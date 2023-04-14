@@ -1,0 +1,52 @@
+.customerDetail {
+   transform: scaleY(0);
+   height: 0px;
+   padding-inline: 10px;
+   transition: all 0.3s ease-in-out;
+   font-size: 13px;
+   white-space: nowrap;
+}
+
+.customerDetail.show {
+   transform: scaleY(1);
+   height: 173px;
+   padding-top: 12px;
+   padding-bottom: 12px;
+}
+
+.customerDetail div {
+   display: flex;
+   align-items: center;
+   flex-wrap: nowrap;
+}
+
+.customerDetail span {
+   margin-left: 10px;
+}
+
+.customerDetail input {
+   margin-left: 20px;
+   height: 32px;
+   padding-left: 10px;
+}
+
+.customerDetail input:focus {
+   outline: none;
+}
+
+.customerDetail .customerContact {
+   width: 200px;
+   
+}
+
+.customerDetail .customerName {
+   width: 300px;
+   margin-left: 33px;
+}
+.customerDetail .customerAddress {
+   width: 400px;
+   margin-left: 46px;
+}
+.customerDetail .customerLocality {
+   width: 400px;
+}

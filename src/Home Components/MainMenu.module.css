@@ -1,0 +1,20 @@
+.mainMenu{
+   width: 55% ;
+   height: 93vh !important ;
+   background-color: lightgray;
+}
+
+.itemSearchContainer {
+   background: rgb(79, 78, 78);
+}
+
+.itemSearch{
+   width:99%;
+   height:35px;
+   margin: 5px;
+   border-radius: 2px;
+}
+
+.itemSearch:focus{
+   outline: none;
+}

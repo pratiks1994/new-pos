@@ -1,0 +1,50 @@
+.orderArea{
+   background-color: white;
+   height: 57vh;
+   flex-shrink: 1;
+   overflow-y: scroll;
+   font-size: 13px;
+}
+
+.orderArea::-webkit-scrollbar {
+   width: 5px;
+ }
+
+ .orderArea::-webkit-scrollbar-thumb {
+   background: rgba(167, 53, 53, 0.307) ; 
+   border-radius: 10px;
+ }
+
+.orderInfo{
+   background-color: rgba(67, 67, 67, 0.119);
+   padding: 5px 5px;
+   color: rgb(67, 67, 67);
+   font-size: 14px;
+   font-weight: 400;
+}
+
+.finalOrder{
+   display: flex;
+   flex-direction: column
+}
+
+.name{
+   flex:7;
+   padding-left: 10px;
+   font-size: 13px;
+}
+
+.qty{
+   flex:4;
+   padding-left: 100px;
+   font-size: 13px;
+
+}
+
+.total{
+   flex:2;
+   text-align: end;
+   padding-left: 10px;
+   font-size: 13px;
+   
+}

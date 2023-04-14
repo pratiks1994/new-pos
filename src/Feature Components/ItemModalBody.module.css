@@ -1,0 +1,14 @@
+.modalBody{
+   display: flex;
+   flex-direction: column;
+   width: 100%;
+   height: 450px;
+   padding: 10px 10px 10px 20px;
+   overflow-y: scroll;
+}
+
+.addOnGroup{
+   margin-top: 10px;
+   padding: 10px 0px;
+}
+

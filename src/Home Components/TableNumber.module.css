@@ -1,0 +1,23 @@
+.tableNumber{
+   height: 0px;
+   transform: scaleY(0);
+   padding-inline: 10px;
+   /* padding-top: 12px;
+   padding-bottom: 12px;  */
+   font-size: 13px;
+   transition: all 0.3s ease-in-out;
+
+   
+}
+
+.tableNumber.show{
+   transform: scaleY(1);
+   height: 55px;
+   padding-top: 12px;
+   padding-bottom: 12px ; 
+}
+
+.tableNumber input{
+   height: 35px;
+   width: 45px;
+}

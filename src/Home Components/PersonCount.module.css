@@ -1,0 +1,23 @@
+.personCount{
+   height: 0px;
+   transform: scaleY(0);
+   padding-inline: 10px;
+   font-size: 13px;
+   /* padding-top: 12px;
+   padding-bottom: 12px;  */
+   transition: all 0.3s ease-in-out
+   
+}
+
+.personCount.show{
+   transform: scaleY(1);
+   height: 55px;
+   padding-top: 12px;
+   padding-bottom: 12px ; 
+}
+
+.personCount input{
+   height: 35px;
+   width: 45px;
+   padding-inline-start: 10px;
+}

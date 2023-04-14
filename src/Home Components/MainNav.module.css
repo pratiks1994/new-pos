@@ -1,0 +1,40 @@
+@import "//netdna.bootstrapcdn.com/font-awesome/3.0/css/font-awesome.css";
+
+.mainNav{
+   height :54px;
+   font-family: FontAwesome ;
+   flex-shrink: 0;
+  
+}
+
+.billSearchInput{
+   max-width: 170px;
+}
+
+.bars{
+   margin-inline: 10px;
+   font-size: 22px;
+}
+
+.LinkIcon{
+   font-size: 25px;
+   margin-inline: 10px;
+   color: black;
+}
+
+.contact{
+  border: 2px solid black;
+  padding: 3px 5px;
+  text-decoration: none;
+  color:black;
+}
+
+.contactText{
+   font-size: 13px;
+   color: black;
+   
+}
+
+.searchInput:focus{
+   box-shadow: none !important;
+}

@@ -1,0 +1,30 @@
+.variant{
+   background-color: rgb(90, 88, 88);
+   color: white;
+   font-size: 14px;
+   font-weight: bold;
+   width: 260px;
+   padding: 8px;
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   margin: 8px ;
+   border-radius: 3px;
+   transition: all 0.05s ease-in-out;
+   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+}
+
+.variant:hover{
+   background-color: brown;
+   transform: scale(1.03);
+}
+
+.variant:active{
+   transform: scale(1);
+}
+
+.variant.selected{
+   background-color: brown ;
+}
+

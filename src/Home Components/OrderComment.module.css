@@ -1,0 +1,26 @@
+.orderComment{
+   height: 0px;
+   transform: scaleY(0);
+   padding-inline: 10px;
+   /* padding-top: 12px;
+   padding-bottom: 12px;  */
+   transition: all 0.3s ease-in-out;
+   font-size: 13px;
+   
+}
+
+.orderComment.show{
+   transform: scaleY(1);
+   height: 120px;
+   padding-top: 8px;
+   padding-bottom: 12px ; 
+}
+
+.orderComment textarea{
+   margin-left:10px;
+   margin-top: 5px;
+   height: 70px;
+   width: 400px;
+   resize: horizontal;
+  
+}
