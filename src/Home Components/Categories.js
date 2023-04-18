@@ -13,15 +13,16 @@ function Categories() {
 
    const dispatch = useDispatch();
 
-   const getCategories = async () => {
-      let { data } = await axios.get("http://192.168.1.208:3001/categories");
-      // console.log(data)
-      dispatch(setBigMenu({data}))
-   };
+   
 
    useEffect(() => {
+      const getCategories = async () => {
+         let { data } = await axios.get("http://192.168.1.208:3001/categories");
+         // console.log(data)
+         dispatch(setBigMenu({data}))
+      };
       getCategories();
-   }, [getCategories]);
+   }, []);
 
 
    return (

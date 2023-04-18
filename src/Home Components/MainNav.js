@@ -19,10 +19,11 @@ import {
    faPhone,
 } from "@fortawesome/free-solid-svg-icons";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { Link,Outlet } from "react-router-dom";
 
 function MainNav() {
    return (
+      <>
       <Navbar bg="light" expand="lg" className={`${styles.mainNav} py-1`}>
          <Container fluid className="d-flex flex-nowrap">
             <div className="d-flex justify-content-start flex-nowrap align-items-center">
@@ -56,7 +57,7 @@ function MainNav() {
                   </div>
                </Link>
 
-               <Link>
+               <Link to="/">
                   <FontAwesomeIcon className={styles.LinkIcon} icon={faStore} />
                </Link>
                <Link>
@@ -86,6 +87,8 @@ function MainNav() {
             </div>
          </Container>
       </Navbar>
+      <Outlet/>
+      </>
    );
 }
 

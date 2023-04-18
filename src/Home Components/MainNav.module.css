@@ -1,8 +1,7 @@
-@import "//netdna.bootstrapcdn.com/font-awesome/3.0/css/font-awesome.css";
+
 
 .mainNav{
    height :54px;
-   font-family: FontAwesome ;
    flex-shrink: 0;
   
 }

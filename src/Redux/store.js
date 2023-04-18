@@ -3,6 +3,7 @@ import currentItemReducer from "./currentItemSlice";
 import finaOrderReducer from "./finalOrderSlice"
 import menuItemsReducer from "./menuItemsSlice"
 import bigMenuReducer from "./bigMenuSlice"
+import serveConfigReducer from "./serverConfigSlice"
 
  const store = configureStore(
    {
@@ -15,6 +16,7 @@ import bigMenuReducer from "./bigMenuSlice"
          finalOrder : finaOrderReducer,
          menuItems: menuItemsReducer,
          bigMenu : bigMenuReducer,
+         serverConfig : serveConfigReducer,
 
       }
    }

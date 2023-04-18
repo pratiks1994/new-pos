@@ -6,10 +6,8 @@ const menuItemsSlice = createSlice({
    initialState:[],
    reducers:{
       setMenuItems :(state,action)=>{
-
            
            const {items} = action.payload
-
            return [...items]
           
       }

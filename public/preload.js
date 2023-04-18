@@ -1,5 +1,10 @@
-const { contextBridge } = require("electron");
+const { contextBridge, ipcRenderer } = require("electron");
 
-process.once("loaded", () => {
-   contextBridge.exposeInMainWorld("versions", process.versions);
- });
+
+ipcApi = {
+request : (chanel,data) => {
+   return ipcRenderer.invoke(chanel,data)}
+
+}
+
+contextBridge.exposeInMainWorld("apiKey", ipcApi);
