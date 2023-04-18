@@ -27,7 +27,7 @@ function ServerConfig() {
           setTimeout(() => {
                navigate("../POS/Home")
                
-          }, 2000);
+          }, 1500);
 
       
      

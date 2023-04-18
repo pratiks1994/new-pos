@@ -10,7 +10,7 @@ function MainMenu() {
       <div className={styles.itemSearchContainer}>
          <input type="text" className={`${styles.itemSearch} border-0 ps-3 py-1`} placeholder='Search item'/>
       </div>
-      <div className='displayMenu d-flex'>
+      <div className={styles.displayMenu} >
          <Categories/>
          <Items/>
       </div>

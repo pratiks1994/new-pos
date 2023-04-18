@@ -84,8 +84,10 @@ const getItems = (id, db) => {
 
 // to gell all data of catagory from catagory id
 
+// for final build use path.join("resources", "restaurant.sqlite")
+
 const getData = async (id) => {
-     const db = new sqlite3.Database(path.join('resources', 'restaurant.sqlite'), (err) => {
+     const db = new sqlite3.Database("restaurant.sqlite", (err) => {
           if (err) {
                console.log(err);
           }
@@ -104,7 +106,7 @@ const getData = async (id) => {
           })
      );
 
-     await db.close((err) => {
+     db.close((err) => {
           if (err) {
                console.log(err);
           }
@@ -116,9 +118,7 @@ const getData = async (id) => {
 // path.join(process.resourcePath, 'extraResources', 'restaurant.sqlite')
 
 const getCategories = async () => {
-     console.log(process.resourcePath)
-     const db = new sqlite3.Database(path.join('resources', 'restaurant.sqlite')
-     , (err) => {
+     const db = new sqlite3.Database(path.join("restaurant.sqlite"), (err) => {
           if (err) {
                console.log(err);
           }
@@ -145,7 +145,7 @@ const getCategories = async () => {
                                    })
                               );
 
-                             res(bigData)
+                              res(bigData);
                          }
                     }
                );

@@ -1,6 +1,6 @@
 .orderArea{
    background-color: white;
-   height: 57vh;
+   height: calc(100% - 295px);
    flex-shrink: 1;
    overflow-y: scroll;
    font-size: 13px;

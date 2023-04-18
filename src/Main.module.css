@@ -3,4 +3,6 @@
    flex-direction: column;
    scroll-behavior: smooth;
    height: 100vh;
+   min-width: 960px;
+   overflow: hidden ;
 }

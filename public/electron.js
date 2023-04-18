@@ -9,8 +9,8 @@ const url = require("url");
 // Create the native browser window.
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1024,
+    height: 768,
     // Set the path of an additional "preload" script that can be used to
     // communicate between node-land and browser-land.
     webPreferences: {
@@ -94,8 +94,9 @@ app.on("web-contents-created", (event, contents) => {
 ipcMain.handle("setup", async (event, data) => {
   console.log("ipc req");
  
+  // for dinal build use path 'resources/server/server.js'
 
-const serverProcess = spawn('node', ['resources/server/server.js']);
+const serverProcess = spawn('node', ['server/server.js']);
 
 serverProcess.stdout.on('data', (data) => {
   console.log(`Server stdout: ${data}`);

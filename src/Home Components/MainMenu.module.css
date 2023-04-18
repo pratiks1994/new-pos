@@ -1,11 +1,12 @@
 .mainMenu{
    width: 55% ;
-   height: 93vh !important ;
+   height: 100% !important ;
    background-color: lightgray;
 }
 
 .itemSearchContainer {
    background: rgb(79, 78, 78);
+   height: 45px;
 }
 
 .itemSearch{
@@ -17,4 +18,9 @@
 
 .itemSearch:focus{
    outline: none;
+}
+
+.displayMenu{
+   display: flex;
+   height: calc(100% - 40px);
 }
