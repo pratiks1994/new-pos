@@ -69,7 +69,7 @@ const getVariation = (item, db) => {
 const getItems = (id, db) => {
      return new Promise((resolve, reject) => {
           db.all(
-               "SELECT id,category_id,name,display_name,attribute,description,is_spicy,has_jain,has_variation,order_type,price FROM items WHERE category_id=? AND status=1 AND restaurant_id=1 ORDER BY priority ASC",
+               "SELECT id,category_id,name,display_name,attribute,description,is_spicy,has_jain,has_variation,order_type,price,description FROM items WHERE category_id=? AND status=1 AND restaurant_id=1 ORDER BY priority ASC",
                [id],
                (err, items) => {
                     if (err) {

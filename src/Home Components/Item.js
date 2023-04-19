@@ -14,7 +14,10 @@ function Item({ name, id, variations, has_variation, price, display_name }) {
      const [modelShow, setModalShow] = useState(false);
      const [err, setErr] = useState("");
      const currentItem = useSelector((state) => state.currentItem);
-     const finalOrder = useSelector((state) => state.finalOrder.orderCart);
+
+
+
+     
 
      const getIdentifier = (item) => {
           let { itemId, variation_id, toppings } = item;
@@ -72,6 +75,10 @@ function Item({ name, id, variations, has_variation, price, display_name }) {
           dispatch(clearCurrentItem());
           setModalShow(false);
      };
+
+
+
+
 
      return (
           <>

@@ -5,16 +5,21 @@ import axios from "axios";
 import { useDispatch,useSelector } from "react-redux";
 import { setBigMenu } from "../Redux/bigMenuSlice";
 
-function Categories() {
+function Categories({getActiveId}) {
    // const [categories, setCategories] = useState([]);
 
    const categories = useSelector(state => state.bigMenu)
    const [active,setActive] = useState()
 
+   useEffect(()=>{
+      getActiveId(active)
+   },[active])
+
+
    const dispatch = useDispatch();
 
    
-
+// api call everytime component Mounts to get FULL MENU items and set as bigMenu redux state
    useEffect(() => {
       const getCategories = async () => {
          let { data } = await axios.get("http://192.168.1.208:3001/categories");

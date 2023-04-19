@@ -18,6 +18,7 @@ const finalOrderSlice = createSlice({
           personCount: 0,
           orderType: "Dine In",
           orderComment: "",
+          cartTotal:0
      },
      reducers: {
           addOrderItem: (state, action) => {
@@ -37,8 +38,8 @@ const finalOrderSlice = createSlice({
                }
           },
           modifyCartData: (state, action) => {
-               let data = action.payload
-               return  {...state,...data}
+               let data = action.payload;
+               return { ...state, ...data };
           },
 
           incrementQty: (state, action) => {
@@ -72,8 +73,15 @@ const finalOrderSlice = createSlice({
                     orderCart: [...state.orderCart.filter((item) => item.currentOrderItemId !== itemId)],
                };
           },
+
+          calculateCartTotal:(state,action)=>{
+               state.cartTotal = action.payload.cartTotal
+               state.tax = action.payload.tax
+               state.subTotal=action.payload.subTotal
+
+          }
      },
 });
 
 export default finalOrderSlice.reducer;
-export const { addOrderItem, incrementQty, decrementQty, removeItem, modifyCartData } = finalOrderSlice.actions;
+export const { addOrderItem, incrementQty, decrementQty, removeItem, modifyCartData,calculateCartTotal } = finalOrderSlice.actions;

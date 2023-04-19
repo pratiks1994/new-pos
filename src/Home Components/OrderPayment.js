@@ -1,24 +1,38 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import styles from "./OrderPayment.module.css";
 import PaymentBreakdown from "./PaymentBreakdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { calculateCartTotal } from "../Redux/finalOrderSlice";
 
 function OrderPayment() {
-     const finalOrder = useSelector((state) => state.finalOrder.orderCart);
 
-     const cartTotal = () => {
-          let total = 0;
-          finalOrder.forEach((item) => {
-               total += item.multiItemTotal;
+     // get finalOrder state from redux store
+
+     const finalOrder = useSelector((state) => state.finalOrder);
+     const dispatch = useDispatch();
+
+//  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store
+     useEffect(() => {
+          let subTotal = 0;
+          finalOrder.orderCart.forEach((item) => {
+               subTotal += item.multiItemTotal;
           });
-          return total;
-     };
+
+          let tax = subTotal * 0.05;
+          let cartTotal = subTotal + tax;
+
+          dispatch(calculateCartTotal({ subTotal, tax, cartTotal }));
+
+     }, [finalOrder.orderCart]);
+
+
 
      const [showPaymentBreakdown, setShowPaymentBreakdown] = useState(false);
+
      const chevronPosition = showPaymentBreakdown ? (
           <FontAwesomeIcon icon={faCaretDown} />
      ) : (
@@ -34,14 +48,14 @@ function OrderPayment() {
 
                <button
                     className={styles.paymentBreakdownToggle}
-                    onClick={() => setShowPaymentBreakdown(!showPaymentBreakdown)}
+                    onClick={() => setShowPaymentBreakdown(true)}
                >
                     {chevronPosition}
                </button>
 
                <div className={`${styles.total} d-flex justify-content-end`}>
                     <div className="m-2 my-3 text-light fs-6">Total</div>
-                    <div className="mx-3 my-3 text-warning fw-bold"> {cartTotal().toFixed(2)} </div>
+                    <div className="mx-3 my-3 text-warning fw-bold"> ₹ {finalOrder.cartTotal.toFixed(2)} </div>
                </div>
 
                <div className={`${styles.paymentModes} d-flex justify-content-around`}>

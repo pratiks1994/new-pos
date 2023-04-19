@@ -1,18 +1,55 @@
-import React from "react";
+import React,{useEffect, useRef} from "react";
 import styles from "./PaymentBreakdown.module.css";
+import { useSelector } from "react-redux";
 
 function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
+
+
+//   add/remove css showBreakdown class based on showPaymentBreakdown state coming from parent component
+
    let showBreakdown = showPaymentBreakdown ? `${styles.showBreakdown} ${styles.paymentBreakdown}` : `${styles.paymentBreakdown}`;
 
+
+//  to get finalOrder state from redux store 
+
+   const finalOrder = useSelector((state) => state.finalOrder);
+
+
+// close the breakdown when clicked outside the div
+
+   const outsideRef = useRef()
+   useEffect(() => {
+
+        const handleOusideClick = (e) => {
+
+         // set setShowPaymentBreakdown to false if click event occure outside the div with ref outsideRef (PaymentBreakdown) 
+             if (outsideRef.current && !outsideRef.current.contains(e.target)) {
+                  setShowPaymentBreakdown(false);
+                  
+             }
+        };
+
+      //   bind full document for listening click
+        document.addEventListener("mousedown", handleOusideClick);
+
+        return () => {
+
+             // Unbind the event listener on clean up
+             document.removeEventListener("mousedown", handleOusideClick);
+        };
+   }, [outsideRef, setShowPaymentBreakdown]);
+
+
+
    return (
-      <div className={showBreakdown}>
+      <div className={showBreakdown} ref={outsideRef} >
          <button className={styles.breakDownHideBtn} onClick={() => setShowPaymentBreakdown(false)}>
             {" "}
             &#8964;
          </button>
          <div className={`${styles.breakDownItem} d-flex justify-content-between`}>
             <div className="ms-4">Sub Total</div>
-            <div className="me-4">0.00</div>
+            <div className="me-4">{finalOrder.subTotal.toFixed(2)}</div>
          </div>
          <div className={`${styles.breakDownItem} d-flex justify-content-between`}>
             <div className="ms-4">Discount</div>
@@ -28,7 +65,7 @@ function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
          </div>
          <div className={`${styles.breakDownItem} d-flex justify-content-between`}>
             <div className="ms-4">Tax</div>
-            <div className="me-4">0.00</div>
+            <div className="me-4">{finalOrder.tax.toFixed(2)}</div>
          </div>
          <div className={`${styles.breakDownItem} d-flex justify-content-between`}>
             <div className="ms-4">Round Of</div>
