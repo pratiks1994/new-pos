@@ -4,12 +4,13 @@ import finaOrderReducer from "./finalOrderSlice"
 import menuItemsReducer from "./menuItemsSlice"
 import bigMenuReducer from "./bigMenuSlice"
 import serveConfigReducer from "./serverConfigSlice"
+import UIActiveReducer from "./UIActiveSlice"
 
  const store = configureStore(
    {
       middleware: (getDefaultMiddleware) => getDefaultMiddleware({
-         immutableCheck: { warnAfter: 128 },
-         serializableCheck: { warnAfter: 128 },
+         immutableCheck: { warnAfter: 50 },
+         serializableCheck: { warnAfter: 50 },
        }),
       reducer:{
          currentItem : currentItemReducer,
@@ -17,6 +18,7 @@ import serveConfigReducer from "./serverConfigSlice"
          menuItems: menuItemsReducer,
          bigMenu : bigMenuReducer,
          serverConfig : serveConfigReducer,
+         UIActive : UIActiveReducer,
 
       }
    }

@@ -22,6 +22,14 @@ import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { Link,Outlet } from "react-router-dom";
 
 function MainNav() {
+
+   const handleClose = () =>{
+      localStorage.removeItem("IP")
+      localStorage.removeItem("systemType")
+
+   }
+
+
    return (
       <>
       <Navbar bg="light" expand="lg" className={`${styles.mainNav} py-1`}>
@@ -32,9 +40,11 @@ function MainNav() {
                   Martino'z
                </Navbar.Brand>
 
-               <Button variant="danger" size="sm" className="mx-2 py-1 px-2 fw-bold text-nowrap">
+               <Link to="Home">
+               <Button  variant="danger" size="sm" className="mx-2 py-1 px-2 fw-bold text-nowrap">
                   New Order
                </Button>
+               </Link>
 
                <Form className={`d-flex ${styles.billSearchInput}`}>
                   <InputGroup>
@@ -63,7 +73,7 @@ function MainNav() {
                <Link>
                   <FontAwesomeIcon className={styles.LinkIcon} icon={faBowlFood} />
                </Link>
-               <Link>
+               <Link to="LiveView/OrderView">
                   <FontAwesomeIcon className={styles.LinkIcon} icon={faUsersViewfinder} />
                </Link>
                <Link>
@@ -81,7 +91,7 @@ function MainNav() {
                <Link>
                   <FontAwesomeIcon className={styles.LinkIcon} icon={faUser} />
                </Link>
-               <Link>
+               <Link to="../serverConfig" onClick={handleClose}>
                   <FontAwesomeIcon className={styles.LinkIcon} icon={faPowerOff} />
                </Link>
             </div>

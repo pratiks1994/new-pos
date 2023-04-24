@@ -3,10 +3,15 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const serverConfigSlice = createSlice({
    name:"serverConfig",
-   initialState:"client",
+   initialState:{
+      systemType:"client",
+      IPAddress :"192.168.1.208"
+   },
    reducers:{
       setSystem :(state,action)=>{
-          return action.payload.system
+          const {name,value} = action.payload
+
+          state[name]=value
       
           
       }

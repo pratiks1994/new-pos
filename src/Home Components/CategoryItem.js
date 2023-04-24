@@ -8,6 +8,9 @@ function CategoryItem({ display_name, id, setActive, active }) {
      const dispatch = useDispatch();
      const bigMenu = useSelector(state=>state.bigMenu)
 
+
+     // get items list from bigMenu redux state according to active category id and set menuItem redux state with aquired items
+
      const handleClick = (id) => {
           setActive(id);
           // const { data } = await axios.get(`http://localhost:3001/categories/${id}`);
@@ -15,6 +18,8 @@ function CategoryItem({ display_name, id, setActive, active }) {
 
           dispatch(setMenuItems({ items }));
      };
+
+     
 
      let selected = active === id ? styles.selected : "";
 

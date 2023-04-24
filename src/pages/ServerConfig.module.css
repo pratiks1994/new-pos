@@ -12,8 +12,8 @@
    justify-content: center;
    align-items: flex-start;
    flex-direction: column;   
-   height: 200px;
-   width: 300px;
+   height: 250px;
+   width: 400px;
    background-color: rgba(0, 0, 0, 0.379);
    border-radius: 15px;
    color: white;
@@ -40,4 +40,20 @@
    background-color: black;
   color: white;
   
+}
+
+.ipAddress{
+   margin-left: 10px;
+   padding-inline: 5px;
+   height: 30px;
+   width: 158px;
+   border: none;
+   line-height: 30px;
+   border-radius: 4px;
+   margin-top: 5px;
+}
+
+.err{
+   font-size: 14px;
+   color: red;
 }

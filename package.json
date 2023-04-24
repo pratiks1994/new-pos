@@ -23,9 +23,11 @@
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",
     "react-dom": "^18.2.0",
+    "react-query": "^3.39.3",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.2.0",
     "react-scripts": "5.0.1",
+    "react-toastify": "^9.1.2",
     "sqlite3": "^5.1.6",
     "uuid": "^9.0.0",
     "web-vitals": "^2.1.4"
@@ -36,11 +38,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "concurrently -k \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3006 && electronmon .\"",
-    "server":"nodemon ./server/server.js",
+    "server": "nodemon ./server/server.js",
     "linux": "yarn build && electron-builder -l -c.extraMetadata.main=build/electron.js",
     "win": "yarn build && electron-builder -w -c.extraMetadata.main=build/electron.js"
-
-    
   },
   "eslintConfig": {
     "extends": [
@@ -50,11 +50,10 @@
   },
   "browserslist": {
     "production": [
-      "last 1 electron version",  
+      "last 1 electron version",
       ">0.2%",
       "not dead",
       "not op_mini all"
-
     ],
     "development": [
       "last 1 electron version",
@@ -78,9 +77,16 @@
   "build": {
     "appId": "com.electron.myapp",
     "productName": "POS",
-    "files": ["build/**/*", "node_modules/**/*", "restaurant.sqlite","server/*"],
-    "extraResources": ["restaurant.sqlite","server"],
-
+    "files": [
+      "build/**/*",
+      "node_modules/**/*",
+      "restaurant.sqlite",
+      "server/*"
+    ],
+    "extraResources": [
+      "restaurant.sqlite",
+      "server"
+    ],
     "directories": {
       "buildResources": "public"
     },
@@ -94,6 +100,4 @@
       "target": "deb"
     }
   }
-
-
 }

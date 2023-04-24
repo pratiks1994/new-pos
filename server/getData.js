@@ -124,7 +124,7 @@ const getCategories = async () => {
           }
      });
 
-     return (categories = await Promise.resolve(
+     return await Promise.resolve(
           new Promise((res, rej) => {
                db.all(
                     "SELECT id,restaurant_id,name,display_name,item_count FROM categories WHERE restaurant_id=1 AND status=1",
@@ -150,7 +150,7 @@ const getCategories = async () => {
                     }
                );
           })
-     ));
+     );
 };
 
 module.exports = { getData, getCategories };

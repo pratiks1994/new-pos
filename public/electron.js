@@ -113,17 +113,4 @@ serverProcess.on('close', (code) => {
 
 
 
-
-
-
-
-  // exec(`npm run server` ,(error, stdout, stderr) => {
-  //   console.log("exec req");
-
-  //   if (error) {
-  //     console.error(`exec error: ${error}`);
-  //     return;
-  //   }
-
-  // });
 })

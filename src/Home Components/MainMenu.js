@@ -18,7 +18,7 @@ function MainMenu() {
           activeCategoryId = id;
      };
 
-     //  set items according to search term
+     //  set Menuitems according to search term
 
      const handleChange = () => {
           let searchTerm = searchItemRef.current.value;
@@ -36,7 +36,7 @@ function MainMenu() {
                });
           }
 
-          // if seach term length is 0 or search box is empty reset menuItems to selected active id that we aquired from activeCategoryId
+          // if seach term length is 0 or search box is empty reset menuItems to selected active id that was aquired from activeCategoryId
 
           if (searchTerm.length === 0 && activeCategoryId) {
                let { items } = bigMenu.find((category) => category.id === activeCategoryId);
@@ -49,6 +49,9 @@ function MainMenu() {
 
      return (
           <div className={styles.mainMenu}>
+
+            {/* item search bar */}
+
                <div className={styles.itemSearchContainer}>
                     <input
                          type="text"
@@ -58,8 +61,14 @@ function MainMenu() {
                          onChange={handleChange}
                     />
                </div>
+
+
                <div className={styles.displayMenu}>
+
+                {/* category list component */}
                     <Categories getActiveId={getActiveId} />
+                    
+                 {/* items component that shows items according to selected category or search term   */}
                     <Items />
                </div>
           </div>

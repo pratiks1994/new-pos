@@ -79,9 +79,32 @@ const finalOrderSlice = createSlice({
                state.tax = action.payload.tax
                state.subTotal=action.payload.subTotal
 
-          }
+          },
+
+          resetFinalOrder : (state) => {
+              return ({
+               customerName: "",
+               customerContact: "",
+               customerAdd: "",
+               customerLocality: "",
+               orderCart: [],
+               subTotal: 0,
+               tax: 0,
+               deliveryCharge: 0,
+               packagingCharge: 0,
+               discount: 0,
+               paymentMethod: "Cash",
+               tableNumber: "",
+               personCount: 0,
+               orderType: "Dine In",
+               orderComment: "",
+               cartTotal:0
+          })
+               }
+               
+
      },
 });
 
 export default finalOrderSlice.reducer;
-export const { addOrderItem, incrementQty, decrementQty, removeItem, modifyCartData,calculateCartTotal } = finalOrderSlice.actions;
+export const { addOrderItem, incrementQty, decrementQty, removeItem, modifyCartData,calculateCartTotal,resetFinalOrder } = finalOrderSlice.actions;

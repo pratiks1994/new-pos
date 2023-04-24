@@ -15,42 +15,6 @@ function ItemModalBody({ id }) {
    let addonGroups = variants.find((variant) => variant.variation_id === selectedVariantId).addonGroups;
 
 
-   // const variants = [
-   //    { id:1,type: "Slice", price: "155" },
-   //    { id:2,type: "Regular", price:"165" },
-   //    { id:3,type: "Medium", price: "355" },
-   //    { id:4,type: "Large", price: "495" },
-   //    { id:5,type: "Gaint", price: "895" },
-   //    { id:6,type: "Monster", price: "1350" },
-   // ];
-
-   // const vegToppings = [
-   //    { id: 1, type: "Onion", price: "30" },
-   //    { id: 2, type: "Capsicum", price: "30" },
-   //    { id: 3, type: "Paneer", price: "30" },
-   //    { id: 4, type: "Olives", price: "30" },
-   //    { id: 5, type: "Jalapenos", price: "30" },
-   //    { id: 6, type: "Red Paprika", price: "30" },
-   //    { id: 7, type: "Pineapple", price: "30" },
-   //    { id: 8, type: "Sweet Corn", price: "30" },
-   //    { id: 9, type: "Mushroom", price: "30" },
-   //    { id: 11, type: "Fresh Tomatoes", price: "30" },
-   //    { id: 12, type: "Baby Corns", price: "30" },
-   // ];
-
-   // const cheeseDeeps = [
-   //    { id: 13, type: "Extra Cheese", price: "40" },
-   //    { id: 14, type: "Cheese Dip", price: "40" },
-   //    { id: 15, type: "Jalapenos Dip", price: "40" },
-   //    { id: 16, type: "Hot & Garlic Dip", price: "40" },
-   //    { id: 17, type: "Peri Peri Dip", price: "40" },
-   //    { id: 18, type: "Korma Dip", price: "40" },
-   //    { id: 19, type: "Pesto & Basil Dip", price: "40" },
-   //    { id: 20, type: "Mexican Salsa Dip", price: "40" },
-   // ];
-
-   // const extras = [{ id: 20, type: "9 cheesy", price: "45" }];
-
    return (
       <div className={styles.modalBody}>
          <div className={styles.variation}>

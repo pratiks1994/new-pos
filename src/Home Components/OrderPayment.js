@@ -1,21 +1,58 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import styles from "./OrderPayment.module.css";
 import PaymentBreakdown from "./PaymentBreakdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useSelector, useDispatch } from "react-redux";
-import { calculateCartTotal } from "../Redux/finalOrderSlice";
+import { calculateCartTotal, resetFinalOrder } from "../Redux/finalOrderSlice";
+import { modifyCartData } from "../Redux/finalOrderSlice";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function OrderPayment() {
-
      // get finalOrder state from redux store
 
      const finalOrder = useSelector((state) => state.finalOrder);
+     const { IPAddress } = useSelector((state) => state.serverConfig);
      const dispatch = useDispatch();
+     const notify = () => {
+          toast.success("Order Placed!", {
+               position: "top-center",
+               autoClose: 2000,
+               hideProgressBar: true,
+               closeOnClick: true,
+               pauseOnHover: true,
+               draggable: true,
+               progress: undefined,
+               theme: "colored",
+          });
+     };
 
-//  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store
+     // add payment method to finalOrder redux state
+     const handleChange = (e) => {
+          let { name, value } = e.target;
+          dispatch(modifyCartData({ [name]: value }));
+     };
+
+     // on save post api call to backend
+
+     const saveOrder = async () => {
+          if (finalOrder.orderCart.length !== 0) {
+               let res = await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
+
+               notify();
+          }
+
+          // set finalorder redux state to initial state after api call completion
+
+          dispatch(resetFinalOrder());
+     };
+
+     //  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store
+
      useEffect(() => {
           let subTotal = 0;
           finalOrder.orderCart.forEach((item) => {
@@ -26,10 +63,7 @@ function OrderPayment() {
           let cartTotal = subTotal + tax;
 
           dispatch(calculateCartTotal({ subTotal, tax, cartTotal }));
-
-     }, [finalOrder.orderCart]);
-
-
+     }, [finalOrder.orderCart, dispatch]);
 
      const [showPaymentBreakdown, setShowPaymentBreakdown] = useState(false);
 
@@ -45,10 +79,12 @@ function OrderPayment() {
                     showPaymentBreakdown={showPaymentBreakdown}
                     setShowPaymentBreakdown={setShowPaymentBreakdown}
                />
+               <ToastContainer />
 
                <button
                     className={styles.paymentBreakdownToggle}
-                    onClick={() => setShowPaymentBreakdown(true)}
+                    name="toggleBreakdown"
+                    onClick={() => setShowPaymentBreakdown(!showPaymentBreakdown)}
                >
                     {chevronPosition}
                </button>
@@ -60,20 +96,48 @@ function OrderPayment() {
 
                <div className={`${styles.paymentModes} d-flex justify-content-around`}>
                     <label>
-                         <input className="mx-2 my-2" type="radio" name="mode" value="Cash" />
+                         <input
+                              className="mx-2 my-2"
+                              type="radio"
+                              name="paymentMethod"
+                              onChange={handleChange}
+                              value="Cash"
+                              checked={finalOrder.paymentMethod === "Cash"}
+                         />
                          Cash
                     </label>
 
                     <label>
-                         <input className="mx-2 my-2" type="radio" name="mode" value="Card" />
+                         <input
+                              className="mx-2 my-2"
+                              type="radio"
+                              name="paymentMethod"
+                              onChange={handleChange}
+                              value="Card"
+                              checked={finalOrder.paymentMethod === "Card"}
+                         />
                          Card
                     </label>
                     <label>
-                         <input className="mx-2 my-2" type="radio" name="mode" value="Due" />
+                         <input
+                              className="mx-2 my-2"
+                              type="radio"
+                              name="paymentMethod"
+                              onChange={handleChange}
+                              value="Due"
+                              checked={finalOrder.paymentMethod === "Due"}
+                         />
                          Due
                     </label>
                     <label>
-                         <input className="mx-2 my-2" type="radio" name="mode" value="Other" />
+                         <input
+                              className="mx-2 my-2"
+                              type="radio"
+                              name="paymentMethod"
+                              onChange={handleChange}
+                              value="Other"
+                              checked={finalOrder.paymentMethod === "Other"}
+                         />
                          Other
                     </label>
                </div>
@@ -84,7 +148,12 @@ function OrderPayment() {
                </div>
 
                <div className={`${styles.ProcessOrderBtns} d-flex justify-content-center bg-light pt-3 pb-3 flex-wrap`}>
-                    <Button variant="danger" size="sm" className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1">
+                    <Button
+                         variant="danger"
+                         size="sm"
+                         className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1"
+                         onClick={saveOrder}
+                    >
                          {" "}
                          Save{" "}
                     </Button>
