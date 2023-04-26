@@ -1,4 +1,4 @@
-const sqlite3 = require("sqlite3").verbose();
+
 
 const getLiveOrders = async () => {
      const db = new sqlite3.Database("../restaurant.sqlite", (err) => {

@@ -4,7 +4,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const serverConfigSlice = createSlice({
    name:"serverConfig",
    initialState:{
-      systemType:"client",
+      systemType:"",
       IPAddress :"192.168.1.208"
    },
    reducers:{

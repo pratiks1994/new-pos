@@ -27,7 +27,9 @@ function Categories({ getActiveId }) {
      };
 
    //   react query api call for data chashing, loading and error state management
-     const { data, status, isLoading } = useQuery("bigMenu", getCategories);
+     const { data, status, isLoading } = useQuery("bigMenu", getCategories,{
+          staleTime: 120000
+     });
 
      useEffect(() => {
           if (status === "success") {

@@ -14,7 +14,7 @@ function Main() {
                {/* <MainNav /> */}
                <Routes>
                     <Route path="/" element={<ServerConfig />} />
-                    <Route path="POS" element={<MainNav />}>
+                    <Route path="POS " element={<MainNav />}>
                          <Route path="Home" element={<Home />} />
                          <Route path="LiveView" element={<LiveView />}>
                               <Route path="OrderView" element={<OrderView />} />

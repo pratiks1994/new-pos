@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import styles from "./ServerConfig.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { setSystem } from "../Redux/serverConfigSlice";
-import { useNavigate } from "react-router-dom";
+import { redirect, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function ServerConfig() {
      const [err, setErr] = useState("");
+     const [isLoading, setIsLoding] = useState(false);
      const { systemType, IPAddress } = useSelector((state) => state.serverConfig);
 
      const dispatch = useDispatch();
@@ -19,26 +20,43 @@ function ServerConfig() {
 
      const handleClick = async (system) => {
           setErr("");
+          setIsLoding(true);
           if (system === "server") {
+
                let res = await window.apiKey.request("setup", system);
-          
-          try {
-               const { status } = await axios.get(`http://${IPAddress}:3001/ping`);
-                    if (status === 200) {
-                    localStorage.setItem("IP", IPAddress);
-                    localStorage.setItem("systemType", systemType);
-                    navigate("../POS/Home");
-               }
-          } catch (err) {
-               setErr("server is not responding");
           }
 
-     }
+          setTimeout(async () => {
+               try {
+                    console.log("server");
+                    const { status } = await axios.get(`http://${IPAddress}:3001/ping`);
+                    if (status === 200) {
+                         IPAddress && localStorage.setItem("IP", IPAddress);
+                         systemType && localStorage.setItem("systemType", systemType);
+                         navigate("../POS/Home");
+                    } else {
+                         setErr("server not responding");
+                         setIsLoding(false);
+                         navigate("./")
+                         
+                    }
+               } catch (err) {
+                    setErr("server not responding");
+                    setIsLoding(false);
+               }
+          }, 400);
      };
 
-    
+     useEffect(() => {
+          if (localStorage.getItem("systemType")) {
+               handleClick(localStorage.getItem("systemType"));
+          }
+          
+     }, []);
 
-     return (
+
+
+  if(!localStorage.getItem("systemType")) { return (
           <div className={styles.serverConfig}>
                <div className={styles.main}>
                     <div>
@@ -79,11 +97,23 @@ function ServerConfig() {
                     </div>
                     {err && <div className={styles.err}> {err} </div>}
                     <button className={styles.btn} onClick={() => handleClick(systemType)}>
-                         Next
+                         {isLoading ? "loading..." : "next"}
                     </button>
                </div>
           </div>
      );
 }
+
+else{
+
+     return (
+          <div  className={styles.serverConfig}>LOADING....</div>
+     )
+}
+
+
+}
+
+
 
 export default ServerConfig;

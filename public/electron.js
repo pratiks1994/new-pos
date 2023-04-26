@@ -1,10 +1,11 @@
 
-const { exec,spawn } = require("child_process");
-
-
+const { spawn } = require("child_process");
 const { app, BrowserWindow, protocol ,ipcMain} = require("electron");
 const path = require("path");
 const url = require("url");
+
+
+
 
 // Create the native browser window.
 function createWindow() {
@@ -92,23 +93,29 @@ app.on("web-contents-created", (event, contents) => {
 
 
 ipcMain.handle("setup", async (event, data) => {
-  console.log("ipc req");
+
+  const posServer = require("../server/server")
+  
+  // ssss
  
-  // for dinal build use path 'resources/server/server.js'
+  // for final build use path 'resources/server/server.js'
+  // path.join("resources", "server","server.js")
+  
+  
 
-const serverProcess = spawn('node', ['server/server.js']);
+// const serverProcess = spawn('node', [path.join("resources", "server","server.js")]);
 
-serverProcess.stdout.on('data', (data) => {
-  console.log(`Server stdout: ${data}`);
-});
+// serverProcess.stdout.on('data', (data) => {
+//   console.log(`Server stdout: ${data}`);
+// });
 
-serverProcess.stderr.on('data', (data) => {
-  console.error(`Server stderr: ${data}`);
-});
+// serverProcess.stderr.on('data', (data) => {
+//   console.error(`Server stderr: ${data}`);
+// });
 
-serverProcess.on('close', (code) => {
-  console.log(`Server process exited with code ${code}`);
-});
+// serverProcess.on('close', (code) => {
+//   console.log(`Server process exited with code ${code}`);
+// });
 
 
 
