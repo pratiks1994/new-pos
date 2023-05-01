@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 const openDb = () => {
 
    // for build path.join("resources", "restaurant.sqlite")
-     const db = new sqlite.Database(path.join("resources","restaurant.sqlite"), (err) => {
+     const db = new sqlite.Database(path.join("restaurant.sqlite"), (err) => {
           if (err) {
                console.log(err);
           }

@@ -49,6 +49,8 @@ function OrderPayment() {
           // set finalorder redux state to initial state after api call completion
 
           dispatch(resetFinalOrder());
+
+          let res = await window.apiKey.request("print", finalOrder);
      };
 
      //  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store

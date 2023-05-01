@@ -14,14 +14,14 @@ function Main() {
                {/* <MainNav /> */}
                <Routes>
                     <Route path="/" element={<ServerConfig />} />
-                    <Route path="POS " element={<MainNav />}>
-                         <Route path="Home" element={<Home />} />
+                    <Route path="Home" element={<MainNav />}>
+                         <Route index element={<Home />} />
                          <Route path="LiveView" element={<LiveView />}>
                               <Route path="OrderView" element={<OrderView />} />
                               <Route path="KOTView" element={<KOTView />} />
                          </Route>
                     </Route>
-                    <Route path="*" element={<Navigate to="/" />} />
+                    {/* <Route path="*" element={<Navigate to="/" />} /> */}
                </Routes>
           </div>
      );

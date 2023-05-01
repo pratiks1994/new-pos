@@ -1,7 +1,12 @@
+const { printBill } = require("./printBill");
 
 
-const createOrder = (order, db) => {
+
+
+const createOrder = async (order, db) => {
      // create new order number
+     // printBill(order)
+
      const d = new Date();
      let orderNo = d.getTime();
      let userId = 85698;

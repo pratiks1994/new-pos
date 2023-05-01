@@ -1,4 +1,5 @@
 
+
 const getVariation = (item, db) => {
      // get variation for each item from Item_variation(pivot) and variations table
 
@@ -91,6 +92,8 @@ const getData = async (id, db) => {
      //      }
      // });
 
+
+
      let items = await getItems(id, db);
 
      // get detail items array with variation and addongroups and addonitems
@@ -110,35 +113,34 @@ const getData = async (id, db) => {
 // path.join(process.resourcePath, 'extraResources', 'restaurant.sqlite')
 
 const getCategories = async (db) => {
+
+         
+
      return await Promise.resolve(
           new Promise((res, rej) => {
-              
-                    db.all(
-                         "SELECT id,restaurant_id,name,display_name,item_count FROM categories WHERE restaurant_id=1 AND status=1",
-                         [],
-                         async (err, categories) => {
-                              if (err) {
-                                   rej(err);
-                              } else {
-                                   // console.log(category)
-                                   // res(categories);
+               db.all(
+                    "SELECT id,restaurant_id,name,display_name,item_count FROM categories WHERE restaurant_id=1 AND status=1",
+                    [],
+                    async (err, categories) => {
+                         if (err) {
+                              rej(err);
+                         } else {
+                              // console.log(category)
+                              // res(categories);
 
-                                   let bigData = await Promise.all(
-                                        categories.map(async (category) => {
-                                             return new Promise(async (res, rej) => {
-                                                  let items = await getData(category.id, db);
-                                                  res({ ...category, items: [...items] });
-                                             });
-                                        })
-                                   );
+                              let bigData = await Promise.all(
+                                   categories.map(async (category) => {
+                                        return new Promise(async (res, rej) => {
+                                             let items = await getData(category.id, db);
+                                             res({ ...category, items: [...items] });
+                                        });
+                                   })
+                              );
 
-                                   res(bigData);
-                              }
+                              res(bigData);
                          }
-                    );
-
-                    
-              
+                    }
+               );
           })
      );
 };

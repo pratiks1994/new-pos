@@ -33,11 +33,11 @@ function ServerConfig() {
                     if (status === 200) {
                          IPAddress && localStorage.setItem("IP", IPAddress);
                          systemType && localStorage.setItem("systemType", systemType);
-                         navigate("../POS/Home");
+                         navigate("Home");
                     } else {
                          setErr("server not responding");
                          setIsLoding(false);
-                         navigate("./")
+                         navigate(".")
                          
                     }
                } catch (err) {

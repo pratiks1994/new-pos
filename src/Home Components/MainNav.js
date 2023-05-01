@@ -91,7 +91,7 @@ function MainNav() {
                <Link>
                   <FontAwesomeIcon className={styles.LinkIcon} icon={faUser} />
                </Link>
-               <Link to="../serverConfig" onClick={handleClose}>
+               <Link to="../" onClick={handleClose}>
                   <FontAwesomeIcon className={styles.LinkIcon} icon={faPowerOff} />
                </Link>
             </div>
