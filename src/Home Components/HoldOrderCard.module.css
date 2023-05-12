@@ -1,0 +1,65 @@
+.holdOrderCard {
+      padding: 5px;
+      border-radius: 5px;
+      border: 1px solid rgb(175, 175, 175);
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      color: rgb(83, 83, 83);
+      background-color: rgb(238, 238, 238);
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.cardHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 2px;
+}
+
+.total {
+      display: flex;
+      justify-content: flex-end;
+      padding: 3px 2px;
+      font-weight: bolder;
+      font-size: 13px;
+      color: rgb(53, 53, 53);
+}
+
+.customerDetail {
+      padding: 3px 2px 5px 2px;
+      width: 100%;
+      border-bottom: 1px solid rgb(175, 175, 175);
+}
+
+.actions {
+      padding: 7px 2px 3px 2px;
+      display: flex;
+      justify-content: space-between;
+}
+
+.actions button {
+      font-weight: bolder;
+      color: inherit;
+      border: 2px solid rgb(175, 175, 175);
+      border-radius: 5px;
+      padding-inline: 20px;
+      padding-block: 5px ;
+      background-color: white;
+      
+}
+
+.actions button:hover{
+    border-color: rgba(221, 0, 0, 0.808);
+}
+
+.holdOrderCard:hover{
+
+   border-color: rgba(0, 73, 0, 0.582);
+   transform: scale(1.01);
+
+}
+
+
+
+

@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setBigMenu } from "../Redux/bigMenuSlice";
 import { useQuery } from "react-query";
 
+
 function Categories({ getActiveId }) {
      // const [categories, setCategories] = useState([]);
 
@@ -23,12 +24,14 @@ function Categories({ getActiveId }) {
 
      const getCategories = async () => {
           let { data } = await axios.get(`http://${IPAddress}:3001/categories`);
+          
+          
           return data;
      };
 
    //   react query api call for data chashing, loading and error state management
      const { data, status, isLoading } = useQuery("bigMenu", getCategories,{
-          staleTime: 120000
+          staleTime: 1200000
      });
 
      useEffect(() => {

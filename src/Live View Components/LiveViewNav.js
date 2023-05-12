@@ -54,7 +54,7 @@ function LiveViewNav() {
                          );
                     })}
 
-                    <Link to="../Home" className={styles.backBtn}>
+                    <Link to="../" className={styles.backBtn}>
                          {" "}
                          &#x2190; Back
                     </Link>

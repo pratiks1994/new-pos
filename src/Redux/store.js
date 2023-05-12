@@ -5,6 +5,7 @@ import menuItemsReducer from "./menuItemsSlice"
 import bigMenuReducer from "./bigMenuSlice"
 import serveConfigReducer from "./serverConfigSlice"
 import UIActiveReducer from "./UIActiveSlice"
+import KOTReducer from "./KOTSlice"
 
  const store = configureStore(
    {
@@ -19,6 +20,7 @@ import UIActiveReducer from "./UIActiveSlice"
          bigMenu : bigMenuReducer,
          serverConfig : serveConfigReducer,
          UIActive : UIActiveReducer,
+         KOT:KOTReducer,
 
       }
    }

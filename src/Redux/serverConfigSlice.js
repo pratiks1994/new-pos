@@ -5,7 +5,7 @@ const serverConfigSlice = createSlice({
    name:"serverConfig",
    initialState:{
       systemType:"",
-      IPAddress :"192.168.1.208"
+      IPAddress :"192.168.1.108"
    },
    reducers:{
       setSystem :(state,action)=>{

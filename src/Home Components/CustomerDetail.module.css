@@ -30,6 +30,10 @@
    padding-left: 10px;
 }
 
+.customerContact{
+   position: relative;
+}
+
 .customerDetail input:focus {
    outline: none;
 }

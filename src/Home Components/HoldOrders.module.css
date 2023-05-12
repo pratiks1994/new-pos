@@ -1,0 +1,21 @@
+
+
+.holdOrderHeader {
+      padding: 20px 20px;
+      font-size: 17px;
+      font-weight: 500;
+      color: rgb(80, 80, 80);
+}
+.holdOrdersBody {
+      padding: 0px 10px;
+      height: 100%;
+}
+
+.holdOrdersBody::-webkit-scrollbar {
+      width: 5px;
+}
+
+.holdOrdersBody::-webkit-scrollbar-thumb {
+      background: rgba(70, 70, 70, 0.753);
+      border-radius: 10px;
+}
