@@ -17,7 +17,7 @@ function PersonCount({showDetailType}) {
   return (
    <div className={showPersonCount}>
 
-      <span className='mx-2'>please enter No. of Person</span><input type="number" min="0" value={personCount} onChange={(e)=>handleChange(e)}/>
+      <span className='mx-2'>please enter No. of Person</span><input  type="number" min="0" value={personCount} onChange={(e)=>handleChange(e)}/>
     </div>
   )
 }

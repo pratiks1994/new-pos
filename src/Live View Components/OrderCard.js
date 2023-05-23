@@ -2,14 +2,23 @@ import React from "react";
 import styles from "./OrderCard.module.css";
 import { v4 } from "uuid";
 import Timer from "./Timer";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useMutation, useQueryClient } from "react-query";
 import axios from "axios";
+import deliveryImg from "../icons/liveview-delivery.png";
+import pickUpImg from "../icons/liveview-pickup.png";
+import dineInIng from "../icons/liveview-dinein.png";
+import { liveOrderToCart } from "../Redux/finalOrderSlice";
+import { useNavigate } from "react-router-dom";
+import { setActive } from "../Redux/UIActiveSlice";
+import { motion } from "framer-motion";
 
-function OrderCard({ order }) {
+function OrderCard({ order,idx }) {
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const queryClient = useQueryClient();
       const DineInStatus = ["accepted", "printed", "settled"];
+      const dispatch = useDispatch();
+      const navigate = useNavigate();
 
       const updateLiveOrders = async ({ orderStatus, orderId }) => {
             let updatedStatus;
@@ -23,9 +32,9 @@ function OrderCard({ order }) {
 
       const { mutate: orderMutation, isLoading } = useMutation({
             mutationFn: updateLiveOrders,
-            onSettled: () => {
-                  queryClient.invalidateQueries("liveOrders");
-            },
+            // onSettled: () => {
+            //       queryClient.invalidateQueries("liveOrders");
+            // },
       });
 
       const getBtnTheme = (status) => {
@@ -38,12 +47,32 @@ function OrderCard({ order }) {
             }
       };
 
+      const getHeaderTheme = (type) => {
+            if (type === "Delivery") {
+                  return { style: { backgroundColor: "rgba(161, 118, 108, 0.41)" }, image: deliveryImg };
+            }
+
+            if (type === "Pick Up") {
+                  return { style: { backgroundColor: "rgba(201, 182, 34, 0.41)" }, image: pickUpImg };
+            } else {
+                  return { style: { backgroundColor: "rgba(81, 161, 77, 0.41)" }, image: dineInIng };
+            }
+      };
+
+      const moveOrderToHome = (order) => {
+            dispatch(liveOrderToCart({ order }));
+            dispatch(setActive({ key: "isCartActionDisable", name: true }));
+            navigate("/Home");
+      };
+
       return (
-            <div className={styles.orderCard}>
-                  <header className={styles.cardHeader}>
-                        <div>
+            <motion.div layout className={styles.orderCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1 ,delay : idx*0.05}} >
+                  <header className={styles.cardHeader} style={getHeaderTheme(order.order_type).style} onClick={() => moveOrderToHome(order)}>
+                        <div >
                               <div> Martinoz...</div>
                               <Timer startTime={order.created_at} />
+                              <img src={getHeaderTheme(order.order_type).image} alt="BigCo Inc. logo" />
+
                               <div>{`TABLE : ${order.dine_in_table_no || 12}`}</div>
                         </div>
                         <div>
@@ -52,11 +81,12 @@ function OrderCard({ order }) {
                         </div>
                   </header>
                   <div className={styles.riderStatus}>Not Assign</div>
-                  {order.customer_name && (
-                        <div className={styles.customerDetail}>
-                              {order.customer_name} | {order.phone_number} <br /> {order.complete_address}
-                        </div>
-                  )}
+
+                  <div className={styles.customerDetail}>
+                        {order.customer_name ? order.customer_name : "----"} | {order.phone_number ? order.phone_number : "----"} <br />{" "}
+                        {order.complete_address ? order.complete_address : "------"}
+                  </div>
+
                   <div className={styles.orderItems}>
                         {order.items.map((item) => {
                               return (
@@ -79,13 +109,16 @@ function OrderCard({ order }) {
                         })}
                   </div>
                   <div className={styles.statusBtn}>
-                        <div className={styles.orderTotal}>₹ {order.total}</div>
-                        <button style={getBtnTheme(order.order_status).style} onClick={() => orderMutation({ orderStatus: order.order_status, orderId: order.id })} disabled={isLoading}>
+                        <div className={styles.orderTotal}>₹ {order.total.toFixed(2)}</div>
+                        <button
+                              style={getBtnTheme(order.order_status).style}
+                              onClick={() => orderMutation({ orderStatus: order.order_status, orderId: order.id })}
+                              disabled={isLoading}>
                               {" "}
-                              {isLoading ? "Loading...":getBtnTheme(order.order_status).name}
+                              {isLoading ? "Loading..." : getBtnTheme(order.order_status).name}
                         </button>
                   </div>
-            </div>
+            </motion.div>
       );
 }
 

@@ -17,9 +17,11 @@ function OrderPayment() {
       // get finalOrder state from redux store
       const queryClient = useQueryClient();
       const finalOrder = useSelector((state) => state.finalOrder);
+      
+
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const dispatch = useDispatch();
-      const notify = (status) => {
+      const notify = (status, msg) => {
             if (status === "success") {
                   toast.success("Order Placed!", {
                         position: "top-center",
@@ -32,8 +34,8 @@ function OrderPayment() {
                         theme: "colored",
                   });
             } else {
-                  toast.warn("Cart is Empty!!!", {
-                        position: "top-center",
+                  toast.warn(msg, {
+                        position: "top-right",
                         autoClose: 2000,
                         hideProgressBar: true,
                         closeOnClick: true,
@@ -54,15 +56,25 @@ function OrderPayment() {
       // on save post api call to backend
 
       const saveOrder = async () => {
+            if (finalOrder.orderType === "Dine In" && finalOrder.tableNumber === "") {
+                  console.log(finalOrder.orderType, finalOrder.tableNumber);
+                  notify("err", "please Enter Table No.");
+
+                  return;
+            }
+
             if (finalOrder.orderCart.length !== 0) {
+
+
                   let res = await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
 
                   notify("success");
                   // set finalorder redux state to initial state after api call completion
                   // let responce = await window.apiKey.request("print", finalOrder);
                   dispatch(resetFinalOrder());
+                  queryClient.invalidateQueries({ queryKey: ["KOTs","liveOrders"] });
             } else {
-                  notify("err");
+                  notify("err", "Cart is Empty");
             }
       };
 
@@ -70,17 +82,29 @@ function OrderPayment() {
             if (finalOrder.orderCart.length !== 0) {
                   let res = await axios.post(`http://${IPAddress}:3001/holdOrder`, finalOrder);
                   if (res.statusText === "OK") {
-                        queryClient.invalidateQueries("holdOrders");
+                        notify("success");
+                        // set finalorder redux state to initial state after api call completion
+                        dispatch(resetFinalOrder());
+                  }
+            } else {
+                  notify("err", "Cart is Empty");
+            }
+      };
+
+      const createKOT = async () => {
+            if (finalOrder.orderCart.length !== 0) {
+                  let res = await axios.post(`http://${IPAddress}:3001/KOT`, finalOrder);
+                  if (res.statusText === "OK") {
+                        queryClient.invalidateQueries("KOTs");
 
                         notify("success");
                         // set finalorder redux state to initial state after api call completion
                         dispatch(resetFinalOrder());
                   }
             } else {
-                  notify("err");
+                  notify("err", "Cart is Empty");
             }
       };
-
       //  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store
 
       useEffect(() => {
@@ -89,7 +113,15 @@ function OrderPayment() {
                   subTotal += item.multiItemTotal;
             });
 
-            let tax = subTotal * 0.05;
+            let tax = finalOrder.orderCart.reduce((totalTax, item) => {
+                  return (
+                        totalTax +
+                        item.itemTax.reduce((singleTax, tax) => {
+                              return singleTax + tax.tax;
+                        }, 0)
+                  );
+            }, 0);
+
             let cartTotal = subTotal + tax;
 
             dispatch(calculateCartTotal({ subTotal, tax, cartTotal }));
@@ -102,7 +134,7 @@ function OrderPayment() {
       return (
             <div className={styles.orderPayment}>
                   <PaymentBreakdown showPaymentBreakdown={showPaymentBreakdown} setShowPaymentBreakdown={setShowPaymentBreakdown} />
-                  <ToastContainer />
+                  
 
                   <button className={styles.paymentBreakdownToggle} name="toggleBreakdown" onClick={() => setShowPaymentBreakdown(!showPaymentBreakdown)}>
                         {chevronPosition}
@@ -149,7 +181,7 @@ function OrderPayment() {
                         </Button>
                         {/* <Button variant="danger" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> Save & eBill </Button> */}
                         {/* <Button variant="secondary" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> KOT </Button> */}
-                        <Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1">
+                        <Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={createKOT}>
                               {" "}
                               KOT & Print{" "}
                         </Button>

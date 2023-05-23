@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styles from "./HoldOrderCard.module.css";
 import { useMutation, useQueryClient } from "react-query";
 import { useSelector, useDispatch } from "react-redux";
@@ -6,35 +6,27 @@ import { holdToFinalOrder } from "../Redux/finalOrderSlice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-
 function HoldOrderCard({ order, setShowHoldOrders }) {
       const queryClient = useQueryClient();
       const dispatch = useDispatch();
       const { IPAddress } = useSelector((state) => state.serverConfig);
-      const navigate = useNavigate()
+      const navigate = useNavigate();
 
       const deletHoldOrders = async (id) => {
             let { data } = await axios.delete(`http://${IPAddress}:3001/holdOrder`, { params: { id } });
-            
       };
 
       const holdOrderMutation = useMutation({
             mutationFn: deletHoldOrders,
-            onSettled: (data) => {
-                  queryClient.invalidateQueries("holdOrders");
-            },
       });
 
-      const setAsFinalOrder = async(order) => {
-           await dispatch(holdToFinalOrder({ order }));
-           await  holdOrderMutation.mutate(order.id);
-           await setShowHoldOrders(false);
-           navigate("/Home")
-           
-
+      const setAsFinalOrder = async (order) => {
+            await dispatch(holdToFinalOrder({ order }));
+            await holdOrderMutation.mutate(order.id);
+            await setShowHoldOrders(false);
+            navigate("/Home");
       };
 
-    
       return (
             <div className={styles.holdOrderCard}>
                   <div onClick={() => setAsFinalOrder(order)}>

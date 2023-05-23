@@ -4,7 +4,7 @@ const { dbAll, dbRun } = require("../common/dbExecute");
 // dbAll(db, "SELECT * FROM KOT_item_addongroupitems WHERE KOT_item_id = ?",[KOTItems.id])
 
 const getLiveKOT = async (db) => {
-      const liveKOTs = await dbAll(db, "SELECT * FROM KOT WHERE KOT_status = 'active'", []);
+      const liveKOTs = await dbAll(db, "SELECT * FROM KOT WHERE KOT_status = 'accepted'", []);
 
       const liveKOTsWithItems = Promise.all(
             liveKOTs.map(async (KOT) => {
@@ -13,7 +13,8 @@ const getLiveKOT = async (db) => {
                   const itemsWithAddons = await Promise.all(
                         KOTItems.map(async (item) => {
                               const itemAddons = await dbAll(db, "SELECT * FROM KOT_item_addongroupitems WHERE KOT_item_id = ?", [item.id]);
-                              return { ...item, itemAddons };
+
+                              return { ...item, itemAddons,itemTax:JSON.parse(item.itemTax) };
                         })
                   );
 

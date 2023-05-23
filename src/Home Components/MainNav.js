@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -8,22 +8,31 @@ import styles from "./MainNav.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStore, faBowlFood, faUsersViewfinder, faTruck, faCirclePause, faBellConcierge, faBell, faUser, faPowerOff, faPhone } from "@fortawesome/free-solid-svg-icons";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { resetFinalOrder } from "../Redux/finalOrderSlice";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+
 import HoldOrders from "./HoldOrders";
-
-
+import { setActive } from "../Redux/UIActiveSlice";
+import { ToastContainer } from "react-toastify";
 
 function MainNav() {
-
-   const [showHoldOrders, setShowHoldOrders] = useState(false);
-
+      const [showHoldOrders, setShowHoldOrders] = useState(false);
+      const {holdOrderCount} = useSelector(state => state.UIActive)
+      const dispatch = useDispatch();
+      const navigate = useNavigate();
 
       const handleClose = () => {
             localStorage.removeItem("IP");
             localStorage.removeItem("systemType");
       };
 
-      
+      const getNewOrderPage = () => {
+            dispatch(resetFinalOrder());
+            dispatch(setActive({key:"isCartActionDisable",name:false}))
+            navigate("/Home");
+      };
 
       return (
             <>
@@ -35,11 +44,9 @@ function MainNav() {
                                           Martino'z
                                     </Navbar.Brand>
 
-                                    <Link to=".">
-                                          <Button variant="danger" size="sm" className="mx-2 py-1 px-2 fw-bold text-nowrap">
-                                                New Order
-                                          </Button>
-                                    </Link>
+                                    <Button variant="danger" size="sm" className="mx-2 py-1 px-2 fw-bold text-nowrap" onClick={getNewOrderPage}>
+                                          New Order
+                                    </Button>
 
                                     <Form className={`d-flex ${styles.billSearchInput}`}>
                                           <InputGroup>
@@ -69,10 +76,11 @@ function MainNav() {
                                     <Link>
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faTruck} />
                                     </Link>
-                                    <Link>
-                                          <FontAwesomeIcon className={styles.LinkIcon} icon={faCirclePause} onClick={()=>setShowHoldOrders(true)} />
-                                    </Link> 
-                                    <Link>
+                                    <Link className={styles.holdOrderLink}>
+                                          <FontAwesomeIcon className={styles.LinkIcon} icon={faCirclePause} onClick={() => setShowHoldOrders(true)} />
+                                          {holdOrderCount!==0 ? <div className={styles.holdOrderCountBadge}>{holdOrderCount}</div> : null}
+                                    </Link>
+                                    <Link to="tableView">
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faBellConcierge} />
                                     </Link>
                                     <Link>
@@ -87,7 +95,8 @@ function MainNav() {
                               </div>
                         </Container>
                   </Navbar>
-                  <HoldOrders showHoldOrders={showHoldOrders} setShowHoldOrders={setShowHoldOrders}/>
+                  <ToastContainer/>
+                  <HoldOrders showHoldOrders={showHoldOrders} setShowHoldOrders={setShowHoldOrders} />
                   <Outlet />
             </>
       );

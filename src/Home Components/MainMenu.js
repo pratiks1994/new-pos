@@ -8,6 +8,7 @@ import { setMenuItems } from "../Redux/menuItemsSlice";
 
 function MainMenu() {
      const bigMenu = useSelector((state) => state.bigMenu);
+     const isCartActionDisable = useSelector(state => state.UIActive.isCartActionDisable)
      const dispatch = useDispatch();
      let activeCategoryId;
      const searchItemRef = useRef("");
@@ -48,7 +49,7 @@ function MainMenu() {
      };
 
      return (
-          <div className={styles.mainMenu}>
+          <div className={styles.mainMenu} style={isCartActionDisable ? {pointerEvents:"none",color:"gray"} : null}>
 
             {/* item search bar */}
 

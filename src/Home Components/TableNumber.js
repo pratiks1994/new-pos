@@ -16,13 +16,12 @@ function TableNumber({showDetailType}) {
 
   }
 
-
  
   let showTableNumber = showDetailType==="tableNumber" ? `${styles.show} ${styles.tableNumber}` : `${styles.tableNumber}`
 
   return (
     <div className={showTableNumber}>
-      <span className='mx-2'>please enter Table No.</span><input type="number" min="0" value={tableNumber} onChange={(e)=>hanndleChange(e)}/>
+      <span className='mx-2'>please enter Table No.</span><input type="number" min="0" value={tableNumber} onChange={(e)=>hanndleChange(e)  }/>
     </div>
   )
 }

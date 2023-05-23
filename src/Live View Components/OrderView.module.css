@@ -92,7 +92,6 @@
       flex-direction: row;
       justify-content: flex-start;
       align-items: flex-start;
-      overflow-y: scroll;
       align-content: flex-start;
-      overflow-y: scroll;
+      overflow-y: auto
 }

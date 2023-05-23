@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import styles from "./LiveViewNav.module.css";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink,useLocation,useResolvedPath } from "react-router-dom";
 import { useSelector,useDispatch } from "react-redux";
 import { setActive } from "../Redux/UIActiveSlice";
 
 function LiveViewNav() {
      const {liveViewOrderStatus} = useSelector(state => state.UIActive)
      const dispatch = useDispatch()
+     const location = useLocation()
+     const path = useResolvedPath()
 
      const handleClick = (name) => {
           const key ="liveViewOrderStatus"
@@ -19,6 +21,8 @@ function LiveViewNav() {
           { name: "Dispatch", number: 0 },
           { name: "Deliver", number: 0 },
      ];
+
+    const isKOT = path.pathname === "/Home/LiveView/KOTView" 
 
      
 
@@ -39,7 +43,7 @@ function LiveViewNav() {
                     KOT View
                </NavLink>
                <div className={styles.OrderStatusFilter}>
-                    {fitlers.map((filter) => {
+                    {!isKOT && fitlers.map((filter) => {
                          return (
                               <div key={filter.name}
                                    className={

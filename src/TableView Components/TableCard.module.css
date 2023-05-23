@@ -1,0 +1,36 @@
+.tableCard{
+    height: 90px;
+    width: 90px;
+    border: 2px dashed rgb(175, 175, 175) ;
+    margin: 15px;
+    border-radius: 5px;
+    background-color: rgba(3, 148, 3, 0.247);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: 3px 5px 15px 5px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgb(49, 49, 49);
+    cursor: pointer;
+}
+
+.total {
+    font-weight: 700;
+}
+
+.actionIcon{
+    position: absolute;
+    bottom: -6%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    cursor: pointer;
+    
+
+}
+
+.container {
+    position: relative  ;
+    height: fit-content;
+}

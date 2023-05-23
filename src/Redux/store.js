@@ -20,7 +20,7 @@ import KOTReducer from "./KOTSlice"
          bigMenu : bigMenuReducer,
          serverConfig : serveConfigReducer,
          UIActive : UIActiveReducer,
-         KOT:KOTReducer,
+         KOTs:KOTReducer,
 
       }
    }

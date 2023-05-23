@@ -52,6 +52,7 @@
    padding-top: 5px;
    font-size: 14px;
    z-index: 10;
+   pointer-events: all;
    transition: transform 0.1s ease-in-out;
 }
 

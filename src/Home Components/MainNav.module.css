@@ -1,40 +1,58 @@
-
-
-.mainNav{
-   flex-basis :53px;
-   flex-shrink: 0;
-   flex-grow: 0;
-  
+.mainNav {
+      flex-basis: 53px;
+      flex-shrink: 0;
+      flex-grow: 0;
 }
 
-.billSearchInput{
-   max-width: 170px;
+.billSearchInput {
+      max-width: 170px;
 }
 
-.bars{
-   margin-inline: 10px;
-   font-size: 22px;
+.bars {
+      margin-inline: 10px;
+      font-size: 22px;
 }
 
-.LinkIcon{
-   font-size: 25px;
-   margin-inline: 10px;
-   color: black;
+.LinkIcon {
+      font-size: 25px;
+      margin-inline: 10px;
+      color: black;
 }
 
-.contact{
-  border: 2px solid black;
-  padding: 3px 5px;
-  text-decoration: none;
-  color:black;
+.contact {
+      border: 2px solid black;
+      padding: 3px 5px;
+      text-decoration: none;
+      color: black;
 }
 
-.contactText{
-   font-size: 13px;
-   color: black;
-   
+.contactText {
+      font-size: 13px;
+      color: black;
 }
 
-.searchInput:focus{
-   box-shadow: none !important;
+.searchInput:focus {
+      box-shadow: none !important;
+}
+
+.holdOrderLink {
+      position: relative;
+}
+
+.holdOrderCountBadge {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background-color: rgba(196, 0, 0, 0.932);
+      border-radius: 50%;
+      color: white;
+      text-align: center;
+      line-height: 100%;
+      display: flex;
+      justify-content: center;
+      right: 1px;
+      top: -7px;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 500;
 }

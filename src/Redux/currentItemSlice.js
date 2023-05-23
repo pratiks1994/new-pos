@@ -13,6 +13,7 @@ const currentItemSlice = createSlice({
       toppings: [],
       itemTotal: 0,
       multiItemTotal : 0,
+      itemTax:[]
    },
    reducers: {
       addCurrentItem: (state, action) => {
@@ -96,6 +97,7 @@ const currentItemSlice = createSlice({
          state.itemTotal = 0;
          state.itemQty = 0;
          state.multiItemTotal = 0;
+         state.itemTax=[]
       },
    },
 });

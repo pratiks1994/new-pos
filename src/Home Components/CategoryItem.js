@@ -7,6 +7,7 @@ import { setMenuItems } from "../Redux/menuItemsSlice";
 function CategoryItem({ display_name, id, setActive, active }) {
      const dispatch = useDispatch();
      const bigMenu = useSelector(state=>state.bigMenu)
+     const isCartActionDisable = useSelector(state=>state.UIActive.isCartActionDisable)
 
 
      // get items list from bigMenu redux state according to active category id and set menuItem redux state with aquired items
@@ -29,6 +30,7 @@ function CategoryItem({ display_name, id, setActive, active }) {
                onClick={() => {
                     handleClick(id);
                }}
+               
           >
                {display_name}
           </div>

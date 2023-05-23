@@ -5,7 +5,8 @@ const serverConfigSlice = createSlice({
    name:"serverConfig",
    initialState:{
       systemType:"",
-      IPAddress :"192.168.1.108"
+      IPAddress :"192.168.1.108",
+      refetchInterval :400000,
    },
    reducers:{
       setSystem :(state,action)=>{

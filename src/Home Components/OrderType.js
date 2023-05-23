@@ -1,7 +1,6 @@
 import React from "react";
 import styles from "./OrderType.module.css";
 
-import { useState } from "react";
 import OrderTypeDetail from "./OrderTypeDetail";
 import { useSelector, useDispatch } from "react-redux";
 import { modifyCartData } from "../Redux/finalOrderSlice";

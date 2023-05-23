@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styles from "./OrderView.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faBorderAll, faUtensils, faPersonBiking, faBasketShopping, faWifi, faPersonDotsFromLine } from "@fortawesome/free-solid-svg-icons";
@@ -8,9 +8,12 @@ import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import OrderCard from "./OrderCard";
 import { v4 } from "uuid";
+import socket from "../Utils/Socket";
+import { motion } from "framer-motion";
 
 function OrderView() {
-      const { IPAddress } = useSelector((state) => state.serverConfig);
+      const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
+      const [orders, setOrders] = useState([]);
       // const queryClient = useQueryClient();
       // const DineInStatus = ["accepted", "printed", "settled"];
 
@@ -60,14 +63,24 @@ function OrderView() {
       //       return data;
       // };
 
-      const {
-            data: orders,
-            status,
-            isLoading,
-      } = useQuery("liveOrders", getLiveOrders, {
-            refetchInterval: 400000,
-            refetchIntervalInBackground: 1000000,
+      const { data, status, isLoading } = useQuery({
+            queryKey: ["liveOrders"],
+            queryFn: getLiveOrders,
+            refetchInterval: 500000,
+            refetchIntervalInBackground: 500000,
+            refetchOnWindowFocus: false,
+            onSuccess: (data) => {
+                  setOrders(() => [...data]);
+            },
       });
+
+      useEffect(() => {
+            socket.on("orders", (orders) => {
+                  setOrders(() => [...orders]);
+            });
+
+            return () => socket.off("orders");
+      }, [socket]);
 
       // const orderMutation = useMutation({
       //       mutationFn: updateLiveOrders,
@@ -84,7 +97,12 @@ function OrderView() {
       // console.log(orders);
 
       return (
-            <div className={styles.orderView}>
+            <motion.div
+                  className={styles.orderView}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.15 }}
+                  exit={{ opacity: 0, scale: 1, x: "-100%" }}>
                   <div className={styles.orderViewControl}>
                         <button className={styles.searchBtn}>
                               <FontAwesomeIcon icon={faMagnifyingGlass} />
@@ -106,9 +124,13 @@ function OrderView() {
                         <button className={styles.mfrBtn}>MFR</button>
                   </div>
                   <div className={styles.OrderViewMain}>
-                        {isLoading ? <div>loading...</div> : orders && orders.map((order) => <OrderCard order={order} key={v4()} />)}
+                        {orders.length !== 0
+                              ? orders
+                                      ?.filter((order) => (liveViewOrderType === "All" ? true : order.order_type === liveViewOrderType))
+                                      .map((order,idx) => <OrderCard order={order} key={order.id} idx={idx} />)
+                              : isLoading && <div>loading...</div>}
                   </div>
-            </div>
+            </motion.div>
       );
 }
 

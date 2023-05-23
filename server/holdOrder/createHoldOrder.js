@@ -42,12 +42,26 @@ const createHoldOrder = async (order, db) => {
       );
 
       orderCart.forEach(async (item) => {
-            const { itemQty, itemId, itemName, variation_id, variantName, toppings, currentOrderItemId, basePrice, itemTotal, multiItemTotal, itemIdentifier } = item;
+            const { itemQty, itemId, itemName, variation_id, variantName, toppings, currentOrderItemId, basePrice, itemTotal, multiItemTotal, itemIdentifier, itemTax } = item;
 
             const holdOrderItemId = await dbRun(
                   db,
-                  "INSERT INTO hold_order_items (Hold_order_id,item_id,item_name,quantity,variation_name,variation_id,description,currentOrderItemId,basePrice,itemTotal,multiItemTotal,itemIdentifier) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                  [holdOrderId, itemId, itemName, itemQty, variantName, variation_id, orderComment,currentOrderItemId,basePrice,itemTotal,multiItemTotal,itemIdentifier]
+                  "INSERT INTO hold_order_items (Hold_order_id,item_id,item_name,quantity,variation_name,variation_id,description,currentOrderItemId,basePrice,itemTotal,multiItemTotal,itemIdentifier,itemTax) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                  [
+                        holdOrderId,
+                        itemId,
+                        itemName,
+                        itemQty,
+                        variantName,
+                        variation_id,
+                        orderComment,
+                        currentOrderItemId,
+                        basePrice,
+                        itemTotal,
+                        multiItemTotal,
+                        itemIdentifier,
+                        JSON.stringify(itemTax),
+                  ]
             );
 
             if (toppings) {

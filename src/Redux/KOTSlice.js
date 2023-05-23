@@ -1,12 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const KOTSlice = createSlice({
-      name: "KOT",
+      name: "KOTs",
       initialState: [],
       reducers: {
             setKOT: (state, action) => {
                   const { data } = action.payload;
-                  console.log(data)
                   return [...data];
             },
             modifyKOT : (state,action) =>{

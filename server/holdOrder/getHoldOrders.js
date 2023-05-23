@@ -1,6 +1,5 @@
 const { dbAll, dbRun } = require("../common/dbExecute");
 
-
 const getHoldOrders = async (db) => {
       const holdOrders = await dbAll(db, "SELECT * FROM hold_orders", []);
 
@@ -11,15 +10,16 @@ const getHoldOrders = async (db) => {
                   const itemsWithAddons = await Promise.all(
                         holdOrderItems.map(async (item) => {
                               const itemAddons = await dbAll(db, "SELECT * FROM hold_order_item_addongroupitems WHERE hold_order_item_id = ?", [item.id]);
-                              return { ...item, toppings:itemAddons };
+
+                              return { ...item, toppings: itemAddons, itemTax: JSON.parse(item.itemTax) };
                         })
                   );
 
-                  return { ...order, orderCart:itemsWithAddons };
+                  return { ...order, orderCart: itemsWithAddons };
             })
       );
 
-      return holdOrdersWithItems
-        }
+      return holdOrdersWithItems;
+};
 
 module.exports = { getHoldOrders };

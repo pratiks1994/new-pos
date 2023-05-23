@@ -4,9 +4,19 @@ const { dbAll, dbRun } = require("../common/dbExecute");
 const createOrder = async (order, db) => {
       // create new order number
       // printBill(order)
+      // console.log(order);
 
-      const [{ id }] = await dbAll(db, "SELECT id FROM orders ORDER BY ID DESC LIMIT 1", []);
-      const orderNo = `ON00${id + 1}`;
+      const generateOrderNo = (id) => {
+            const numString = String(id);
+            const numZerosToAdd = 7 - numString.length;
+            const zeros = "0".repeat(numZerosToAdd);
+            return `ON${zeros}${id}`;
+      };
+
+      const lastEntry = await dbAll(db, "SELECT id FROM orders ORDER BY ID DESC LIMIT 1", []);
+      // const orderNo = `ON00${id + 1}`;
+      const currentId = lastEntry[0]?.id + 1 || 0;
+      const orderNo = generateOrderNo(currentId);
 
       let userId;
       let restaurantId = 1;
@@ -36,7 +46,6 @@ const createOrder = async (order, db) => {
                   dbRun(db, "INSERT INTO user_addresses (user_id,complete_address,landmark) VALUES(?,?,?)", [userId, customerAdd, customerLocality]);
                   dbRun(db, "INSERT INTO users_groups (user_id,group_id) VALUES (?,?)", [userId, 1]);
             } else {
-                  console.log(user);
                   userId = user[0].id;
 
                   if (customerAdd) {
@@ -80,7 +89,7 @@ const createOrder = async (order, db) => {
                   // insert order item data into order_item table with order_id as id from above orders table entry
                   let orderId = this.lastID;
                   orderCart.forEach((item) => {
-                        const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings } = item;
+                        const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax } = item;
 
                         if (variation_id) {
                               // if item has varient keep varient releted entries
@@ -94,6 +103,14 @@ const createOrder = async (order, db) => {
                                           }
 
                                           let orderItemId = this.lastID;
+                                          itemTax.forEach((tax) => {
+                                                dbRun(db, "INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)", [
+                                                      orderItemId,
+                                                      tax.id,
+                                                      2.5,
+                                                      tax.tax,
+                                                ]);
+                                          });
 
                                           if (toppings) {
                                                 // item with varient has toppings insert topping data into oreder_item_addongroupitems table with id of above order_item table id
@@ -121,9 +138,19 @@ const createOrder = async (order, db) => {
                               db.run(
                                     "INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity) VALUES (?,?,?,?,?,?)",
                                     [orderId, itemId, itemName, itemTotal, multiItemTotal, itemQty],
-                                    (err) => {
+                                    function (err) {
                                           if (err) {
                                                 console.log(err);
+                                          } else {
+                                                let orderItemId = this.lastID;
+                                                itemTax.forEach((tax) => {
+                                                      dbRun(db, "INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)", [
+                                                            orderItemId,
+                                                            tax.id,
+                                                            2.5,
+                                                            tax.tax,
+                                                      ]);
+                                                });
                                           }
                                     }
                               );
@@ -132,9 +159,7 @@ const createOrder = async (order, db) => {
             }
       );
 
-            return userId
-
-
+      return userId;
 };
 
 module.exports = { createOrder };

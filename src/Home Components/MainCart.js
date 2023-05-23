@@ -8,9 +8,10 @@ import { useSelector } from 'react-redux'
 import { useCallback } from 'react'
 
 function MainCart() {
+   const isCartActionDisable = useSelector(state => state.UIActive.isCartActionDisable)
 
   return (
-   <div className={`${styles.mainCart} d-flex flex-column`}>
+   <div className={`${styles.mainCart} d-flex flex-column`} style={isCartActionDisable ? {pointerEvents:"none",color:"gray"} : null}>
     <OrderType/>
     <OrderArea/>
     <OrderPayment/>

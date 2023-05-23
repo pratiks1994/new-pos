@@ -284,8 +284,6 @@ ipcMain.handle("print", async (event, data) => {
           color: false,
           printBackground: false,
           dpi: 300,
-
-
      };
 
 

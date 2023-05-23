@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { act } from "@testing-library/react";
 
 const finalOrderSlice = createSlice({
       name: "finalOrder",
@@ -28,7 +27,14 @@ const finalOrderSlice = createSlice({
 
                   if (existingItem) {
                         existingItem.itemQty += 1;
+                        // console.log(existingItem.itemQty)
                         existingItem.multiItemTotal = existingItem.itemQty * existingItem.itemTotal;
+
+                        existingItem.itemTax = existingItem.itemTax.map((tax) => {
+                              const newTax = (tax.tax * existingItem.itemQty) / (existingItem.itemQty - 1);
+                              return { ...tax, tax: newTax };
+                        });
+
                         state.orderCart.forEach((item) => {
                               if (item.id === existingItem.id) {
                                     return existingItem;
@@ -53,6 +59,10 @@ const finalOrderSlice = createSlice({
                         if (item.currentOrderItemId === id) {
                               item.itemQty += 1;
                               item.multiItemTotal = item.itemQty * item.itemTotal;
+                              item.itemTax = item.itemTax.map((tax) => {
+                                    const newTax = (tax.tax * item.itemQty) / (item.itemQty - 1);
+                                    return { ...tax, tax: newTax };
+                              });
                         }
                   });
             },
@@ -64,6 +74,10 @@ const finalOrderSlice = createSlice({
                               if (item.itemQty > 1) {
                                     item.itemQty -= 1;
                                     item.multiItemTotal = item.itemQty * item.itemTotal;
+                                    item.itemTax = item.itemTax.map((tax) => {
+                                          const newTax = (tax.tax * item.itemQty) / (item.itemQty + 1);
+                                          return { ...tax, tax: newTax };
+                                    });
                               }
                         }
                   });
@@ -154,6 +168,50 @@ const finalOrderSlice = createSlice({
                               itemTotal: item.itemTotal,
                               multiItemTotal: item.multiItemTotal,
                               itemIdentifier: item.itemIdentifier,
+                              itemTax:item.itemTax
+                        };
+                  });
+            },
+
+            liveOrderToCart: (state, action) => {
+                  const { order } = action.payload;
+                  state.customerName = order.customer_name;
+                  state.customerContact = order.phone_number;
+                  state.customerAdd = order.complete_address;
+                  state.subTotal = order.item_total;
+                  state.tax = order.total_tax;
+                  state.deliveryCharge = order.delivery_charges;
+                  state.packagingCharge = 0;
+                  state.discount = order.total_discount;
+                  state.paymentMethod = order.payment_type;
+                  state.tableNumber = order.dine_in_table_no;
+                  state.orderType = order.order_type;
+                  state.cartTotal = order.total;
+                  state.orderComment = order.description;
+
+                  state.orderCart = order.items.map((item) => {
+                        let toppings = item.itemAddons.map((topping) => {
+                              return { id: topping?.addongroupitem_id, type: topping?.name, price: topping?.price, qty: topping?.quantity };
+                        });
+
+                        let itemTax = item.itemTax.map((tax) => {
+                              return { id: tax.tax_id, name: `${tax.tax_id === 3 ? "CGST" : "SGST"}`, tax: tax.tax_amount };
+                        });
+
+                        return {
+                              currentOrderItemId: item.id,
+                              itemQty: item.quantity,
+                              itemId: item.item_id,
+                              itemName: item.item_name,
+                              variation_id: item.variation_id,
+                              variationName: item.variation_name,
+                              basePrice: item.price,
+                              toppings: toppings,
+                              itemTotal: item.itemTotal,
+                              multiItemTotal: item.final_price,
+                              itemTax: itemTax,
+
+
                         };
                   });
             },
@@ -161,5 +219,5 @@ const finalOrderSlice = createSlice({
 });
 
 export default finalOrderSlice.reducer;
-export const { addOrderItem, incrementQty, decrementQty, removeItem, modifyCartData, calculateCartTotal, resetFinalOrder, setCustomerDetail, holdToFinalOrder } =
+export const { addOrderItem, incrementQty, decrementQty, removeItem, modifyCartData, calculateCartTotal, resetFinalOrder, setCustomerDetail, holdToFinalOrder, liveOrderToCart } =
       finalOrderSlice.actions;

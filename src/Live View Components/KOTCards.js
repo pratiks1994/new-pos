@@ -4,8 +4,9 @@ import { v4 as uuidv4 } from "uuid";
 import { useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { motion } from "framer-motion";
 
-function KOTCards({ KOT }) {
+function KOTCards({ KOT,idx }) {
       const { IPAddress } = useSelector((state) => state.serverConfig);
 
       const queryClient = useQueryClient();
@@ -15,17 +16,33 @@ function KOTCards({ KOT }) {
             return data;
       };
 
-      const {mutate:KOTmutation,isLoading,isError} = useMutation({
+      const {
+            mutate: KOTmutation,
+            isLoading,
+            isError,
+      } = useMutation({
             mutationFn: updateKOT,
-            onSettled: (data) => {
-                  queryClient.invalidateQueries("KOTs");
-            },
+            // onMutate: async (id) => {
+            //       await queryClient.cancelQueries({ queryKey: ["KOTs"] });
+            //       const previousKOTs = queryClient.getQueryData(["KOTs"]);
+            //       queryClient.setQueryData(["KOTs"], (oldKOTs) => {
+            //             return oldKOTs.filter((KOT) => KOT.id !== id);
+            //       });
+            //       return { previousKOTs };
+            // },
+            // onError: (err, id, context) => {
+            //       queryClient.setQueryData(["KOTs"], context.previousKOTs);
+            // },
+
+            // onSettled: (data) => {
+            //       queryClient.invalidateQueries("KOTs");
+            // },
       });
 
       const getColor = (type) => (type !== "Dine In" ? { backgroundColor: "rgba(116, 116, 0, 0.87)" } : null);
 
       return (
-            <div className={styles.KOTCard}>
+            <motion.div layout className={styles.KOTCard}  initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1, delay:idx * 0.03 }} >
                   <div className={styles.CardHeader} style={getColor(KOT.order_type)}>
                         <div>
                               {KOT.table_no && <div>{KOT.table_no}</div>}
@@ -72,7 +89,7 @@ function KOTCards({ KOT }) {
                               {isLoading ? "loading..." : "Food Is Ready"}
                         </button>
                   </div>
-            </div>
+            </motion.div>
       );
 }
 

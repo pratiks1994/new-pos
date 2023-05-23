@@ -11,6 +11,8 @@ function CustomerSuggest({ suggestions, setSuggestions }) {
             setSuggestions([]);
       };
 
+      
+
       return (
             <div className={styles.mainSuggest}>
                   {suggestions.map((suggestion, idx1) => {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import styles from "./Timer.module.css";
 
-function Timer({ startTime }) {
+function MinTimer({ startTime }) {
       const [timer, setTimer] = useState();
 
       const initialDate = new Date(startTime);
@@ -12,9 +11,10 @@ function Timer({ startTime }) {
             const difference = now - initialTime;
             const minutes = Math.floor(difference / 60000);
             const seconds = ((difference % 60000) / 1000).toFixed(0);
-            const timer = `${minutes} : ${seconds < 10 ? "0" : ""}${seconds}`;
-
+            const timer = `${minutes}`;
+    
             setTimer(timer);
+            
       }
 
       useEffect(() => {
@@ -22,14 +22,14 @@ function Timer({ startTime }) {
 
             const int = setInterval(() => {
                   getTimeDifference(initalTime);
-            }, 1000);
+            }, 60000);
 
             return () => {
                   clearInterval(int);
             };
       }, []);
 
-      return <div className={styles.timer}>{timer}</div>;
+      return <>{timer} Min</>;
 }
 
-export default React.memo(Timer);
+export default MinTimer;
