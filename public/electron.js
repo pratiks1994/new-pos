@@ -1,4 +1,4 @@
-const { spawn } = require("child_process");
+const { fork } = require("child_process");
 const { app, BrowserWindow, protocol, ipcMain } = require("electron");
 const path = require("path");
 const url = require("url");
@@ -104,7 +104,8 @@ app.on("web-contents-created", (event, contents) => {
 });
 
 ipcMain.handle("setup", async (event, data) => {
-     const posServer = require("../server/server");
+     const posServer = fork("../POS/server/server");
+   
 
      // for final build use path 'resources/server/server.js'
      // path.join("resources", "server","server.js")

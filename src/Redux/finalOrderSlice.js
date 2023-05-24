@@ -16,7 +16,7 @@ const finalOrderSlice = createSlice({
             paymentMethod: "Cash",
             tableNumber: "",
             personCount: 0,
-            orderType: "Dine In",
+            orderType: "Delivery",
             orderComment: "",
             cartTotal: 0,
       },
@@ -128,7 +128,7 @@ const finalOrderSlice = createSlice({
                         paymentMethod: "Cash",
                         tableNumber: "",
                         personCount: 0,
-                        orderType: "Dine In",
+                        orderType: "Delivery",
                         orderComment: "",
                         cartTotal: 0,
                   };

@@ -17,7 +17,6 @@ function OrderPayment() {
       // get finalOrder state from redux store
       const queryClient = useQueryClient();
       const finalOrder = useSelector((state) => state.finalOrder);
-      
 
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const dispatch = useDispatch();
@@ -64,15 +63,13 @@ function OrderPayment() {
             }
 
             if (finalOrder.orderCart.length !== 0) {
-
-
-                  let res = await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
+                  await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
 
                   notify("success");
                   // set finalorder redux state to initial state after api call completion
                   // let responce = await window.apiKey.request("print", finalOrder);
                   dispatch(resetFinalOrder());
-                  queryClient.invalidateQueries({ queryKey: ["KOTs","liveOrders"] });
+                  queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
             } else {
                   notify("err", "Cart is Empty");
             }
@@ -134,7 +131,6 @@ function OrderPayment() {
       return (
             <div className={styles.orderPayment}>
                   <PaymentBreakdown showPaymentBreakdown={showPaymentBreakdown} setShowPaymentBreakdown={setShowPaymentBreakdown} />
-                  
 
                   <button className={styles.paymentBreakdownToggle} name="toggleBreakdown" onClick={() => setShowPaymentBreakdown(!showPaymentBreakdown)}>
                         {chevronPosition}

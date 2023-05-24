@@ -29,6 +29,8 @@ app.use(cors("*"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+
+
 const openDb = () => {
       // for build path.join("resources", "restaurant.sqlite")
       const db = new sqlite.Database(path.join("restaurant.sqlite"), (err) => {
@@ -56,6 +58,12 @@ app.get("/categories", async (req, res) => {
 
 app.get("/ping", async (req, res) => {
       res.sendStatus(200);
+});
+
+app.get("/liveOrders", async (req, res) => {
+      const db = openDb();
+      const orders = await getLiveOrders(db);
+      res.status(200).json(orders);
 });
 
 app.get("/liveKOT", async (req, res) => {
@@ -90,8 +98,8 @@ app.post("/order", async (req, res) => {
       createKot(req.body, db, userId);
       res.sendStatus(200);
       const orders = await getLiveOrders(db);
-      const liveKOTs = await getLiveKOT(db);
       io.emit("orders", orders);
+      const liveKOTs = await getLiveKOT(db);
       io.emit("KOTs", liveKOTs);
 });
 
@@ -102,12 +110,6 @@ app.post("/KOT", async (req, res) => {
       res.sendStatus(200);
       const liveKOTs = await getLiveKOT(db);
       io.emit("KOTs", liveKOTs);
-});
-
-app.get("/liveOrders", async (req, res) => {
-      const db = openDb();
-      const orders = await getLiveOrders(db);
-      res.status(200).json(orders);
 });
 
 app.put("/liveOrders", async (req, res) => {
