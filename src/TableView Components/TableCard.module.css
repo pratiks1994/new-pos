@@ -22,10 +22,17 @@
 
 .actionIcon{
     position: absolute;
-    bottom: -6%;
+    bottom: -11%;
     left: 50%;
     transform: translate(-50%,-50%);
+    width: 27px;
+    height: 27px;   
     cursor: pointer;
+    background-color: white;
+    border: 0.5px solid gray;
+    padding: 4px;
+    
+    border-radius: 2px;
     
 
 }

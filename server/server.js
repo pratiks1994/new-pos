@@ -29,8 +29,6 @@ app.use(cors("*"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-
-
 const openDb = () => {
       // for build path.join("resources", "restaurant.sqlite")
       const db = new sqlite.Database(path.join("restaurant.sqlite"), (err) => {
@@ -46,7 +44,6 @@ app.get("/categories", async (req, res) => {
       const db = openDb();
       let categories = await getCategories(db);
       res.status(200).json(categories);
-      db.close();
 });
 
 // app.get("/categories/:id", async (req, res) => {
@@ -61,9 +58,11 @@ app.get("/ping", async (req, res) => {
 });
 
 app.get("/liveOrders", async (req, res) => {
+      const start = Date.now();
       const db = openDb();
       const orders = await getLiveOrders(db);
       res.status(200).json(orders);
+      console.log(`get live ${Date.now() - start}`);
 });
 
 app.get("/liveKOT", async (req, res) => {
@@ -93,14 +92,19 @@ app.post("/order", async (req, res, next) => {
 });
 
 app.post("/order", async (req, res) => {
+      
       const db = openDb();
       const userId = await createOrder(req.body, db);
-      createKot(req.body, db, userId);
       res.sendStatus(200);
-      const orders = await getLiveOrders(db);
-      io.emit("orders", orders);
-      const liveKOTs = await getLiveKOT(db);
-      io.emit("KOTs", liveKOTs);
+      await createKot(req.body, db, userId);
+
+      if (userId !== "any") {
+            const orders = await getLiveOrders(db);
+            io.emit("orders", orders);
+            const liveKOTs = await getLiveKOT(db);
+            io.emit("KOTs", liveKOTs);
+            
+      }
 });
 
 app.post("/KOT", async (req, res) => {

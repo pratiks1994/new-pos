@@ -1,8 +1,8 @@
 const { dbAll, dbRun } = require("../common/dbExecute");
 
-const       checkAndUpdateOrder = async (order, db) => {
+const checkAndUpdateOrder = async (order, db) => {
       // check if order with table id exist which is only accepted and not printed (if printed create new order and KOT )
-      // if exist get order id 
+      // if exist get order id
       // update order with new detail where id = order id , insert into item , addon , tax table
       // no KOT
       // return true
@@ -25,16 +25,11 @@ const       checkAndUpdateOrder = async (order, db) => {
 
             orderCart.forEach(async (item) => {
                   const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax } = item;
-                  orderItemId = await dbRun(db, "INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id) VALUES (?,?,?,?,?,?,?,?)", [
-                        matchOrderId,
-                        itemId,
-                        itemName,
-                        itemTotal,
-                        multiItemTotal,
-                        itemQty,
-                        variantName,
-                        variation_id,
-                  ]);
+                  orderItemId = await dbRun(
+                        db,
+                        "INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id) VALUES (?,?,?,?,?,?,?,?)",
+                        [matchOrderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variantName, variation_id]
+                  );
 
                   if (toppings.length !== 0) {
                         toppings.forEach(async (topping) => {

@@ -5,7 +5,7 @@ import { faMagnifyingGlass, faBorderAll, faUtensils, faPersonBiking, faBasketSho
 import { useSelector, useDispatch } from "react-redux";
 import { setActive } from "../Redux/UIActiveSlice";
 import axios from "axios";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
 import OrderCard from "./OrderCard";
 import { v4 } from "uuid";
 import socket from "../Utils/Socket";
@@ -14,7 +14,7 @@ import { motion } from "framer-motion";
 function OrderView() {
       const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
       const [orders, setOrders] = useState([]);
-      // const queryClient = useQueryClient();
+      const queryClient = useQueryClient();
       // const DineInStatus = ["accepted", "printed", "settled"];
 
       const swiggy = (
@@ -64,11 +64,11 @@ function OrderView() {
       // };
 
       const { data, status, isLoading } = useQuery({
-            queryKey: ["liveOrders"],
+            queryKey: "liveOrders",
             queryFn: getLiveOrders,
             refetchInterval: 500000,
             refetchIntervalInBackground: 500000,
-            refetchOnWindowFocus: false,
+            refetchOnWindowFocus: true,
             onSuccess: (data) => {
                   setOrders(() => [...data]);
             },
@@ -81,9 +81,6 @@ function OrderView() {
 
             return () => socket.off("orders");
       }, [socket]);
-
-
-      
 
       // const orderMutation = useMutation({
       //       mutationFn: updateLiveOrders,
@@ -130,7 +127,7 @@ function OrderView() {
                         {orders.length !== 0
                               ? orders
                                       ?.filter((order) => (liveViewOrderType === "All" ? true : order.order_type === liveViewOrderType))
-                                      .map((order,idx) => <OrderCard order={order} key={order.id} idx={idx} />)
+                                      .map((order, idx) => <OrderCard order={order} key={order.id} idx={idx} />)
                               : isLoading && <div>loading...</div>}
                   </div>
             </motion.div>

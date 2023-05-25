@@ -1,10 +1,10 @@
-const { fork } = require("child_process");
+const { fork,spawn } = require("child_process");
 const { app, BrowserWindow, protocol, ipcMain } = require("electron");
 const path = require("path");
 const url = require("url");
 const fs = require("fs");
 const { PosPrinter } = require("electron-pos-printer");
-const { ThermalPrinter, PrinterTypes, CharacterSet, BreakLine } = require("node-thermal-printer");
+// const { ThermalPrinter, PrinterTypes, CharacterSet, BreakLine } = require("node-thermal-printer");
 
 // Create the native browser window.
 async function createWindow() {
@@ -104,13 +104,14 @@ app.on("web-contents-created", (event, contents) => {
 });
 
 ipcMain.handle("setup", async (event, data) => {
+     
      const posServer = fork("../POS/server/server");
-   
-
+     // const posServer = require("../server/server");
+     
+     // const serverProcess = spawn('node', ["../POS/server/server"]);
      // for final build use path 'resources/server/server.js'
      // path.join("resources", "server","server.js")
 
-     // const serverProcess = spawn('node', [path.join("resources", "server","server.js")]);
 
      // serverProcess.stdout.on('data', (data) => {
      //   console.log(`Server stdout: ${data}`);
