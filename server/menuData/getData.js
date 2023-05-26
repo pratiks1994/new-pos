@@ -58,8 +58,8 @@ const getVariation = (item, db) => {
                                     price: newVariations[0].price,
                                     variations: newVariations,
                                     item_tax: [
-                                          { id: 3, name: "CGST", tax: 2.50 },
-                                          { id: 4, name: "SGST", tax: 2.50 },
+                                          { id: 3, name: "CGST", tax: 2.5 },
+                                          { id: 4, name: "SGST", tax: 2.5 },
                                     ],
                               };
                               res(newItem);
@@ -109,8 +109,8 @@ const getData = async (id, db) => {
                         return {
                               ...item,
                               item_tax: [
-                                    { id: 3, name: "CGST", tax: 2.50 },
-                                    { id: 4, name: "SGST", tax: 2.50 },
+                                    { id: 3, name: "CGST", tax: 2.5 },
+                                    { id: 4, name: "SGST", tax: 2.5 },
                               ],
                               variations: [],
                         };

@@ -43,23 +43,31 @@ const createKot = (order, db, userId) => {
                   .run([restaurantId, tokenNo, orderType, userId, customerName, customerContact, customerAdd, customerLocality, tableNumber, tableNumber, 1, "accepted"]);
 
             db2.transaction(() => {
+                  const prepareItem = db2.prepare(
+                        "INSERT INTO KOT_items (KOT_id,item_id,item_name,quantity,variation_name,variation_id,description,itemTax) VALUES (?,?,?,?,?,?,?,?)"
+                  );
+
+                  const prepareToppings = db2.prepare("INSERT INTO KOT_item_addongroupitems (KOT_item_id,addongroupitem_id,name,quantity) VALUES (?,?,?,?)");
+
                   orderCart.forEach((item) => {
                         const { itemQty, itemId, itemName, variation_id, variantName, toppings, itemTax } = item;
 
-                        const { lastInsertRowid: KOTItemId } = db2
-                              .prepare("INSERT INTO KOT_items (KOT_id,item_id,item_name,quantity,variation_name,variation_id,description,itemTax) VALUES (?,?,?,?,?,?,?,?)")
-                              .run([KOTId, itemId, itemName, itemQty, variantName, variation_id, orderComment, JSON.stringify(itemTax)]);
+                        const { lastInsertRowid: KOTItemId } = prepareItem.run([
+                              KOTId,
+                              itemId,
+                              itemName,
+                              itemQty,
+                              variantName,
+                              variation_id,
+                              orderComment,
+                              JSON.stringify(itemTax),
+                        ]);
 
                         if (toppings.length !== 0) {
                               db2.transaction(() => {
                                     toppings.forEach((topping) => {
                                           const { id, type, price, qty } = topping;
-                                          db2.prepare("INSERT INTO KOT_item_addongroupitems (KOT_item_id,addongroupitem_id,name,quantity) VALUES (?,?,?,?)").run([
-                                                KOTItemId,
-                                                id,
-                                                type,
-                                                qty,
-                                          ]);
+                                          prepareToppings.run([KOTItemId, id, type, qty]);
                                     });
                               })();
                         }

@@ -1,8 +1,6 @@
-const { dbAll, dbRun } = require("../common/dbExecute");
-const Database = require("better-sqlite3");
-const db2 = new Database("restaurant.sqlite", {});
+// const { dbAll, dbRun } = require("../common/dbExecute");
 
-const updateKOT = async (db, { id }) => {
+const updateKOT = (db2, { id }) => {
       try {
             db2.prepare("UPDATE KOT SET KOT_status = 'food is ready' WHERE id=? ").run([id]);
             // dbRun(db, "UPDATE KOT SET KOT_status = 'food is ready' WHERE id=? ", [id]);

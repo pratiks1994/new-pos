@@ -2,7 +2,7 @@ const { dbAll, dbRun } = require("../common/dbExecute");
 const Database = require("better-sqlite3");
 const db2 = new Database("restaurant.sqlite", {});
 
-const updateLiveOrders = async (db, data) => {
+const updateLiveOrders =  (db, data) => {
       let { updatedStatus, orderId } = data;
 
       try {

@@ -5,7 +5,7 @@ const db2 = new Database("restaurant.sqlite", {});
 // dbAll(db, "SELECT * FROM KOT_items WHERE KOT_id = ?", [KOTs.id])
 // dbAll(db, "SELECT * FROM KOT_item_addongroupitems WHERE KOT_item_id = ?",[KOTItems.id])
 
-const getLiveOrders = async (db) => {
+const getLiveOrders = (db) => {
       try {
             const liveOrders = db2
                   .prepare(
@@ -18,38 +18,34 @@ const getLiveOrders = async (db) => {
             //       []
             // );
 
-            const liveOrdersWithItems = await Promise.all(
-                  liveOrders.map(async (order) => {
-                        const orderItems = db2
-                              .prepare("SELECT id,item_id,item_name,price,final_price,quantity,variation_name,variation_id FROM order_items WHERE order_id = ?")
-                              .all([order.id]);
+            const prepareItem = db2.prepare("SELECT id,item_id,item_name,price,final_price,quantity,variation_name,variation_id FROM order_items WHERE order_id = ?");
+            const prepareToppings = db2.prepare("SELECT addongroupitem_id,name,price,quantity FROM order_item_addongroupitems WHERE order_item_id = ?");
+            const prepareTax = db2.prepare("SELECT tax_id,tax_amount FROM order_item_taxes WHERE order_item_id = ?");
 
-                        // const orderItems = await dbAll(
-                        //       db,
-                        //       "SELECT id,item_id,item_name,price,final_price,quantity,variation_name,variation_id FROM order_items WHERE order_id = ?",
-                        //       [order.id]
-                        // );
+            const liveOrdersWithItems = liveOrders.map((order) => {
+                  const orderItems = prepareItem.all([order.id]);
 
-                        const itemsWithAddons = await Promise.all(
-                              orderItems.map(async (item) => {
-                                    const itemAddons = db2
-                                          .prepare("SELECT addongroupitem_id,name,price,quantity FROM order_item_addongroupitems WHERE order_item_id = ?")
-                                          .all([item.id]);
+                  // const orderItems = await dbAll(
+                  //       db,
+                  //       "SELECT id,item_id,item_name,price,final_price,quantity,variation_name,variation_id FROM order_items WHERE order_id = ?",
+                  //       [order.id]
+                  // );
 
-                                    // const itemAddons = await dbAll(db, "SELECT addongroupitem_id,name,price,quantity FROM order_item_addongroupitems WHERE order_item_id = ?", [
-                                    //       item.id,
-                                    // ]);
+                  const itemsWithAddons = orderItems.map((item) => {
+                        const itemAddons = prepareToppings.all([item.id]);
 
-                                    const itemTax = db2.prepare("SELECT tax_id,tax_amount FROM order_item_taxes WHERE order_item_id = ?").all([item.id]);
-                                    // const itemTax = await dbAll(db, "SELECT tax_id,tax_amount FROM order_item_taxes WHERE order_item_id = ?", [item.id]);
+                        // const itemAddons = await dbAll(db, "SELECT addongroupitem_id,name,price,quantity FROM order_item_addongroupitems WHERE order_item_id = ?", [
+                        //       item.id,
+                        // ]);
 
-                                    return { ...item, itemAddons, itemTax };
-                              })
-                        );
+                        const itemTax = prepareTax.all([item.id]);
+                        // const itemTax = await dbAll(db, "SELECT tax_id,tax_amount FROM order_item_taxes WHERE order_item_id = ?", [item.id]);
 
-                        return { ...order, items: itemsWithAddons };
-                  })
-            );
+                        return { ...item, itemAddons, itemTax };
+                  });
+
+                  return { ...order, items: itemsWithAddons };
+            });
 
             return liveOrdersWithItems;
       } catch (err) {

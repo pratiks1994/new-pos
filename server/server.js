@@ -17,6 +17,9 @@ const { createHoldOrder } = require("./holdOrder/createHoldOrder");
 const { getHoldOrders } = require("./holdOrder/getHoldOrders");
 const { deletHoldOrder } = require("./holdOrder/deletHoldOrder");
 const { checkAndUpdateOrder } = require("./orders/checkAndUpdateOrder");
+const Database = require("better-sqlite3");
+const db2 = new Database("restaurant.sqlite", {});
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -39,6 +42,8 @@ const openDb = () => {
       return db;
 };
 
+
+
 app.get("/categories", async (req, res) => {
       console.log("rq recieved");
       const db = openDb();
@@ -57,70 +62,77 @@ app.get("/ping", async (req, res) => {
       res.sendStatus(200);
 });
 
-app.get("/liveOrders", async (req, res) => {
+app.get("/liveOrders", (req, res) => {
       const start = Date.now();
       const db = openDb();
-      const orders = await getLiveOrders(db);
+      const orders = getLiveOrders(db);
       res.status(200).json(orders);
       console.log(`get live ${Date.now() - start}`);
 });
 
-app.get("/liveKOT", async (req, res) => {
-      const db = openDb();
-      const liveKOTs = await getLiveKOT(db);
+app.get("/liveKOT", (req, res) => {
+
+      // const db = openDb();
+      const liveKOTs = getLiveKOT();
       res.status(200).json(liveKOTs);
 });
 
-app.put("/liveKot", async (req, res) => {
-      const db = openDb();
-      await updateKOT(db, req.body);
+app.put("/liveKot", (req, res) => {
+      // const db = openDb();
+      const start = Date.now();
+      updateKOT(db2,req.body);
       res.sendStatus(200);
-      const liveKOTs = await getLiveKOT(db);
+      console.log(`update KOT 1 ${Date.now() - start}`);
+      const liveKOTs = getLiveKOT();
       io.emit("KOTs", liveKOTs);
+      console.log(`update  KOT 2 ${Date.now() - start}`);
+
+
 });
 
 app.post("/order", async (req, res, next) => {
       const db = openDb();
-      const isUpdated = await checkAndUpdateOrder(req.body, db);
+
+      const isUpdated = checkAndUpdateOrder(req.body, db);
       if (isUpdated) {
             res.sendStatus(200);
-            const orders = await getLiveOrders(db);
+            const orders = getLiveOrders(db);
             io.emit("orders", orders);
       } else {
             next();
       }
 });
 
-app.post("/order", async (req, res) => {
-      
+app.post("/order", (req, res) => {
       const db = openDb();
-      const userId = await createOrder(req.body, db);
+      const start = Date.now();
+      const userId = createOrder(req.body, db);
       res.sendStatus(200);
-      await createKot(req.body, db, userId);
+      createKot(req.body, db, userId);
 
       if (userId !== "any") {
-            const orders = await getLiveOrders(db);
+            const orders = getLiveOrders(db);
             io.emit("orders", orders);
-            const liveKOTs = await getLiveKOT(db);
+            const liveKOTs = getLiveKOT();
             io.emit("KOTs", liveKOTs);
-            
+            console.log(`time ${Date.now() - start}`);
       }
 });
 
-app.post("/KOT", async (req, res) => {
+app.post("/KOT", (req, res) => {
       const db = openDb();
       const userId = 0;
-      await createKot(req.body, db, userId);
+      createKot(req.body, db, userId);
       res.sendStatus(200);
-      const liveKOTs = await getLiveKOT(db);
+      const liveKOTs = getLiveKOT();
       io.emit("KOTs", liveKOTs);
 });
 
-app.put("/liveOrders", async (req, res) => {
+app.put("/liveOrders", (req, res) => {
       const db = openDb();
-      await updateLiveOrders(db, req.body);
+      updateLiveOrders(db, req.body);
       res.status(200).json("updated");
-      const orders = await getLiveOrders(db);
+      const orders = getLiveOrders(db);
       io.emit("orders", orders);
 });
 

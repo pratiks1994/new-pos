@@ -1,5 +1,3 @@
-const { useId } = require("react");
-const { dbAll, dbRun } = require("../common/dbExecute");
 const Database = require("better-sqlite3");
 const db2 = new Database("restaurant.sqlite", {});
 
@@ -58,10 +56,10 @@ const createOrder = (order, db) => {
             } else {
                   userId = existingUserInfo.id;
 
-                  if (customerAdd) {
+                  if (customerAdd.trim() !== "") {
                         db2.prepare(
                               "INSERT INTO user_addresses (user_id, complete_address,landmark) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM user_addresses WHERE user_id=? AND complete_address=? AND landmark=?)"
-                        ).run([userId, customerAdd.trim(), customerLocality.trim(), userId, customerAdd.trim(), customerLocality.trim()]);
+                        ).run([userId, customerAdd?.trim(), customerLocality?.trim(), userId, customerAdd?.trim(), customerLocality?.trim()]);
 
                         // const newAddId = await dbRun(
                         //       db,
@@ -99,16 +97,23 @@ const createOrder = (order, db) => {
                   ]);
 
             const cartTrans = db2.transaction((orderCart, orderId) => {
+
+                  const prepareItem = db2.prepare(
+                        "INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id) VALUES (?,?,?,?,?,?,?,?)"
+                  );
+
+                  const prepareTax = db2.prepare("INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)");
+                  
+                  const prepareToppings = db2.prepare("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)");
+
                   orderCart.forEach((item) => {
                         const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax } = item;
 
-                        const itemInfo = db2
-                              .prepare("INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id) VALUES (?,?,?,?,?,?,?,?)")
-                              .run([orderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variantName, variation_id]);
+                        const itemInfo = prepareItem.run([orderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variantName, variation_id]);
 
                         const taxTrans = db2.transaction((itemTax, orderItemId) => {
                               itemTax.forEach((tax) => {
-                                    db2.prepare("INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)").run([orderItemId, tax.id, 2.5, tax.tax]);
+                                    prepareTax.run([orderItemId, tax.id, 2.5, tax.tax]);
                               });
                         });
 
@@ -120,13 +125,7 @@ const createOrder = (order, db) => {
                               const toppingsTrans = db2.transaction((toppings, orderItemId) => {
                                     toppings.forEach((topping) => {
                                           const { id, type, price, qty } = topping;
-                                          db2.prepare("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)").run([
-                                                orderItemId,
-                                                id,
-                                                type,
-                                                price,
-                                                qty,
-                                          ]);
+                                          prepareToppings.run([orderItemId, id, type, price, qty]);
                                     });
                               });
 
