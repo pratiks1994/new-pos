@@ -79,13 +79,13 @@ app.get("/liveKOT", (req, res) => {
 
 app.put("/liveKot", (req, res) => {
       // const db = openDb();
-      const start = Date.now();
+      // const start = Date.now();
       updateKOT(db2,req.body);
       res.sendStatus(200);
-      console.log(`update KOT 1 ${Date.now() - start}`);
+      // console.log(`update KOT 1 ${Date.now() - start}`);
       const liveKOTs = getLiveKOT();
       io.emit("KOTs", liveKOTs);
-      console.log(`update  KOT 2 ${Date.now() - start}`);
+      // console.log(`update  KOT 2 ${Date.now() - start}`);
 
 
 });
@@ -105,7 +105,7 @@ app.post("/order", async (req, res, next) => {
 
 app.post("/order", (req, res) => {
       const db = openDb();
-      const start = Date.now();
+      // const start = Date.now();
       const userId = createOrder(req.body, db);
       res.sendStatus(200);
       createKot(req.body, db, userId);
@@ -115,7 +115,7 @@ app.post("/order", (req, res) => {
             io.emit("orders", orders);
             const liveKOTs = getLiveKOT();
             io.emit("KOTs", liveKOTs);
-            console.log(`time ${Date.now() - start}`);
+            // console.log(`time ${Date.now() - start}`);
       }
 });
 

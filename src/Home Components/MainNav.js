@@ -12,6 +12,7 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import { resetFinalOrder } from "../Redux/finalOrderSlice";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
+import ConfigSideBar from "./ConfigSideBar";
 
 import HoldOrders from "./HoldOrders";
 import { setActive } from "../Redux/UIActiveSlice";
@@ -19,7 +20,8 @@ import { ToastContainer } from "react-toastify";
 
 function MainNav() {
       const [showHoldOrders, setShowHoldOrders] = useState(false);
-      const {holdOrderCount} = useSelector(state => state.UIActive)
+      const [showConfigSideBar, setShowConfigSideBar] = useState(false);
+      const { holdOrderCount } = useSelector((state) => state.UIActive);
       const dispatch = useDispatch();
       const navigate = useNavigate();
 
@@ -30,7 +32,7 @@ function MainNav() {
 
       const getNewOrderPage = () => {
             dispatch(resetFinalOrder());
-            dispatch(setActive({key:"isCartActionDisable",name:false}))
+            dispatch(setActive({ key: "isCartActionDisable", name: false }));
             navigate("/Home");
       };
 
@@ -39,7 +41,7 @@ function MainNav() {
                   <Navbar bg="light" expand="lg" className={`${styles.mainNav} py-1`}>
                         <Container fluid className="d-flex flex-nowrap">
                               <div className="d-flex justify-content-start flex-nowrap align-items-center">
-                                    <FontAwesomeIcon className={styles.bars} icon={faBars} />
+                                    <FontAwesomeIcon className={styles.bars} icon={faBars} onClick={() => setShowConfigSideBar(true)} />
                                     <Navbar.Brand href="#" className="fw-bolder text-danger fs-4 ps-1">
                                           Martino'z
                                     </Navbar.Brand>
@@ -78,7 +80,7 @@ function MainNav() {
                                     </Link>
                                     <Link className={styles.holdOrderLink}>
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faCirclePause} onClick={() => setShowHoldOrders(true)} />
-                                          {holdOrderCount!==0 ? <div className={styles.holdOrderCountBadge}>{holdOrderCount}</div> : null}
+                                          {holdOrderCount !== 0 ? <div className={styles.holdOrderCountBadge}>{holdOrderCount}</div> : null}
                                     </Link>
                                     <Link to="tableView">
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faBellConcierge} />
@@ -95,8 +97,10 @@ function MainNav() {
                               </div>
                         </Container>
                   </Navbar>
-                  <ToastContainer/>
+                  <ToastContainer />
                   <HoldOrders showHoldOrders={showHoldOrders} setShowHoldOrders={setShowHoldOrders} />
+                  <ConfigSideBar showConfigSideBar={showConfigSideBar} setShowConfigSideBar={setShowConfigSideBar} />
+
                   <Outlet />
             </>
       );

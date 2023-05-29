@@ -1,0 +1,28 @@
+.printersListBody{
+    height: calc(100% - 53px);
+
+}
+
+.printersListBody header{
+    display: flex;
+    padding: 10px 20px;
+    justify-content: space-between;
+    font-weight: 500;
+    color: rgb(83, 83, 83);
+    border-bottom: 2px solid rgb(238, 238, 238);
+    align-items: center;
+
+}
+
+.addprinterButton{
+   border: none;
+   background-color: rgba(192, 0, 0, 0.932);
+   color: white;
+   border-radius: 5px;
+   padding: 5px 15px;
+   margin-right: 20px;
+   font-size: 15px;
+   font-weight: 500;
+   border: 1px solid rgba(192, 0, 0, 0.932);
+
+}
