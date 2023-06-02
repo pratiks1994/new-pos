@@ -1,14 +1,14 @@
 const { fork, spawn } = require("child_process");
-const { app, BrowserWindow, protocol, ipcMain } = require("electron");
+const { app, BrowserWindow, protocol, ipcMain, webContents } = require("electron");
 const path = require("path");
 const url = require("url");
 const fs = require("fs");
 const { PosPrinter } = require("electron-pos-printer");
 // const { ThermalPrinter, PrinterTypes, CharacterSet, BreakLine } = require("node-thermal-printer");
-
+let mainWindow;
 // Create the native browser window.
 async function createWindow() {
-      const mainWindow = new BrowserWindow({
+      mainWindow = new BrowserWindow({
             width: 1024,
             height: 768,
             // Set the path of an additional "preload" script that can be used to
@@ -122,6 +122,12 @@ ipcMain.handle("setup", async (event, data) => {
       // serverProcess.on('close', (code) => {
       //   console.log(`Server process exited with code ${code}`);
       // });
+});
+
+ipcMain.handle("getConnectedPrinters", async (event, data) => {
+      const connectedPrinters = await mainWindow.webContents.getPrintersAsync();
+      // console.log(connectedPrinters)
+      return connectedPrinters;
 });
 
 ipcMain.handle("print", async (event, data) => {

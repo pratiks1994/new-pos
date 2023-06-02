@@ -11,18 +11,20 @@ import { modifyCartData } from "../Redux/finalOrderSlice";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useQueryClient } from "react-query";
+import { useQueryClient, useMutation } from "react-query";
+import { setActive } from "../Redux/UIActiveSlice";
 
 function OrderPayment() {
       // get finalOrder state from redux store
       const queryClient = useQueryClient();
       const finalOrder = useSelector((state) => state.finalOrder);
+      const isCartActionDisable = useSelector((state) => state.UIActive.isCartActionDisable);
 
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const dispatch = useDispatch();
       const notify = (status, msg) => {
             if (status === "success") {
-                  toast.success("Order Placed!", {
+                  toast.success(msg, {
                         position: "top-center",
                         autoClose: 2000,
                         hideProgressBar: true,
@@ -56,7 +58,6 @@ function OrderPayment() {
 
       const saveOrder = async () => {
             if (finalOrder.orderType === "Dine In" && finalOrder.tableNumber === "") {
-                  console.log(finalOrder.orderType, finalOrder.tableNumber);
                   notify("err", "please Enter Table No.");
 
                   return;
@@ -65,7 +66,7 @@ function OrderPayment() {
             if (finalOrder.orderCart.length !== 0) {
                   await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
 
-                  notify("success");
+                  notify("success", "order Placed");
                   // set finalorder redux state to initial state after api call completion
                   // let responce = await window.apiKey.request("print", finalOrder);
                   dispatch(resetFinalOrder());
@@ -100,6 +101,52 @@ function OrderPayment() {
                   }
             } else {
                   notify("err", "Cart is Empty");
+            }
+      };
+
+      const updateLiveOrders = async ({ orderStatus, orderId }) => {
+            const DineInStatus = ["accepted", "printed", "settled"];
+            let updatedStatus;
+
+            const current = DineInStatus.findIndex((element) => element === orderStatus);
+            updatedStatus = DineInStatus[current + 1];
+
+            try {
+                  let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, { updatedStatus, orderId });
+                  console.log(data);
+
+                  if (data === "updated") {
+                        if (updatedStatus === "settled") {
+                              dispatch(resetFinalOrder());
+                              dispatch(setActive({ key: "isCartActionDisable", name: false }));
+                        } else {
+                              dispatch(modifyCartData({ order_status: updatedStatus }));
+                        }
+                        notify("success", "status updated");
+                  } else {
+                        notify("err", "something Went wrong");
+                  }
+
+                  return data;
+            } catch (err) {
+                  notify("err", "Something Went Wrong");
+            }
+      };
+
+      const { mutate: orderMutation, isLoading } = useMutation({
+            mutationFn: updateLiveOrders,
+            // onSettled: () => {
+            //       queryClient.invalidateQueries("liveOrders");
+            // },
+      });
+
+      const getBtnTheme = (status) => {
+            if (status === "accepted") {
+                  return { name: "Save & Print", style: null };
+            }
+
+            if (status === "printed") {
+                  return { name: "Save & Settle", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } };
             }
       };
       //  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store
@@ -167,24 +214,39 @@ function OrderPayment() {
                   </div>
 
                   <div className={`${styles.ProcessOrderBtns} d-flex justify-content-center bg-light pt-3 pb-3 flex-wrap`}>
-                        <Button variant="danger" size="sm" className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1" onClick={saveOrder}>
-                              {" "}
-                              Save{" "}
-                        </Button>
-                        <Button variant="danger" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1">
-                              {" "}
-                              Save & Print
-                        </Button>
-                        {/* <Button variant="danger" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> Save & eBill </Button> */}
-                        {/* <Button variant="secondary" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> KOT </Button> */}
-                        <Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={createKOT}>
-                              {" "}
-                              KOT & Print{" "}
-                        </Button>
-                        <Button variant="white" size="sm" className="mx-1 py-1 px-2 fw-bold border-1 border border-dark text-nowrap rounded-1" onClick={holdOrder}>
-                              {" "}
-                              HOLD{" "}
-                        </Button>
+                        {!isCartActionDisable ? (
+                              <div>
+                                    <Button variant="danger" size="sm" className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1" onClick={saveOrder}>
+                                          {" "}
+                                          Save{" "}
+                                    </Button>
+                                    <Button variant="danger" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1">
+                                          {" "}
+                                          Save & Print
+                                    </Button>
+                                    {/* <Button variant="danger" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> Save & eBill </Button> */}
+                                    {/* <Button variant="secondary" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> KOT </Button> */}
+                                    <Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={createKOT}>
+                                          {" "}
+                                          KOT & Print{" "}
+                                    </Button>
+                                    <Button variant="white" size="sm" className="mx-1 py-1 px-2 fw-bold border-1 border border-dark text-nowrap rounded-1" onClick={holdOrder}>
+                                          {" "}
+                                          HOLD{" "}
+                                    </Button>
+                              </div>
+                        ) : (
+                              <div>
+                                    <Button
+                                          variant="danger"
+                                          size="sm"
+                                          className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1"
+                                          onClick={() => orderMutation({ orderStatus: finalOrder.order_status, orderId: finalOrder.id })}
+                                          style={{ pointerEvents: "all" }}>
+                                          {getBtnTheme(finalOrder.order_status).name}
+                                    </Button>
+                              </div>
+                        )}
                   </div>
             </div>
       );

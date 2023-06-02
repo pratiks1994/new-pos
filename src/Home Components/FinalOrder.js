@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import styles from "./FinalOrder.module.css";
 import { incrementQty, decrementQty, removeItem } from "../Redux/finalOrderSlice";
 import { motion } from "framer-motion";
+import FinalOrderItemModal from "./FinalOrderItemModal";
 
 function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantName, multiItemTotal }) {
+      const [showItemModal, setShowItemModal] = useState(false);
+
       const dispatch = useDispatch();
 
       const addQty = (id) => {
@@ -20,8 +23,19 @@ function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantN
       };
 
       return (
-            <motion.div layout className={styles.finalOrderItem} initial={{ opacity: 0, scale: 0.5 }}  exit={{ opacity: 0 , scale:0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.15 }}>
-                  <div className={styles.name}>
+            <motion.div
+                  layout
+                  className={styles.finalOrderItem}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.15 }}>
+                  <div
+                        className={styles.name}
+                        onClick={(e) => {
+                              setShowItemModal(true);
+                              e.stopPropagation();
+                        }}>
                         <span
                               className={styles.remove}
                               onClick={() => {
@@ -42,6 +56,7 @@ function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantN
                         </button>
                   </div>
                   <div className={styles.total}>{multiItemTotal.toFixed(2)}</div>
+                  {showItemModal && <FinalOrderItemModal show={showItemModal} hideModal={() => setShowItemModal(false)} />}
             </motion.div>
       );
 }

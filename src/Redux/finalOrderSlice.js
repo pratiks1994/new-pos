@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const finalOrderSlice = createSlice({
       name: "finalOrder",
       initialState: {
+            id: "",
             customerName: "emerging coders",
             customerContact: "8238267210",
             customerAdd: "Rk Empire nr nana Mauva circle 9th floor 905 rajkot ",
@@ -19,6 +20,7 @@ const finalOrderSlice = createSlice({
             orderType: "Delivery",
             orderComment: "",
             cartTotal: 0,
+            order_status: "accepted",
       },
       reducers: {
             addOrderItem: (state, action) => {
@@ -115,6 +117,8 @@ const finalOrderSlice = createSlice({
 
             resetFinalOrder: (state) => {
                   return {
+                        id: "",
+                        order_status: "accepted",
                         customerName: "",
                         customerContact: "",
                         customerAdd: "",
@@ -168,7 +172,7 @@ const finalOrderSlice = createSlice({
                               itemTotal: item.itemTotal,
                               multiItemTotal: item.multiItemTotal,
                               itemIdentifier: item.itemIdentifier,
-                              itemTax:item.itemTax
+                              itemTax: item.itemTax,
                         };
                   });
             },
@@ -188,6 +192,8 @@ const finalOrderSlice = createSlice({
                   state.orderType = order.order_type;
                   state.cartTotal = order.total;
                   state.orderComment = order.description;
+                  state.id = order.id;
+                  state.order_status = order.order_status;
 
                   state.orderCart = order.items.map((item) => {
                         let toppings = item.itemAddons.map((topping) => {
@@ -210,8 +216,6 @@ const finalOrderSlice = createSlice({
                               itemTotal: item.itemTotal,
                               multiItemTotal: item.final_price,
                               itemTax: itemTax,
-
-
                         };
                   });
             },

@@ -56,7 +56,7 @@ function TableCard({ order }) {
                               <MinTimer startTime={order.created_at} />
                         </div>
                         <div>{order.dine_in_table_no}</div>
-                        <div className={styles.total}>₹ {order.total}</div>
+                        <div className={styles.total}>₹ {order.total.toFixed(2)}</div>
                   </div>
                   <img
                         className={styles.actionIcon}

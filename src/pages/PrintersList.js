@@ -1,10 +1,32 @@
-import React from "react";
+import React, { Children } from "react";
 import styles from "./PrintersList.module.css";
 import BackButton from "../Feature Components/BackButton";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { useQuery } from "react-query";
+import axios from "axios";
+import { setPrinters } from "../Redux/printerSettingsSlice";
 
 function PrintersList() {
+      const { IPAddress } = useSelector((state) => state.serverConfig);
+      const dispatch = useDispatch();
+
+      const getPrinters = async () => {
+            const { data } = await axios.get(`http://${IPAddress}:3001/getPrinters`);
+            return data;
+      };
+
+      const {
+            data: printers,
+            isLoading,
+            isError,
+            error,
+      } = useQuery({
+            queryKey: "printers",
+            queryFn: getPrinters,
+      });
+
       const navigate = useNavigate();
 
       return (
@@ -12,13 +34,45 @@ function PrintersList() {
                   <header>
                         <div className={styles.headerText}> Printer Listing </div>
                         <div>
-                        <button className={styles.addprinterButton}>+ Add Printer</button>
-                        <BackButton onClick={() => navigate("..")} />
+                              <button className={styles.addprinterButton}>+ Add Printer</button>
+                              <BackButton onClick={() => navigate("..")} />
                         </div>
-
                   </header>
-                  <main className={styles.printersList}></main>
-            </motion.div>   
+                  <main className={styles.printersList}>
+                        {isLoading ? <div>Loading....</div> : null}
+                        {isError ? <div>{error}</div> : null}
+                        {printers && (
+                              <table className={styles.tableMain}>
+                                    <thead>
+                                          <tr>
+                                                <th>Printer Name</th>
+                                                <th>Printer Type</th>
+                                                <th>Report Print</th>
+                                                <th>Action</th>
+                                                <th>Print Assign</th>
+                                          </tr>
+                                    </thead>
+                                    <tbody>
+                                          {printers?.map((printer) => {
+                                                return (
+                                                      <tr key={printer.id}>
+                                                            <td>{printer.printer_display_name}</td>
+                                                            <td>General</td>
+                                                            <td>NO</td>
+                                                            <td>
+                                                                  <Link to={`${printer.id}`}>Edit</Link> | <Link>Remove</Link>
+                                                            </td>
+                                                            <td>
+                                                                  <Link>Assign</Link>
+                                                            </td>
+                                                      </tr>
+                                                );
+                                          })}
+                                    </tbody>
+                              </table>
+                        )}
+                  </main>
+            </motion.div>
       );
 }
 

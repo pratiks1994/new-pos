@@ -17,9 +17,10 @@ const { createHoldOrder } = require("./holdOrder/createHoldOrder");
 const { getHoldOrders } = require("./holdOrder/getHoldOrders");
 const { deletHoldOrder } = require("./holdOrder/deletHoldOrder");
 const { checkAndUpdateOrder } = require("./orders/checkAndUpdateOrder");
+const { getPrinters } = require("./printers/getPrinters");
 const Database = require("better-sqlite3");
+const { updatePrinter } = require("./printers/updatePrinter");
 const db2 = new Database("restaurant.sqlite", {});
-
 
 const app = express();
 const httpServer = createServer(app);
@@ -41,8 +42,6 @@ const openDb = () => {
       });
       return db;
 };
-
-
 
 app.get("/categories", async (req, res) => {
       console.log("rq recieved");
@@ -71,7 +70,6 @@ app.get("/liveOrders", (req, res) => {
 });
 
 app.get("/liveKOT", (req, res) => {
-
       // const db = openDb();
       const liveKOTs = getLiveKOT();
       res.status(200).json(liveKOTs);
@@ -80,14 +78,12 @@ app.get("/liveKOT", (req, res) => {
 app.put("/liveKot", (req, res) => {
       // const db = openDb();
       // const start = Date.now();
-      updateKOT(db2,req.body);
+      updateKOT(db2, req.body);
       res.sendStatus(200);
       // console.log(`update KOT 1 ${Date.now() - start}`);
       const liveKOTs = getLiveKOT();
       io.emit("KOTs", liveKOTs);
       // console.log(`update  KOT 2 ${Date.now() - start}`);
-
-
 });
 
 app.post("/order", async (req, res, next) => {
@@ -162,6 +158,16 @@ app.delete("/holdOrder", async (req, res) => {
       res.sendStatus(200);
       const holdOrders = await getHoldOrders(db);
       io.emit("holdOrders", holdOrders);
+});
+
+app.get("/getPrinters", (req, res) => {
+      const printers = getPrinters();
+      res.status(200).json(printers);
+});
+
+app.put("/updatePrinter", (req, res) => {
+      updatePrinter(req.body);
+      res.sendStatus(200);
 });
 
 httpServer.listen(3001, (err) => {

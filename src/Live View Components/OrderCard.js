@@ -13,14 +13,14 @@ import { useNavigate } from "react-router-dom";
 import { setActive } from "../Redux/UIActiveSlice";
 import { motion } from "framer-motion";
 
-function OrderCard({ order,idx }) {
+function OrderCard({ order, idx }) {
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const queryClient = useQueryClient();
-      const DineInStatus = ["accepted", "printed", "settled"];
       const dispatch = useDispatch();
       const navigate = useNavigate();
 
       const updateLiveOrders = async ({ orderStatus, orderId }) => {
+            const DineInStatus = ["accepted", "printed", "settled"];
             let updatedStatus;
 
             const current = DineInStatus.findIndex((element) => element === orderStatus);
@@ -66,9 +66,14 @@ function OrderCard({ order,idx }) {
       };
 
       return (
-            <motion.div layout className={styles.orderCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1 ,delay : idx*0.05}} >
+            <motion.div
+                  layout
+                  className={styles.orderCard}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.1, delay: idx * 0.05 }}>
                   <header className={styles.cardHeader} style={getHeaderTheme(order.order_type).style} onClick={() => moveOrderToHome(order)}>
-                        <div >
+                        <div>
                               <div> Martinoz...</div>
                               <Timer startTime={order.created_at} />
                               <img src={getHeaderTheme(order.order_type).image} alt="BigCo Inc. logo" />

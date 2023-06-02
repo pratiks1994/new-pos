@@ -5,40 +5,38 @@ import Topping from "./Topping";
 import { useSelector } from "react-redux";
 
 function ItemModalBody({ id }) {
-   const menuItems = useSelector((state) => state.menuItems);
-   const selectedVariantId = useSelector((state) => state.currentItem.variation_id);
+      const menuItems = useSelector((state) => state.menuItems);
+      const selectedVariantId = useSelector((state) => state.currentItem.variation_id);
 
-   let item = menuItems.find((item) => item.id === id);
+      let item = menuItems.find((item) => item.id === id);
 
-   let variants = item.variations;
+      let variants = item.variations;
 
-   let addonGroups = variants.find((variant) => variant.variation_id === selectedVariantId).addonGroups;
+      let addonGroups = variants.find((variant) => variant.variation_id === selectedVariantId).addonGroups;
 
+      return (
+            <div className={styles.modalBody}>
+                  <div className={styles.variation}>
+                        <div className="ms-2"> Variation</div>
+                        <div className="d-flex flex-wrap">
+                              {variants.map((variant) => (
+                                    <Variant key={variant.variation_id} {...variant} />
+                              ))}
+                        </div>
+                  </div>
+                  {addonGroups.map((group) => (
+                        <div key={group.addongroup_id} className={styles.addOnGroup}>
+                              <div className="ms-2">{group.name}</div>
+                              <div className="d-flex flex-wrap">
+                                    {" "}
+                                    {group.addonItems.map((item) => (
+                                          <Topping key={item.id} type={item.name} price={item.price} id={item.id} />
+                                    ))}{" "}
+                              </div>
+                        </div>
+                  ))}
 
-   return (
-      <div className={styles.modalBody}>
-         <div className={styles.variation}>
-            <div className="ms-2"> Variation</div>
-            <div className="d-flex flex-wrap">
-               {variants.map((variant) => (
-                  <Variant key={variant.variation_id} {...variant} />
-               ))}
-            </div>
-         </div>
-         {addonGroups.map((group) => (
-            <div key={group.addongroup_id} className={styles.addOnGroup}>
-               <div className="ms-2">{group.name}</div>
-               <div className="d-flex flex-wrap">
-                  {" "}
-                  {group.addonItems.map((item) => (
-                     <Topping key={item.id} type={item.name} price={item.price} id={item.id} />
-                  ))}{" "}
-               </div>
-            </div>
-            )
-         )}
-
-         {/* <div className={styles.addOnGroup}>
+                  {/* <div className={styles.addOnGroup}>
             <div className="ms-2">Veg Toppings</div>
             <div className="d-flex flex-wrap">
                {" "}
@@ -65,8 +63,8 @@ function ItemModalBody({ id }) {
                ))}{" "}
             </div>
          </div> */}
-      </div>
-   );
+            </div>
+      );
 }
 
 export default ItemModalBody;

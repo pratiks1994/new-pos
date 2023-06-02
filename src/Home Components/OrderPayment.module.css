@@ -1,63 +1,62 @@
-.orderPayment{
-   height: 190px;
-   background-color: rgb(67, 67, 67);
-   flex-shrink: 0;
-   position: relative;
-   z-index: 10 !important;
-
+.orderPayment {
+      height: 190px;
+      background-color: rgb(67, 67, 67);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10 !important;
 }
 
-.total{
-   background-color: rgb(67, 67, 67) ;
+.total {
+      background-color: rgb(67, 67, 67);
 }
 
-.paymentModes{
-   background-color:rgb(111, 111, 111) ;
-   color: #ffffff;
+.paymentModes {
+      background-color: rgb(111, 111, 111);
+      color: #ffffff;
 }
 
-.paymentModes input[type=radio] {
-  height: 17px;
-  width: 17px;
-  accent-color: red;
-  
+.paymentModes input[type="radio"] {
+      height: 17px;
+      width: 17px;
+      accent-color: red;
 }
 
-.paymentModesCheck{
-   background-color:rgb(67, 67, 67) ;
+button svg {
+      pointer-events: none;
 }
 
-.paymentModesCheck input[type=checkbox] {
-   height: 17px;
-   width: 17px;
-   accent-color: red;
+.paymentModesCheck {
+      background-color: rgb(67, 67, 67);
 }
 
-.ProcessOrderBtns button:hover{
-   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
-
+.paymentModesCheck input[type="checkbox"] {
+      height: 17px;
+      width: 17px;
+      accent-color: red;
 }
 
-.paymentBreakdownToggle{
-   position: absolute;
-   left :50% ;
-   top:-15px ;
-   transform: translateX(-50%);
-   width:60px;
-   background-color:rgb(67, 67, 67) ;
-   border: none;
-   border-radius: 6px;
-   color: white;
-   font-weight: bolder;
-   padding-top: 5px;
-   font-size: 14px;
-   z-index: 10;
-   pointer-events: all;
-   transition: transform 0.1s ease-in-out;
+.ProcessOrderBtns button:hover {
+      box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
 }
 
-.paymentBreakdownToggle:hover{
-   transform: translateX(-50%) scale(1.05);
+.paymentBreakdownToggle {
+      position: absolute;
+      left: 50%;
+      top: -15px;
+      transform: translateX(-50%);
+      width: 60px;
+      background-color: rgb(67, 67, 67);
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bolder;
+      padding-top: 5px;
+      font-size: 14px;
+      z-index: 10;
+      pointer-events: all;
+      transition: transform 0.1s ease-in-out;
 }
 
-
+.paymentBreakdownToggle:hover {
+      transform: translateX(-50%) scale(1.05);
+}
