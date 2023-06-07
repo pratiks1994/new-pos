@@ -69,6 +69,16 @@ const finalOrderSlice = createSlice({
                   });
             },
 
+            addItemNotes: (state, action) => {
+                  const { currentOrderItemId, notes } = action.payload;
+
+                  state.orderCart.forEach((item) => {
+                        if (item.currentOrderItemId === currentOrderItemId) {
+                              item.itemNotes = notes;
+                        }
+                  });
+            },
+
             decrementQty: (state, action) => {
                   let { id } = action.payload;
                   state.orderCart.forEach((item) => {
@@ -223,5 +233,16 @@ const finalOrderSlice = createSlice({
 });
 
 export default finalOrderSlice.reducer;
-export const { addOrderItem, incrementQty, decrementQty, removeItem, modifyCartData, calculateCartTotal, resetFinalOrder, setCustomerDetail, holdToFinalOrder, liveOrderToCart } =
-      finalOrderSlice.actions;
+export const {
+      addOrderItem,
+      incrementQty,
+      decrementQty,
+      removeItem,
+      modifyCartData,
+      calculateCartTotal,
+      resetFinalOrder,
+      setCustomerDetail,
+      holdToFinalOrder,
+      liveOrderToCart,
+      addItemNotes,
+} = finalOrderSlice.actions;

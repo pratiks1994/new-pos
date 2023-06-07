@@ -5,7 +5,7 @@ import { incrementQty, decrementQty, removeItem } from "../Redux/finalOrderSlice
 import { motion } from "framer-motion";
 import FinalOrderItemModal from "./FinalOrderItemModal";
 
-function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantName, multiItemTotal }) {
+function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantName, multiItemTotal, itemTax, toppings, itemNotes }) {
       const [showItemModal, setShowItemModal] = useState(false);
 
       const dispatch = useDispatch();
@@ -56,7 +56,18 @@ function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantN
                         </button>
                   </div>
                   <div className={styles.total}>{multiItemTotal.toFixed(2)}</div>
-                  {showItemModal && <FinalOrderItemModal show={showItemModal} hideModal={() => setShowItemModal(false)} />}
+                  {showItemModal && (
+                        <FinalOrderItemModal
+                              show={showItemModal}
+                              hideModal={() => setShowItemModal(false)}
+                              currentOrderItemId={currentOrderItemId}
+                              itemTax={itemTax}
+                              toppings={toppings}
+                              itemName={itemName}
+                              variantName={variantName}
+                              itemNotes={itemNotes}
+                        />
+                  )}
             </motion.div>
       );
 }

@@ -30,9 +30,9 @@ function Main() {
                                     <Route index element={<Configuration />} />
                                     <Route path="printerConfig">
                                           <Route index element={<PrinterConfig />} />
-                                          <Route path="PrintersList" >
+                                          <Route path="PrintersList">
                                                 <Route index element={<PrintersList />} />
-                                                <Route path=":printerId" element={<EditPrinter/>} />
+                                                <Route path=":printerId" element={<EditPrinter />} />
                                           </Route>
                                     </Route>
                               </Route>

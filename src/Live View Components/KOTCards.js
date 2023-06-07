@@ -6,13 +6,13 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 
-function KOTCards({ KOT,idx }) {
+function KOTCards({ KOT, idx }) {
       const { IPAddress } = useSelector((state) => state.serverConfig);
 
       const queryClient = useQueryClient();
 
-      const updateKOT = async (id) => {
-            let { data } = await axios.put(`http://${IPAddress}:3001/liveKot`, { id });
+      const updateKOT = async ({ id, order_id, order_type }) => {
+            let { data } = await axios.put(`http://${IPAddress}:3001/liveKot`, { id, order_id, order_type });
             return data;
       };
 
@@ -42,7 +42,7 @@ function KOTCards({ KOT,idx }) {
       const getColor = (type) => (type !== "Dine In" ? { backgroundColor: "rgba(116, 116, 0, 0.87)" } : null);
 
       return (
-            <motion.div layout className={styles.KOTCard}  initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1, delay:idx * 0.03 }} >
+            <motion.div layout className={styles.KOTCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1, delay: idx * 0.03 }}>
                   <div className={styles.CardHeader} style={getColor(KOT.order_type)}>
                         <div>
                               {KOT.table_no && <div>{KOT.table_no}</div>}
@@ -85,7 +85,7 @@ function KOTCards({ KOT,idx }) {
                         );
                   })}
                   <div className={styles.footer}>
-                        <button onClick={() => KOTmutation(KOT.id)} disabled={isLoading}>
+                        <button onClick={() => KOTmutation({ id: KOT.id, order_id: KOT.order_id, order_type: KOT.order_type })} disabled={isLoading}>
                               {isLoading ? "loading..." : "Food Is Ready"}
                         </button>
                   </div>

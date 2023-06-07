@@ -12,13 +12,14 @@ const checkAndUpdateOrder = (order, db) => {
 
       const { orderCart } = order;
 
-      const matchOrder = db2.prepare("SELECT id FROM orders WHERE dine_in_table_no=? AND order_status = 'accepted'").get([order.tableNumber]);
+      const matchOrder = db2
+            .prepare("SELECT id FROM orders WHERE dine_in_table_no=? AND order_status = 'accepted' AND print_count= 0 AND settle_amount IS NULL")
+            .get([order.tableNumber]);
 
       // const matchOrder = await dbAll(db, "SELECT id FROM orders WHERE dine_in_table_no=? AND order_status = 'accepted'", [order.tableNumber]);
 
+      console.log(matchOrder)
       if (matchOrder?.id && order.orderType === "Dine In") {
-
-
             const matchOrderId = matchOrder.id;
 
             db2.prepare("UPDATE orders SET item_total = item_total + ? , total_discount = total_discount + ? , total_tax = total_tax + ? , total = total + ? WHERE id = ?").run([

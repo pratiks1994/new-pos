@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "./OrderCard.module.css";
 import { v4 } from "uuid";
 import Timer from "./Timer";
@@ -12,21 +12,27 @@ import { liveOrderToCart } from "../Redux/finalOrderSlice";
 import { useNavigate } from "react-router-dom";
 import { setActive } from "../Redux/UIActiveSlice";
 import { motion } from "framer-motion";
+import SettleOrderModal from "./SettleOrderModal";
 
 function OrderCard({ order, idx }) {
       const { IPAddress } = useSelector((state) => state.serverConfig);
-      const queryClient = useQueryClient();
+      // const queryClient = useQueryClient();
       const dispatch = useDispatch();
       const navigate = useNavigate();
+      const [showSettleModal, setShowSettleModal] = useState(false);
 
-      const updateLiveOrders = async ({ orderStatus, orderId }) => {
-            const DineInStatus = ["accepted", "printed", "settled"];
-            let updatedStatus;
-
-            const current = DineInStatus.findIndex((element) => element === orderStatus);
-            updatedStatus = DineInStatus[current + 1];
-
-            let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, { updatedStatus, orderId });
+      const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId, print_count, tip, paymentType, customerPaid, settleAmount }) => {
+            let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, {
+                  orderStatus,
+                  orderId,
+                  orderType,
+                  KOTId,
+                  print_count,
+                  tip,
+                  paymentType,
+                  customerPaid,
+                  settleAmount,
+            });
             return data;
       };
 
@@ -37,13 +43,38 @@ function OrderCard({ order, idx }) {
             // },
       });
 
-      const getBtnTheme = (status) => {
-            if (status === "accepted") {
-                  return { name: "Save & Print", style: null };
-            }
+      const getBtnTheme = (orderStatus, orderType, print_count) => {
+            const themes = [
+                  {
+                        orderType: "Delivery",
+                        statuses: [
+                              { status: "accepted", btnName: "Food is ready", style: { backgroundColor: "rgb(179, 107, 0)", color: "white" } },
+                              { status: "food_is_ready", btnName: "Dispatch", style: { backgroundColor: "rgb(0, 102, 61)", color: "white" } },
+                              { status: "dispatched", btnName: "Delivered", style: { backgroundColor: "rgb(102, 0, 41)", color: "white" } },
+                        ],
+                  },
+                  {
+                        orderType: "Dine In",
+                        statuses: [
+                              { print_count: 0, btnName: "Save & Print", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } },
+                              { print_count: 1, btnName: "Save & Settle", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } },
+                        ],
+                  },
+                  {
+                        orderType: "Pick Up",
+                        statuses: [
+                              { status: "accepted", btnName: "Food is ready", style: { backgroundColor: "rgb(179, 107, 0)", color: "white" } },
+                              { status: "food_is_ready", btnName: "Picked Up", style: { backgroundColor: "rgb(0, 102, 61)", color: "white" } },
+                        ],
+                  },
+            ];
 
-            if (status === "printed") {
-                  return { name: "Save & Settle", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } };
+            // const btnTheme = themes.find((theme) => theme.orderType === orderType).statuses.find((status) => status.status === orderStatus);
+            const theme = themes.find((theme) => theme.orderType === orderType);
+            if (theme.orderType === "Dine In") {
+                  return theme?.statuses.find((status) => status.print_count === print_count);
+            } else {
+                  return theme?.statuses.find((status) => status.status === orderStatus);
             }
       };
 
@@ -65,6 +96,26 @@ function OrderCard({ order, idx }) {
             navigate("/Home");
       };
 
+      const handleClick = () => {
+            if (order.print_count === 1 && order.order_type === "Dine In") {
+                  setShowSettleModal(true);
+            } else {
+                  orderMutation({
+                        orderStatus: order.order_status,
+                        orderId: order.id,
+                        orderType: order.order_type,
+                        KOTId: order.KOTDetail.id,
+                        print_count: order.print_count,
+                        paymentType: null,
+                        customerPaid: null,
+                        tip: null,
+                        settleAmount: null,
+                  });
+            }
+      };
+
+      console.log(showSettleModal);
+
       return (
             <motion.div
                   layout
@@ -81,7 +132,9 @@ function OrderCard({ order, idx }) {
                               <div>{`TABLE : ${order.dine_in_table_no || 12}`}</div>
                         </div>
                         <div>
-                              <div>KOT : 1 | BILL : {order.order_number}</div>
+                              <div>
+                                    KOT : {order.KOTDetail.token_no} | BILL : {order.order_number}
+                              </div>
                               <div>{order.order_type}</div>
                         </div>
                   </header>
@@ -115,14 +168,14 @@ function OrderCard({ order, idx }) {
                   </div>
                   <div className={styles.statusBtn}>
                         <div className={styles.orderTotal}>₹ {order.total.toFixed(2)}</div>
-                        <button
-                              style={getBtnTheme(order.order_status).style}
-                              onClick={() => orderMutation({ orderStatus: order.order_status, orderId: order.id })}
-                              disabled={isLoading}>
+                        <button style={getBtnTheme(order.order_status, order.order_type, order.print_count).style} onClick={handleClick} disabled={isLoading}>
                               {" "}
-                              {isLoading ? "Loading..." : getBtnTheme(order.order_status).name}
+                              {isLoading ? "Loading..." : getBtnTheme(order.order_status, order.order_type, order.print_count).btnName}
                         </button>
                   </div>
+                  {showSettleModal && (
+                        <SettleOrderModal show={showSettleModal} hide={() => setShowSettleModal(false)} order={order} orderMutation={orderMutation} isLoading={isLoading} />
+                  )}
             </motion.div>
       );
 }

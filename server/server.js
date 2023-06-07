@@ -64,7 +64,7 @@ app.get("/ping", async (req, res) => {
 app.get("/liveOrders", (req, res) => {
       const start = Date.now();
       const db = openDb();
-      const orders = getLiveOrders(db);
+      const orders = getLiveOrders();
       res.status(200).json(orders);
       console.log(`get live ${Date.now() - start}`);
 });
@@ -76,60 +76,80 @@ app.get("/liveKOT", (req, res) => {
 });
 
 app.put("/liveKot", (req, res) => {
-      // const db = openDb();
-      // const start = Date.now();
+      const { order_id, order_type } = req.body;
       updateKOT(db2, req.body);
       res.sendStatus(200);
-      // console.log(`update KOT 1 ${Date.now() - start}`);
       const liveKOTs = getLiveKOT();
       io.emit("KOTs", liveKOTs);
-      // console.log(`update  KOT 2 ${Date.now() - start}`);
+
+      if (order_id !== null && order_type !== "Dine In") {
+            const data = { orderStatus: "accepted", orderId: order_id, orderType: order_type };
+            updateLiveOrders(db2, data);
+            const orders = getLiveOrders();
+            io.emit("orders", orders);
+      }
 });
 
 app.post("/order", async (req, res, next) => {
+      // middleware
       const db = openDb();
 
+      //  for order type Dine In only check if same table number exist and is not setteled, if axist add items to that order only no need to create new KOT
       const isUpdated = checkAndUpdateOrder(req.body, db);
       if (isUpdated) {
+            // for isUpdate = true emmit live order, terminate request as order is updated
             res.sendStatus(200);
-            const orders = getLiveOrders(db);
+            const orders = getLiveOrders();
             io.emit("orders", orders);
       } else {
+            // for isUpdate = false move on to create new order kot
             next();
       }
 });
 
 app.post("/order", (req, res) => {
       const db = openDb();
-      // const start = Date.now();
-      const userId = createOrder(req.body, db);
-      res.sendStatus(200);
-      createKot(req.body, db, userId);
 
-      if (userId !== "any") {
-            const orders = getLiveOrders(db);
-            io.emit("orders", orders);
-            const liveKOTs = getLiveKOT();
-            io.emit("KOTs", liveKOTs);
-            // console.log(`time ${Date.now() - start}`);
-      }
+      // create new order
+      const { userId, orderId } = createOrder(req.body, db);
+      res.sendStatus(200);
+      // create new KOT
+      createKot(req.body, db, userId, orderId);
+
+      // after entry in table emmit both order and KOTs
+      const orders = getLiveOrders();
+      io.emit("orders", orders);
+      const liveKOTs = getLiveKOT();
+      io.emit("KOTs", liveKOTs);
 });
 
 app.post("/KOT", (req, res) => {
       const db = openDb();
-      const userId = 0;
-      createKot(req.body, db, userId);
+
+      //  create KOT
+      createKot(req.body, db);
       res.sendStatus(200);
+      // emmit KOT
       const liveKOTs = getLiveKOT();
       io.emit("KOTs", liveKOTs);
 });
 
 app.put("/liveOrders", (req, res) => {
       const db = openDb();
+
+      // update live order status
       updateLiveOrders(db, req.body);
       res.status(200).json("updated");
+
+      // emmit live orders after entry in table
       const orders = getLiveOrders(db);
       io.emit("orders", orders);
+
+      // only update and emmit KOT for pick up or delivery and status is "accpted"/ click on "food is redy"
+      if (req.body.orderType !== "Dine In" && req.body.orderStatus === "accepted") {
+            const liveKOTs = getLiveKOT();
+            io.emit("KOTs", liveKOTs);
+      }
 });
 
 app.get("/users", async (req, res) => {

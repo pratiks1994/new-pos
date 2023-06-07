@@ -21,6 +21,7 @@ const createOrder = (order, db) => {
 
       let userId;
       let restaurantId = 1;
+      let orderId
       const {
             customerName,
             customerContact,
@@ -135,6 +136,7 @@ const createOrder = (order, db) => {
             });
 
             cartTrans(orderCart, orderInfo.lastInsertRowid);
+            orderId = orderInfo.lastInsertRowid
       });
 
       orderTrans(userId);
@@ -235,8 +237,8 @@ const createOrder = (order, db) => {
       //             // });
       //       }
       // );
-
-      return userId;
+ console.log(`userId ${userId}, orderId ${orderId}`)
+      return ({userId,orderId});
 };
 
 module.exports = { createOrder };

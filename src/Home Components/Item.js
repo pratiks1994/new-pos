@@ -53,6 +53,7 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
                         itemTotal: price,
                         multiItemTotal: price,
                         itemIdentifier: id,
+                        itemNotes: "",
                   };
 
                   const itemTax = item_tax.map((tax) => {

@@ -2,7 +2,7 @@ const { dbAll, dbRun } = require("../common/dbExecute");
 const Database = require("better-sqlite3");
 const db2 = new Database("restaurant.sqlite", {});
 
-const createKot = (order, db, userId) => {
+const createKot = (order, db, userId, orderId) => {
       let restaurantId = 1;
       let tokenNo;
       const {
@@ -38,9 +38,9 @@ const createKot = (order, db, userId) => {
 
             const { lastInsertRowid: KOTId } = db2
                   .prepare(
-                        "INSERT INTO KOT (restaurant_id,token_no,order_type,user_id,customer_name,number,address,landmark,table_id,table_no,print_count,KOT_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
+                        "INSERT INTO KOT (order_id,restaurant_id,token_no,order_type,user_id,customer_name,number,address,landmark,table_id,table_no,print_count,KOT_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
                   )
-                  .run([restaurantId, tokenNo, orderType, userId, customerName, customerContact, customerAdd, customerLocality, tableNumber, tableNumber, 1, "accepted"]);
+                  .run([orderId, restaurantId, tokenNo, orderType, userId, customerName, customerContact, customerAdd, customerLocality, tableNumber, tableNumber, 1, "accepted"]);
 
             db2.transaction(() => {
                   const prepareItem = db2.prepare(
