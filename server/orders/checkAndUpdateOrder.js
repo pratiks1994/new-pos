@@ -9,18 +9,19 @@ const checkAndUpdateOrder = (order, db) => {
       // no KOT
       // return true
       // if does not exist return false
-
-      const { orderCart } = order;
+      let orderId = "";
 
       const matchOrder = db2
-            .prepare("SELECT id FROM orders WHERE dine_in_table_no=? AND order_status = 'accepted' AND print_count= 0 AND settle_amount IS NULL")
+            .prepare("SELECT id FROM orders WHERE  order_type='Dine In' AND dine_in_table_no=? AND order_status = 'accepted' AND print_count= 0 AND settle_amount IS NULL")
             .get([order.tableNumber]);
 
       // const matchOrder = await dbAll(db, "SELECT id FROM orders WHERE dine_in_table_no=? AND order_status = 'accepted'", [order.tableNumber]);
 
-      console.log(matchOrder)
       if (matchOrder?.id && order.orderType === "Dine In") {
+            const { orderCart } = order;
+
             const matchOrderId = matchOrder.id;
+            orderId = matchOrder.id;
 
             db2.prepare("UPDATE orders SET item_total = item_total + ? , total_discount = total_discount + ? , total_tax = total_tax + ? , total = total + ? WHERE id = ?").run([
                   order.subTotal,
@@ -95,9 +96,9 @@ const checkAndUpdateOrder = (order, db) => {
             //       // });
             // });
 
-            return true;
+            return orderId;
       } else {
-            return false;
+            return orderId;
       }
 };
 

@@ -11,10 +11,9 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
             if (name === "customerPaid") {
                   setPaymentDetail((prev) => {
                         const returnAmount = Math.round(value - order.total);
-                        const customerReturn = returnAmount < 0 ? "Amount is less" : `₹ ${returnAmount}`
+                        const customerReturn = returnAmount < 0 ? "Amount is less" : `₹ ${returnAmount}`;
                         return { ...prev, [name]: value, customerReturn: customerReturn };
                   });
-                // setPaymentDetail((prev) => ({ ...prev, [name]: value }));
             } else {
                   setPaymentDetail((prev) => ({ ...prev, [name]: value }));
             }

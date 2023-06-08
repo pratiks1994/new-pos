@@ -2,7 +2,7 @@ const { dbAll, dbRun } = require("../common/dbExecute");
 const Database = require("better-sqlite3");
 const db2 = new Database("restaurant.sqlite", {});
 
-const createKot = (order, db, userId, orderId) => {
+const createKot = (order, userId, orderId) => {
       let restaurantId = 1;
       let tokenNo;
       const {
@@ -44,13 +44,13 @@ const createKot = (order, db, userId, orderId) => {
 
             db2.transaction(() => {
                   const prepareItem = db2.prepare(
-                        "INSERT INTO KOT_items (KOT_id,item_id,item_name,quantity,variation_name,variation_id,description,itemTax) VALUES (?,?,?,?,?,?,?,?)"
+                        "INSERT INTO KOT_items (KOT_id,item_id,item_name,quantity,variation_name,variation_id,description,itemTax,price,final_price,itemAddons) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
                   );
 
-                  const prepareToppings = db2.prepare("INSERT INTO KOT_item_addongroupitems (KOT_item_id,addongroupitem_id,name,quantity) VALUES (?,?,?,?)");
+                  // const prepareToppings = db2.prepare("INSERT INTO KOT_item_addongroupitems (KOT_item_id,addongroupitem_id,name,quantity) VALUES (?,?,?,?)");
 
                   orderCart.forEach((item) => {
-                        const { itemQty, itemId, itemName, variation_id, variantName, toppings, itemTax } = item;
+                        const { itemQty, itemId, itemName, variation_id, variantName, toppings, itemTax, itemTotal, multiItemTotal } = item;
 
                         const { lastInsertRowid: KOTItemId } = prepareItem.run([
                               KOTId,
@@ -61,16 +61,19 @@ const createKot = (order, db, userId, orderId) => {
                               variation_id,
                               orderComment,
                               JSON.stringify(itemTax),
+                              itemTotal,
+                              multiItemTotal,
+                              JSON.stringify(toppings)
                         ]);
 
-                        if (toppings.length !== 0) {
-                              db2.transaction(() => {
-                                    toppings.forEach((topping) => {
-                                          const { id, type, price, qty } = topping;
-                                          prepareToppings.run([KOTItemId, id, type, qty]);
-                                    });
-                              })();
-                        }
+                        // if (toppings.length !== 0) {
+                        //       db2.transaction(() => {
+                        //             toppings.forEach((topping) => {
+                        //                   const { id, type, price, qty } = topping;
+                        //                   prepareToppings.run([KOTItemId, id, type, qty]);
+                        //             });
+                        //       })();
+                        // }
                   });
             })();
       })();

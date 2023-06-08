@@ -75,7 +75,7 @@ function KOTCards({ KOT, idx }) {
                                           {item.itemAddons.length
                                                 ? item.itemAddons.map((addon) => (
                                                         <span key={uuidv4()}>
-                                                              / {addon.name} ({addon.quantity})
+                                                              / {addon.type} ({addon.qty})
                                                         </span>
                                                   ))
                                                 : null}

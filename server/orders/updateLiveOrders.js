@@ -5,7 +5,6 @@ const db2 = new Database("restaurant.sqlite", {});
 const updateLiveOrders = (db, data) => {
       let { orderStatus, orderId, orderType, KOTId, print_count, tip, settleAmount, customerPaid, paymentType } = data;
 
-      console.log(tip, settleAmount, customerPaid, paymentType);
 
       if (orderType === "Dine In") {
             try {

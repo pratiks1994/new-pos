@@ -50,12 +50,8 @@ function KOTView() {
 
       if (KOTs) {
             return (
-                  <motion.main layout
-                        className={styles.mainKOT}
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.15 }}>
-                        {KOTs.map((KOT,idx) => {
+                  <motion.main layout className={styles.mainKOT} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.15 }}>
+                        {KOTs.map((KOT, idx) => {
                               return <KOTCards KOT={KOT} key={KOT.id} idx={idx} />;
                         })}
                   </motion.main>

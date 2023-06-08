@@ -1,7 +1,7 @@
 const Database = require("better-sqlite3");
 const db2 = new Database("restaurant.sqlite", {});
 
-const createOrder = (order, db) => {
+const createOrder = (order) => {
       // create new order number
       // printBill(order)
       // console.log(order);

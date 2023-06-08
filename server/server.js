@@ -17,6 +17,7 @@ const { createHoldOrder } = require("./holdOrder/createHoldOrder");
 const { getHoldOrders } = require("./holdOrder/getHoldOrders");
 const { deletHoldOrder } = require("./holdOrder/deletHoldOrder");
 const { checkAndUpdateOrder } = require("./orders/checkAndUpdateOrder");
+const { checkExistingOrder } = require("./orders/checkExistingOrder");
 const { getPrinters } = require("./printers/getPrinters");
 const Database = require("better-sqlite3");
 const { updatePrinter } = require("./printers/updatePrinter");
@@ -95,8 +96,8 @@ app.post("/order", async (req, res, next) => {
       const db = openDb();
 
       //  for order type Dine In only check if same table number exist and is not setteled, if axist add items to that order only no need to create new KOT
-      const isUpdated = checkAndUpdateOrder(req.body, db);
-      if (isUpdated) {
+      const orderId = checkAndUpdateOrder(req.body, db);
+      if (orderId !== "") {
             // for isUpdate = true emmit live order, terminate request as order is updated
             res.sendStatus(200);
             const orders = getLiveOrders();
@@ -108,13 +109,13 @@ app.post("/order", async (req, res, next) => {
 });
 
 app.post("/order", (req, res) => {
-      const db = openDb();
+      // const db = openDb();
 
       // create new order
-      const { userId, orderId } = createOrder(req.body, db);
+      const { userId, orderId } = createOrder(req.body);
       res.sendStatus(200);
       // create new KOT
-      createKot(req.body, db, userId, orderId);
+      createKot(req.body, userId, orderId);
 
       // after entry in table emmit both order and KOTs
       const orders = getLiveOrders();
@@ -123,12 +124,20 @@ app.post("/order", (req, res) => {
       io.emit("KOTs", liveKOTs);
 });
 
-app.post("/KOT", (req, res) => {
-      const db = openDb();
+app.post("/KOT", (req, res, next) => {
+      const isOrdeExist = checkExistingOrder(req.body);
+      if (!isOrdeExist) {
+            next();
+      } else {
+            res.status(200).json({ orderExist: true });
+      }
+});
 
+app.post("/KOT", (req, res) => {
+      // const db = openDb();
       //  create KOT
-      createKot(req.body, db);
-      res.sendStatus(200);
+      createKot(req.body);
+      res.status(200).json({ orderExist: false });
       // emmit KOT
       const liveKOTs = getLiveKOT();
       io.emit("KOTs", liveKOTs);
@@ -188,6 +197,18 @@ app.get("/getPrinters", (req, res) => {
 app.put("/updatePrinter", (req, res) => {
       updatePrinter(req.body);
       res.sendStatus(200);
+});
+
+app.post("/updateOrderAndCreateKOT", (req, res) => {
+      // const db = openDb();
+      const orderId = checkAndUpdateOrder(req.body);
+      res.sendStatus(200);
+      let userId 
+      createKot (req.body,userId, orderId);
+      const orders = getLiveOrders();
+      io.emit("orders", orders);
+      const liveKOTs = getLiveKOT();
+      io.emit("KOTs", liveKOTs);
 });
 
 httpServer.listen(3001, (err) => {

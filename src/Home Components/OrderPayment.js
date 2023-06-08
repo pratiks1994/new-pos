@@ -13,12 +13,14 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useQueryClient, useMutation } from "react-query";
 import { setActive } from "../Redux/UIActiveSlice";
+import OrderExistAlertModal from "./OrderExistAlertModal";
 
 function OrderPayment() {
       // get finalOrder state from redux store
       const queryClient = useQueryClient();
       const finalOrder = useSelector((state) => state.finalOrder);
       const isCartActionDisable = useSelector((state) => state.UIActive.isCartActionDisable);
+      const [showOrderExistModal, setShowOrderExistModal] = useState(false);
 
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const dispatch = useDispatch();
@@ -92,12 +94,19 @@ function OrderPayment() {
       const createKOT = async () => {
             if (finalOrder.orderCart.length !== 0) {
                   let res = await axios.post(`http://${IPAddress}:3001/KOT`, finalOrder);
-                  if (res.statusText === "OK") {
+
+                  // console.log(res);
+                  if (res.statusText === "OK" && !res.data.orderExist) {
                         queryClient.invalidateQueries("KOTs");
 
-                        notify("success");
+                        notify("success", "KOT Success");
                         // set finalorder redux state to initial state after api call completion
                         dispatch(resetFinalOrder());
+                  } else if (res.statusText === "OK" && res.data.orderExist) {
+                        setShowOrderExistModal(true);
+                        console.log("order exists");
+                  } else {
+                        notify("err", "something went wrong");
                   }
             } else {
                   notify("err", "Cart is Empty");
@@ -248,6 +257,9 @@ function OrderPayment() {
                               </div>
                         )}
                   </div>
+                  {showOrderExistModal && (
+                        <OrderExistAlertModal show={showOrderExistModal} hide={() => setShowOrderExistModal(false)} IPAddress={IPAddress} finalOrder={finalOrder} notify={notify}/>
+                  )}
             </div>
       );
 }

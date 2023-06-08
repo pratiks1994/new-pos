@@ -22,6 +22,7 @@ const finalOrderSlice = createSlice({
             cartTotal: 0,
             order_status: "accepted",
       },
+
       reducers: {
             addOrderItem: (state, action) => {
                   let orderItem = action.payload;
@@ -51,6 +52,8 @@ const finalOrderSlice = createSlice({
             },
             modifyCartData: (state, action) => {
                   let data = action.payload;
+                  console.log(data);
+
                   return { ...state, ...data };
             },
 
