@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { setActive } from "../Redux/UIActiveSlice";
 import { motion } from "framer-motion";
 import SettleOrderModal from "./SettleOrderModal";
+import getDisplayName from "../Utils/getDisplayName";
 
 function OrderCard({ order, idx }) {
       const { IPAddress } = useSelector((state) => state.serverConfig);
@@ -46,7 +47,7 @@ function OrderCard({ order, idx }) {
       const getBtnTheme = (orderStatus, orderType, print_count) => {
             const themes = [
                   {
-                        orderType: "Delivery",
+                        orderType: "delivery",
                         statuses: [
                               { status: "accepted", btnName: "Food is ready", style: { backgroundColor: "rgb(179, 107, 0)", color: "white" } },
                               { status: "food_is_ready", btnName: "Dispatch", style: { backgroundColor: "rgb(0, 102, 61)", color: "white" } },
@@ -54,14 +55,14 @@ function OrderCard({ order, idx }) {
                         ],
                   },
                   {
-                        orderType: "Dine In",
+                        orderType: "dine_in",
                         statuses: [
                               { print_count: 0, btnName: "Save & Print", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } },
                               { print_count: 1, btnName: "Save & Settle", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } },
                         ],
                   },
                   {
-                        orderType: "Pick Up",
+                        orderType: "pick_up",
                         statuses: [
                               { status: "accepted", btnName: "Food is ready", style: { backgroundColor: "rgb(179, 107, 0)", color: "white" } },
                               { status: "food_is_ready", btnName: "Picked Up", style: { backgroundColor: "rgb(0, 102, 61)", color: "white" } },
@@ -71,7 +72,7 @@ function OrderCard({ order, idx }) {
 
             // const btnTheme = themes.find((theme) => theme.orderType === orderType).statuses.find((status) => status.status === orderStatus);
             const theme = themes.find((theme) => theme.orderType === orderType);
-            if (theme.orderType === "Dine In") {
+            if (theme.orderType === "dine_in") {
                   return theme?.statuses.find((status) => status.print_count === print_count);
             } else {
                   return theme?.statuses.find((status) => status.status === orderStatus);
@@ -79,11 +80,11 @@ function OrderCard({ order, idx }) {
       };
 
       const getHeaderTheme = (type) => {
-            if (type === "Delivery") {
+            if (type === "delivery") {
                   return { style: { backgroundColor: "rgba(161, 118, 108, 0.41)" }, image: deliveryImg };
             }
 
-            if (type === "Pick Up") {
+            if (type === "pick_up") {
                   return { style: { backgroundColor: "rgba(201, 182, 34, 0.41)" }, image: pickUpImg };
             } else {
                   return { style: { backgroundColor: "rgba(81, 161, 77, 0.41)" }, image: dineInIng };
@@ -97,7 +98,7 @@ function OrderCard({ order, idx }) {
       };
 
       const handleClick = () => {
-            if (order.print_count === 1 && order.order_type === "Dine In") {
+            if (order.print_count === 1 && order.order_type === "dine_in") {
                   setShowSettleModal(true);
             } else {
                   orderMutation({
@@ -114,7 +115,7 @@ function OrderCard({ order, idx }) {
             }
       };
 
-      console.log(showSettleModal);
+      // console.log(showSettleModal);
 
       return (
             <motion.div
@@ -135,7 +136,7 @@ function OrderCard({ order, idx }) {
                               <div>
                                     KOT : {order.KOTDetail.token_no} | BILL : {order.order_number}
                               </div>
-                              <div>{order.order_type}</div>
+                              <div>{getDisplayName(order.order_type)}</div>
                         </div>
                   </header>
                   <div className={styles.riderStatus}>Not Assign</div>

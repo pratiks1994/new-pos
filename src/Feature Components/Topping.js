@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, {memo} from "react";
 import styles from "./Topping.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import { addTopping, removeTopping } from "../Redux/currentItemSlice";
@@ -10,8 +10,10 @@ function Topping({ type, price, id }) {
             dispatch(addTopping({ id, type, price }));
       };
 
-      const currentToppings = useSelector((state) => state.currentItem.toppings);
-      let topping = currentToppings.find((topping) => id === topping.id);
+      const topping = useSelector((state) => state.currentItem.toppings.find((topping) => id === topping.id));
+
+
+      // let topping = currentToppings.find((topping) => id === topping.id);
 
       const remove = (id) => {
             dispatch(removeTopping({ id, price }));
@@ -32,4 +34,4 @@ function Topping({ type, price, id }) {
       );
 }
 
-export default Topping;
+export default  memo(Topping);

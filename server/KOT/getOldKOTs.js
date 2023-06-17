@@ -1,12 +1,10 @@
-const { dbAll, dbRun } = require("../common/dbExecute");
 const Database = require("better-sqlite3");
 const db2 = new Database("restaurant.sqlite", {});
 
-// dbAll(db, "SELECT * FROM KOT_items WHERE KOT_id = ?", [KOTs.id])
-// dbAll(db, "SELECT * FROM KOT_item_addongroupitems WHERE KOT_item_id = ?",[KOTItems.id])
+const getOldKOTs = (tableNO) => {
 
-const getLiveKOT = () => {
-      const liveKOTs = db2.prepare("SELECT * FROM kot WHERE kot_status = 'accepted'").all([]);
+      const allKOTItems = []
+      const liveKOTs = db2.prepare("SELECT id FROM kot WHERE order_type='dine_in' AND table_no=? AND order_id IS NULL  ").all([tableNO]);
       // const liveKOTs = await dbAll(db, "SELECT * FROM KOT WHERE KOT_status = 'accepted'", []);
 
       const prepareKOTItem = db2.prepare("SELECT * FROM kot_items WHERE kot_id = ?");
@@ -20,13 +18,16 @@ const getLiveKOT = () => {
                   // const itemAddons = prepareAddon.all([item.id]);
                   // const itemAddons = await dbAll(db, "SELECT * FROM KOT_item_addongroupitems WHERE KOT_item_id = ?", [item.id]);
 
-                  return { ...item, item_addons:JSON.parse(item.item_addons), item_tax: JSON.parse(item.item_tax) };
+                  return { ...item, item_addons: JSON.parse(item.item_addons), item_tax: JSON.parse(item.item_tax) };
             });
 
-            return { ...KOT, items: itemsWithAddons };
+            allKOTItems.push(...itemsWithAddons)
+
+            // return { ...KOT, items: itemsWithAddons };
+
       });
 
-      return liveKOTsWithItems;
+      return allKOTItems
 };
 
-module.exports = { getLiveKOT };
+module.exports = {getOldKOTs}

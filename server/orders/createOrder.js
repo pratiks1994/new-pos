@@ -108,9 +108,9 @@ const createOrder = (order) => {
                   const prepareToppings = db2.prepare("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)");
 
                   orderCart.forEach((item) => {
-                        const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax } = item;
+                        const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax,variant_display_name } = item;
 
-                        const itemInfo = prepareItem.run([orderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variantName, variation_id]);
+                        const itemInfo = prepareItem.run([orderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variant_display_name, variation_id]);
 
                         const taxTrans = db2.transaction((itemTax, orderItemId) => {
                               itemTax.forEach((tax) => {
@@ -237,7 +237,7 @@ const createOrder = (order) => {
       //             // });
       //       }
       // );
- console.log(`userId ${userId}, orderId ${orderId}`)
+//  console.log(`userId ${userId}, orderId ${orderId}`)
       return ({userId,orderId});
 };
 

@@ -3,17 +3,18 @@ import styles from "./PrintersList.module.css";
 import BackButton from "../Feature Components/BackButton";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+// import { useSelector, useDispatch } from "react-redux";
 import { useQuery } from "react-query";
-import axios from "axios";
-import { setPrinters } from "../Redux/printerSettingsSlice";
+// import axios from "axios";
+// import { setPrinters } from "../Redux/printerSettingsSlice";
+import axiosInstance from "../Feature Components/axiosGlobal";
 
 function PrintersList() {
-      const { IPAddress } = useSelector((state) => state.serverConfig);
-      const dispatch = useDispatch();
+      // const { IPAddress } = useSelector((state) => state.serverConfig);
+      // const dispatch = useDispatch();
 
       const getPrinters = async () => {
-            const { data } = await axios.get(`http://${IPAddress}:3001/getPrinters`);
+            const { data } = await axiosInstance.get(`/getPrinters`);
             return data;
       };
 

@@ -42,7 +42,21 @@ const createHoldOrder = async (order, db) => {
       );
 
       orderCart.forEach(async (item) => {
-            const { itemQty, itemId, itemName, variation_id, variantName, toppings, currentOrderItemId, basePrice, itemTotal, multiItemTotal, itemIdentifier, itemTax } = item;
+            const {
+                  itemQty,
+                  itemId,
+                  itemName,
+                  variation_id,
+                  variantName,
+                  toppings,
+                  currentOrderItemId,
+                  basePrice,
+                  itemTotal,
+                  multiItemTotal,
+                  itemIdentifier,
+                  itemTax,
+                  variant_display_name,
+            } = item;
 
             const holdOrderItemId = await dbRun(
                   db,
@@ -52,7 +66,7 @@ const createHoldOrder = async (order, db) => {
                         itemId,
                         itemName,
                         itemQty,
-                        variantName,
+                        variant_display_name,
                         variation_id,
                         orderComment,
                         currentOrderItemId,

@@ -4,15 +4,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faBorderAll, faUtensils, faPersonBiking, faBasketShopping, faWifi, faPersonDotsFromLine } from "@fortawesome/free-solid-svg-icons";
 import { useSelector, useDispatch } from "react-redux";
 import { setActive } from "../Redux/UIActiveSlice";
-import axios from "axios";
 import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
 import OrderCard from "./OrderCard";
 import { v4 } from "uuid";
 import socket from "../Utils/Socket";
 import { motion } from "framer-motion";
+import axiosInstance from "../Feature Components/axiosGlobal";
+
 
 function OrderView() {
-      const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
+      // const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
       const [orders, setOrders] = useState([]);
       const queryClient = useQueryClient();
       // const DineInStatus = ["accepted", "printed", "settled"];
@@ -33,14 +34,14 @@ function OrderView() {
       const { liveViewOrderType } = useSelector((state) => state.UIActive);
 
       const controls = [
-            { name: "All", icon: <FontAwesomeIcon icon={faBorderAll} /> },
-            { name: "Dine In", icon: <FontAwesomeIcon icon={faUtensils} /> },
-            { name: "Delivery", icon: <FontAwesomeIcon icon={faPersonBiking} /> },
-            { name: "Pick Up", icon: <FontAwesomeIcon icon={faBasketShopping} /> },
-            { name: "Online", icon: <FontAwesomeIcon icon={faWifi} /> },
-            { name: "Other", icon: <FontAwesomeIcon icon={faPersonDotsFromLine} /> },
-            { name: "Swiggy", icon: swiggy },
-            { name: "Zomato", icon: zomato },
+            { name: "all", display_name:"All", icon: <FontAwesomeIcon icon={faBorderAll} /> },
+            { name: "dine_in", display_name:"Dine In", icon: <FontAwesomeIcon icon={faUtensils} /> },
+            { name: "delivery" ,display_name:"Delivery", icon: <FontAwesomeIcon icon={faPersonBiking} /> },
+            { name: "pick_up" ,display_name:"Pick Up", icon: <FontAwesomeIcon icon={faBasketShopping} /> },
+            { name: "online" ,display_name:"Online", icon: <FontAwesomeIcon icon={faWifi} /> },
+            { name: "other" ,display_name:"Other", icon: <FontAwesomeIcon icon={faPersonDotsFromLine} /> },
+            { name: "swiggy" ,display_name:"Swiggy", icon: swiggy },
+            { name: "zomato" ,display_name:"Zomato", icon: zomato },
       ];
 
       const handleControl = (name) => {
@@ -49,7 +50,8 @@ function OrderView() {
       };
 
       const getLiveOrders = async () => {
-            let { data } = await axios.get(`http://${IPAddress}:3001/liveorders`);
+            // let { data } = await axios.get(`http://${IPAddress}:3001/liveorders`);
+            let {data} = await axiosInstance.get("/liveorders")
             return data;
       };
 
@@ -78,6 +80,8 @@ function OrderView() {
             socket.on("orders", (orders) => {
                   setOrders(() => [...orders]);
             });
+
+
 
             return () => socket.off("orders");
       }, [socket]);
@@ -115,7 +119,7 @@ function OrderView() {
                                                 className={liveViewOrderType === control.name ? `${styles.control} ${styles.active}` : styles.control}
                                                 onClick={() => handleControl(control.name)}>
                                                 <div className={styles.icon}>{control.icon}</div>
-                                                <div className={styles.name}>{control.name}</div>
+                                                <div className={styles.name}>{control.display_name}</div>
                                           </div>
                                     );
                               })}
@@ -126,7 +130,7 @@ function OrderView() {
                   <div className={styles.OrderViewMain}>
                         {orders.length !== 0
                               ? orders
-                                      ?.filter((order) => (liveViewOrderType === "All" ? true : order.order_type === liveViewOrderType))
+                                      ?.filter((order) => (liveViewOrderType === "all" ? true : order.order_type === liveViewOrderType))
                                       .map((order, idx) => <OrderCard order={order} key={order.id} idx={idx} />)
                               : isLoading && <div>loading...</div>}
                   </div>

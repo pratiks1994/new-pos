@@ -5,6 +5,10 @@ import { useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
+import getDisplayName from "../Utils/getDisplayName";
+
+
+
 
 function KOTCards({ KOT, idx }) {
       const { IPAddress } = useSelector((state) => state.serverConfig);
@@ -39,14 +43,14 @@ function KOTCards({ KOT, idx }) {
             // },
       });
 
-      const getColor = (type) => (type !== "Dine In" ? { backgroundColor: "rgba(116, 116, 0, 0.87)" } : null);
+      const getColor = (type) => (type !== "dine_in" ? { backgroundColor: "rgba(116, 116, 0, 0.87)" } : null);
 
       return (
             <motion.div layout className={styles.KOTCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1, delay: idx * 0.03 }}>
                   <div className={styles.CardHeader} style={getColor(KOT.order_type)}>
                         <div>
                               {KOT.table_no && <div>{KOT.table_no}</div>}
-                              <div>{KOT.order_type} </div>
+                              <div>{getDisplayName(KOT.order_type)} </div>
                         </div>
                         <div className={styles.token}>
                               <div>{KOT.token_no}</div>
@@ -57,7 +61,7 @@ function KOTCards({ KOT, idx }) {
                   {KOT.customer_name && (
                         <div className={styles.KOTCustomerDetail}>
                               <div>{KOT.customer_name}</div>
-                              <div>{KOT.number}</div>
+                              <div>{KOT.phone_number}</div>
                         </div>
                   )}
                   <div className={styles.KOTItemHeader}>
@@ -72,8 +76,8 @@ function KOTCards({ KOT, idx }) {
                               <div className={styles.KOTItemsDetail} key={uuidv4()}>
                                     <div className={styles.KOTItemName}>
                                           {item.item_name} {item.variation_name ? `- ${item.variation_name}` : null}{" "}
-                                          {item.itemAddons.length
-                                                ? item.itemAddons.map((addon) => (
+                                          {item.item_addons.length
+                                                ? item.item_addons.map((addon) => (
                                                         <span key={uuidv4()}>
                                                               / {addon.type} ({addon.qty})
                                                         </span>

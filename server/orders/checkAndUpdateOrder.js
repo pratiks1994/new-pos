@@ -12,12 +12,12 @@ const checkAndUpdateOrder = (order, db) => {
       let orderId = "";
 
       const matchOrder = db2
-            .prepare("SELECT id FROM orders WHERE  order_type='Dine In' AND dine_in_table_no=? AND order_status = 'accepted' AND print_count= 0 AND settle_amount IS NULL")
+            .prepare("SELECT id FROM orders WHERE  order_type='dine_in' AND dine_in_table_no=? AND order_status = 'accepted' AND print_count= 0 AND settle_amount IS NULL")
             .get([order.tableNumber]);
 
       // const matchOrder = await dbAll(db, "SELECT id FROM orders WHERE dine_in_table_no=? AND order_status = 'accepted'", [order.tableNumber]);
 
-      if (matchOrder?.id && order.orderType === "Dine In") {
+      if (matchOrder?.id && order.orderType === "dine_in") {
             const { orderCart } = order;
 
             const matchOrderId = matchOrder.id;
@@ -41,11 +41,11 @@ const checkAndUpdateOrder = (order, db) => {
 
             db2.transaction(() => {
                   orderCart.forEach((item) => {
-                        const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax } = item;
+                        const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax,variant_display_name } = item;
 
                         const { lastInsertRowid: orderItemId } = db2
                               .prepare("INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id) VALUES (?,?,?,?,?,?,?,?)")
-                              .run([matchOrderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variantName, variation_id]);
+                              .run([matchOrderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variant_display_name, variation_id]);
 
                         if (toppings.length !== 0) {
                               db2.transaction(() => {

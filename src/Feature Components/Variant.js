@@ -1,14 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect,memo } from "react";
 import styles from "./Variant.module.css";
 import { useDispatch, useSelector } from "react-redux";
-import { selectVariant, clearToppings } from "../Redux/currentItemSlice";
+import { selectVariant } from "../Redux/currentItemSlice";
 
-function Variant({ variation_id, item_variation_id, price, name, addonGroups }) {
+function Variant({ variation_id, item_variation_id, price, name, addonGroups,display_name }) {
       const dispatch = useDispatch();
       const selectedVariantId = useSelector((state) => state.currentItem.variation_id);
 
       const setVariant = (variation_id, name, price) => {
-            dispatch(selectVariant({ variation_id, name, price }));
+            dispatch(selectVariant({ variation_id, name, price,display_name }));
       };
 
       // useEffect(()=>{
@@ -25,4 +25,4 @@ function Variant({ variation_id, item_variation_id, price, name, addonGroups }) 
       );
 }
 
-export default Variant;
+export default memo(Variant);

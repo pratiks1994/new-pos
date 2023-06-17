@@ -22,12 +22,14 @@ function OrderTypeDetail({ type }) {
 
       useEffect(() => {
             if (showDetailType && showDetailType !== "orderComment") {
-                  if (type === "Delivery" || type === "Pick Up") {
+                  if (type === "delivery" || type === "pick_up") {
                         setShowDetailType("customerDetail");
                   }
             }
       }, [type, setShowDetailType]);
 
+
+    
       useEffect(() => {
             if (searchParams.get("openTable") === "true") {
                   setShowDetailType("tableNumber");
@@ -37,7 +39,7 @@ function OrderTypeDetail({ type }) {
       return (
             <div>
                   <div className={`${styles.orderTypeDetail} d-flex`}>
-                        {type === "Dine In" && (
+                        {type === "dine_in" && (
                               <>
                                     <div className={`${styles.orderIcon} ${showDetailType === "tableNumber" ? "text-danger" : ""}`} onClick={() => handleDetailType("tableNumber")}>
                                           <FontAwesomeIcon icon={faLocationDot} />{" "}

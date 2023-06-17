@@ -39,7 +39,8 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
                   let defaultVariantName = variations[0].name;
                   let defaultVariantId = variations[0].variation_id;
                   let defaultVariantPrice = variations[0].price;
-                  dispatch(addCurrentItem({ id, name, orderItemId, defaultVariantName, defaultVariantId, defaultVariantPrice }));
+                  let defaultVariantDisplayName = variations[0].display_name
+                  dispatch(addCurrentItem({ id, name, orderItemId, defaultVariantName, defaultVariantId, defaultVariantPrice,defaultVariantDisplayName }));
             } else {
                   let currentItem = {
                         currentOrderItemId: orderItemId,
@@ -48,6 +49,7 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
                         itemName: display_name,
                         variation_id: "",
                         variantName: "",
+                        variant_display_name:"",
                         basePrice: price,
                         toppings: [],
                         itemTotal: price,

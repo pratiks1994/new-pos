@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const UIActiveSlice = createSlice({
       name: "UIActive",
-      initialState: { liveViewOrderType: "All", liveViewOrderStatus: "",isCartActionDisable:false,holdOrderCount:0 },
+      initialState: { liveViewOrderType: "all", liveViewOrderStatus: "",isCartActionDisable:false,holdOrderCount:0 },
       reducers: {
             setActive: (state, action) => {
                   const { key, name } = action.payload;

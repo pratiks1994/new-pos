@@ -16,13 +16,14 @@ function OrderType() {
       return (
             <div className="flex-shrink-0">
                   <div className={`d-flex ${styles.orderTypeBtn}`}>
-                        <button className={`flex-grow-1 ${orderType === "Dine In" ? "bg-danger" : "none"}`} onClick={() => handleOrderType("Dine In")}>
-                              Dine in
+                        <button className={`flex-grow-1 ${orderType === "dine_in" ? "bg-danger" : "none"}`} onClick={() => handleOrderType("dine_in")}>
+                              Dine In
                         </button>
-                        <button className={`flex-grow-1 ${orderType === "Delivery" ? "bg-danger" : "none"}`} onClick={() => handleOrderType("Delivery")}>
+                        
+                        <button className={`flex-grow-1 ${orderType === "delivery" ? "bg-danger" : "none"}`} onClick={() => handleOrderType("delivery")}>
                               Delivery
                         </button>
-                        <button className={`flex-grow-1 ${orderType === "Pick Up" ? "bg-danger" : "none"}`} onClick={() => handleOrderType("Pick Up")}>
+                        <button className={`flex-grow-1 ${orderType === "pick_up" ? "bg-danger" : "none"}`} onClick={() => handleOrderType("pick_up")}>
                               Pick up
                         </button>
                   </div>

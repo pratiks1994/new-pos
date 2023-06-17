@@ -17,7 +17,7 @@ const finalOrderSlice = createSlice({
             paymentMethod: "Cash",
             tableNumber: "",
             personCount: 0,
-            orderType: "Delivery",
+            orderType: "delivery",
             orderComment: "",
             cartTotal: 0,
             order_status: "accepted",
@@ -52,7 +52,7 @@ const finalOrderSlice = createSlice({
             },
             modifyCartData: (state, action) => {
                   let data = action.payload;
-                  console.log(data);
+                  // console.log(data);
 
                   return { ...state, ...data };
             },
@@ -145,7 +145,7 @@ const finalOrderSlice = createSlice({
                         paymentMethod: "Cash",
                         tableNumber: "",
                         personCount: 0,
-                        orderType: "Delivery",
+                        orderType: "delivery",
                         orderComment: "",
                         cartTotal: 0,
                   };

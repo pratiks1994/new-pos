@@ -56,7 +56,7 @@ function TableView() {
 
       const handleClick = (orderType) => {
             dispatch(modifyCartData({ orderType }));
-            navigate(`..${orderType === "Dine In" ? "?openTable=true" : ""}`);
+            navigate(`..${orderType === "dine_in" ? "?openTable=true" : ""}`);
       };
 
       return (
@@ -64,16 +64,16 @@ function TableView() {
                   <header>
                         <div className={styles.heading}> Table View</div>
                         <div className={styles.control}>
-                              <button onClick={() => handleClick("Delivery")}> Delivery </button>
-                              <button onClick={() => handleClick("Pick Up")}> Pick Up</button>
-                              <button onClick={() => handleClick("Dine In")}>+ Add Table</button>
+                              <button onClick={() => handleClick("delivery")}> Delivery </button>
+                              <button onClick={() => handleClick("pick_up")}> Pick Up</button>
+                              <button onClick={() => handleClick("dine_in")}>+ Add Table</button>
                         </div>
                   </header>
                   <main className={styles.tableList}>
                         {isLoading && <div>Loading....</div>}
                         {isError && <div>{error}</div>}
                         {orders
-                              ?.filter((order) => order.order_type === "Dine In")
+                              ?.filter((order) => order.order_type === "dine_in")
                               .map((order) => (
                                     <TableCard key={order.id} order={order} />
                               ))}

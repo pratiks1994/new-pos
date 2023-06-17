@@ -7,73 +7,64 @@ import { useSelector, useDispatch } from "react-redux";
 import { setMenuItems } from "../Redux/menuItemsSlice";
 
 function MainMenu() {
-     const bigMenu = useSelector((state) => state.bigMenu);
-     const isCartActionDisable = useSelector(state => state.UIActive.isCartActionDisable)
-     const dispatch = useDispatch();
-     let activeCategoryId;
-     const searchItemRef = useRef("");
+      const bigMenu = useSelector((state) => state.bigMenu);
+      const isCartActionDisable = useSelector((state) => state.UIActive.isCartActionDisable);
+      const dispatch = useDispatch();
+      let activeCategoryId;
+      const searchItemRef = useRef("");
 
-     //  get selected category Id which is active from child component Categories
+      //  get selected category Id which is active from child component Categories
 
-     const getActiveId = (id) => {
-          activeCategoryId = id;
-     };
+      const getActiveId = (id) => {
+            activeCategoryId = id;
+      };
 
-     //  set Menuitems according to search term
+      //  set Menuitems according to search term
 
-     const handleChange = () => {
-          let searchTerm = searchItemRef.current.value;
-          let searchItem = [];
+      const handleChange = () => {
+            let searchTerm = searchItemRef.current.value;
+            let searchItem = [];
 
-          // set Menuitems only if search term length is morethan 3 char
+            // set Menuitems only if search term length is morethan 3 char
 
-          if (searchTerm.length >= 3) {
-               bigMenu.forEach((category) => {
-                    category.items.forEach((item) => {
-                         if (item.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-                              searchItem.push(item);
-                         }
-                    });
-               });
-          }
+            if (searchTerm.length >= 3) {
+                  bigMenu.forEach((category) => {
+                        category.items.forEach((item) => {
+                              if (item.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                                    searchItem.push(item);
+                              }
+                        });
+                  });
+            }
 
-          // if seach term length is 0 or search box is empty reset menuItems to selected active id that was aquired from activeCategoryId
+            // if seach term length is 0 or search box is empty reset menuItems to selected active id that was aquired from activeCategoryId
 
-          if (searchTerm.length === 0 && activeCategoryId) {
-               let { items } = bigMenu.find((category) => category.id === activeCategoryId);
-               dispatch(setMenuItems({ items }));
-               return;
-          }
+            if (searchTerm.length === 0 && activeCategoryId) {
+                  let { items } = bigMenu.find((category) => category.id === activeCategoryId);
+                  dispatch(setMenuItems({ items }));
+                  return;
+            }
 
-          dispatch(setMenuItems({ items: searchItem }));
-     };
+            dispatch(setMenuItems({ items: searchItem }));
+      };
 
-     return (
-          <div className={styles.mainMenu} style={isCartActionDisable ? {pointerEvents:"none",color:"gray"} : null}>
+      return (
+            <div className={styles.mainMenu} style={isCartActionDisable ? { pointerEvents: "none", color: "gray" } : null}>
+                  {/* item search bar */}
 
-            {/* item search bar */}
+                  <div className={styles.itemSearchContainer}>
+                        <input type="text" className={`${styles.itemSearch} border-0 ps-3 py-1`} ref={searchItemRef} placeholder="Search item" onChange={handleChange} />
+                  </div>
 
-               <div className={styles.itemSearchContainer}>
-                    <input
-                         type="text"
-                         className={`${styles.itemSearch} border-0 ps-3 py-1`}
-                         ref={searchItemRef}
-                         placeholder="Search item"
-                         onChange={handleChange}
-                    />
-               </div>
+                  <div className={styles.displayMenu}>
+                        {/* category list component */}
+                        <Categories getActiveId={getActiveId} />
 
-
-               <div className={styles.displayMenu}>
-
-                {/* category list component */}
-                    <Categories getActiveId={getActiveId} />
-                    
-                 {/* items component that shows items according to selected category or search term   */}
-                    <Items />
-               </div>
-          </div>
-     );
+                        {/* items component that shows items according to selected category or search term   */}
+                        <Items />
+                  </div>
+            </div>
+      );
 }
 
 export default MainMenu;

@@ -5,26 +5,27 @@ const db2 = new Database("restaurant.sqlite", {});
 const updateLiveOrders = (db, data) => {
       let { orderStatus, orderId, orderType, KOTId, print_count, tip, settleAmount, customerPaid, paymentType } = data;
 
-
-      if (orderType === "Dine In") {
+      if (orderType === "dine_in") {
             try {
                   if (print_count === 0) {
                         db2.prepare("UPDATE orders SET print_count=? WHERE id=?").run([1, orderId]);
                   } else {
-                        if (settleAmount !== "") {
-                              db2.prepare("UPDATE orders SET settle_amount=? WHERE id=?").run([settleAmount, orderId]);
-                        } else {
-                              db2.prepare("UPDATE orders SET settle_amount=total WHERE id=?").run([orderId]);
-                        }
+                        db2.prepare(
+                              `UPDATE orders SET settle_amount=${settleAmount !== "" ? settleAmount : "total"}, 
+                               user_paid=${customerPaid !== "" ? customerPaid : "total"},
+                               tip=${ tip !== "" ? tip : 0},
+                               payment_type=?
+                               WHERE id=?`
+                        ).run([paymentType, orderId]);
                   }
             } catch (err) {
                   console.log(err);
             }
       } else {
             const statusMap = {
-                  "Dine In": ["accepted", "printed", "settled"],
-                  Delivery: ["accepted", "food_is_ready", "dispatched", "delivered"],
-                  "Pick Up": ["accepted", "food_is_ready", "picked_up"],
+                  // "dine_in": ["accepted", "printed", "settled"],
+                  delivery: ["accepted", "food_is_ready", "dispatched", "delivered"],
+                  pick_up: ["accepted", "food_is_ready", "picked_up"],
             };
 
             const statuses = statusMap[orderType] || [];
@@ -34,10 +35,10 @@ const updateLiveOrders = (db, data) => {
             // console.log(updatedStatus);
 
             try {
-                  db2.prepare("UPDATE orders SET order_status=?, settle_amount=total WHERE id=?").run([updatedStatus, orderId]);
+                  db2.prepare("UPDATE orders SET order_status=?, settle_amount=total,user_paid=total WHERE id=?").run([updatedStatus, orderId]);
 
-                  if (orderType !== "Dine In" && updatedStatus === "food_is_ready") {
-                        db2.prepare("UPDATE KOT SET KOT_status=? WHERE id=?").run(["food is ready", KOTId]);
+                  if (orderType !== "dine_in" && updatedStatus === "food_is_ready") {
+                        db2.prepare("UPDATE kot SET kot_status=? WHERE id=?").run(["food_is_ready", KOTId]);
                   }
 
                   // dbRun(db,"UPDATE orders SET order_status=? WHERE id=?",[updatedStatus,orderId])

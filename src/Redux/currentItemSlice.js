@@ -9,6 +9,7 @@ const currentItemSlice = createSlice({
             itemName: "",
             variation_id: "",
             variantName: "",
+            variant_display_name: "",
             basePrice: 0,
             toppings: [],
             itemTotal: 0,
@@ -19,6 +20,7 @@ const currentItemSlice = createSlice({
       reducers: {
             addCurrentItem: (state, action) => {
                   state.currentOrderItemId = action.payload.orderItemId;
+                  state.variant_display_name = action.payload.defaultVariantDisplayName
                   state.itemId = action.payload.id;
                   state.itemName = action.payload.name;
                   state.itemQty = 1;
@@ -33,6 +35,7 @@ const currentItemSlice = createSlice({
             selectVariant: (state, action) => {
                   state.variation_id = action.payload.variation_id;
                   state.variantName = action.payload.name;
+                  state.variant_display_name = action.payload.display_name;
                   state.basePrice = +action.payload.price;
                   state.itemTotal = +action.payload.price;
                   state.toppings = [];
@@ -99,6 +102,7 @@ const currentItemSlice = createSlice({
                   state.multiItemTotal = 0;
                   state.itemTax = [];
                   state.itemNotes = "";
+                  state.variant_display_name = "";
             },
       },
 });

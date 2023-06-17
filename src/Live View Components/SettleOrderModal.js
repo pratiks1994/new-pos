@@ -1,12 +1,37 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import styles from "./SettleOrderModal.module.css";
 import { Modal, Button, Row, Col } from "react-bootstrap";
+import OtherPaymentOptions from "./OtherPaymentOptions";
+import MultipayOptions from "./MultipayOptions";
 
 function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
-      const [paymentDetail, setPaymentDetail] = useState({ paymentType: "", customerPaid: "", customerReturn: "", tip: "", settleAmount: "" });
+      const [paymentDetail, setPaymentDetail] = useState({
+            paymentType: "cod",
+            customerPaid: "",
+            customerReturn: "",
+            tip: "",
+            settleAmount: "",
+            multipay: [
+                  { name: "upi_phonepe", displayName: "PhonePe", amount: "" },
+                  { name: "upi_gpay", displayName: "Paytm", amount: "" },
+                  { name: "upi_paytm", displayName: "Paytm", amount: "" },
+                  { name: "upi", displayName: "UPI", amount: "" },
+                  { name: "card", displayName: "Card", amount: "" },
+                  { name: "due", displayName: "Due", amount: "" },
+                  { name: "cod", displayName: "Cash", amount: Math.round(order.total).toString() },
+            ],
+      });
+      const otherOptions = ["upi_gpay", "upi_paytm", "upi_phonepe", "upi"];
 
-      const handleChange = (e) => {
+      const handleChange = useCallback((e) => {
             const { name, value } = e.target;
+
+            if (name === "paymentType") {
+                  setPaymentDetail((prev) => {
+                        return { ...prev, [name]: value, customerPaid: "", customerReturn: "", settleAmount: "" };
+                  });
+                  return;
+            }
 
             if (name === "customerPaid") {
                   setPaymentDetail((prev) => {
@@ -14,10 +39,14 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
                         const customerReturn = returnAmount < 0 ? "Amount is less" : `₹ ${returnAmount}`;
                         return { ...prev, [name]: value, customerReturn: customerReturn };
                   });
+                  return;
             } else {
                   setPaymentDetail((prev) => ({ ...prev, [name]: value }));
+                  return;
             }
-      };
+      }, []);
+
+      // console.log(paymentDetail);
 
       const handleSettle = async () => {
             await orderMutation({
@@ -47,7 +76,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
                         <Row>
                               <Col className={styles.paymentOptions}>
                                     <div className={styles.option}>
-                                          <input type="radio" name="paymentType" id="cash" value="cash" onChange={handleChange} checked={paymentDetail.paymentType === "cash"} />
+                                          <input type="radio" name="paymentType" id="cash" value="cod" onChange={handleChange} checked={paymentDetail.paymentType === "cod"} />
                                           <label htmlFor="cash">Cash</label>
                                     </div>
                                     <div className={styles.option}>
@@ -59,39 +88,67 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
                                           <label htmlFor="due">Due</label>
                                     </div>
                                     <div className={styles.option}>
-                                          <input type="radio" name="paymentType" id="other" value="other" onChange={handleChange} checked={paymentDetail.paymentType === "other"} />
+                                          <input
+                                                type="radio"
+                                                name="paymentType"
+                                                id="other"
+                                                value="upi_paytm"
+                                                onChange={handleChange}
+                                                checked={otherOptions.includes(paymentDetail.paymentType)}
+                                          />
                                           <label htmlFor="other">Other</label>
                                     </div>
                                     <div className={styles.option}>
-                                          <input type="radio" name="paymentType" id="part" value="part" onChange={handleChange} checked={paymentDetail.paymentType === "part"} />
-                                          <label htmlFor="part">Part</label>
+                                          <input
+                                                type="radio"
+                                                name="paymentType"
+                                                id="multipay"
+                                                value="multipay"
+                                                onChange={handleChange}
+                                                checked={paymentDetail.paymentType === "multipay"}
+                                          />
+                                          <label htmlFor="multipay">Multi-pay</label>
                                     </div>
                               </Col>
                         </Row>
-                        <Row className={styles.field}>
-                              <Col xs={5}>Customer paid</Col>
-                              <Col xs={7}>
-                                    <input type="number" name="customerPaid" onChange={handleChange} value={paymentDetail.customerPaid} />
-                              </Col>
-                        </Row>
-                        <Row className={styles.field}>
-                              <Col xs={5}>Return to customer</Col>
-                              <Col xs={7}>
-                                    <input type="text" disabled name="customerReturn" value={paymentDetail.customerReturn} className={styles.returnAmount} />
-                              </Col>
-                        </Row>
-                        <Row className={styles.field}>
-                              <Col xs={5}>Tip </Col>
-                              <Col xs={7}>
-                                    <input type="number" name="tip" onChange={handleChange} value={paymentDetail.tip} />
-                              </Col>
-                        </Row>
-                        <Row className={styles.field}>
-                              <Col xs={5}>Settle Amount</Col>
-                              <Col xs={7}>
-                                    <input type="number" name="settleAmount" onChange={handleChange} value={paymentDetail.settleAmount} />
-                              </Col>
-                        </Row>
+
+                        {otherOptions.includes(paymentDetail.paymentType) && <OtherPaymentOptions handleChange={handleChange} paymentType={paymentDetail.paymentType} />}
+
+                        {(paymentDetail.paymentType === "cod" || paymentDetail.paymentType === "card") && (
+                              <Row className={styles.field}>
+                                    <Col xs={5}>Customer paid</Col>
+                                    <Col xs={7}>
+                                          <input type="number" name="customerPaid" onChange={handleChange} value={paymentDetail.customerPaid} />
+                                    </Col>
+                              </Row>
+                        )}
+
+                        {paymentDetail.paymentType === "cod" && (
+                              <Row className={styles.field}>
+                                    <Col xs={5}>Return to customer</Col>
+                                    <Col xs={7}>
+                                          <input type="text" disabled name="customerReturn" value={paymentDetail.customerReturn} className={styles.returnAmount} />
+                                    </Col>
+                              </Row>
+                        )}
+                        {paymentDetail.paymentType !== "multipay" && (
+                              <Row className={styles.field}>
+                                    <Col xs={5}>Tip </Col>
+                                    <Col xs={7}>
+                                          <input type="number" name="tip" onChange={handleChange} value={paymentDetail.tip} />
+                                    </Col>
+                              </Row>
+                        )}
+
+                        {paymentDetail.paymentType !== "due" && paymentDetail.paymentType !== "multipay" && (
+                              <Row className={styles.field}>
+                                    <Col xs={5}>Settle Amount</Col>
+                                    <Col xs={7}>
+                                          <input type="number" name="settleAmount" onChange={handleChange} value={paymentDetail.settleAmount} />
+                                    </Col>
+                              </Row>
+                        )}
+                        {paymentDetail.paymentType === "multipay" && <MultipayOptions paymentDetail={paymentDetail} setPaymentDetail={setPaymentDetail} orderTotal={order.total}/>}
                   </Modal.Body>
                   <Modal.Footer className={styles.footer}>
                         <button className={styles.saveBtn} onClick={handleSettle} disabled={isLoading}>

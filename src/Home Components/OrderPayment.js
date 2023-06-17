@@ -14,13 +14,16 @@ import "react-toastify/dist/ReactToastify.css";
 import { useQueryClient, useMutation } from "react-query";
 import { setActive } from "../Redux/UIActiveSlice";
 import OrderExistAlertModal from "./OrderExistAlertModal";
+import KOTExistAlertModal from "./KOTExistAlertModal";
 
 function OrderPayment() {
       // get finalOrder state from redux store
       const queryClient = useQueryClient();
       const finalOrder = useSelector((state) => state.finalOrder);
+
       const isCartActionDisable = useSelector((state) => state.UIActive.isCartActionDisable);
       const [showOrderExistModal, setShowOrderExistModal] = useState(false);
+      const [showKOTExistMOdal, setShowKOTExistModal] = useState(false);
 
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const dispatch = useDispatch();
@@ -59,14 +62,18 @@ function OrderPayment() {
       // on save post api call to backend
 
       const saveOrder = async () => {
-            if (finalOrder.orderType === "Dine In" && finalOrder.tableNumber === "") {
+            if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
                   notify("err", "please Enter Table No.");
-
                   return;
             }
 
             if (finalOrder.orderCart.length !== 0) {
-                  await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
+                  const { data } = await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
+                  if (data.isOldKOTsExist) {
+                        setShowKOTExistModal(true);
+                        console.log("ran");
+                        return;
+                  }
 
                   notify("success", "order Placed");
                   // set finalorder redux state to initial state after api call completion
@@ -92,6 +99,10 @@ function OrderPayment() {
       };
 
       const createKOT = async () => {
+            if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
+                  notify("err", "please Enter Table No.");
+                  return;
+            }
             if (finalOrder.orderCart.length !== 0) {
                   let res = await axios.post(`http://${IPAddress}:3001/KOT`, finalOrder);
 
@@ -258,7 +269,18 @@ function OrderPayment() {
                         )}
                   </div>
                   {showOrderExistModal && (
-                        <OrderExistAlertModal show={showOrderExistModal} hide={() => setShowOrderExistModal(false)} IPAddress={IPAddress} finalOrder={finalOrder} notify={notify}/>
+                        <OrderExistAlertModal show={showOrderExistModal} hide={() => setShowOrderExistModal(false)} IPAddress={IPAddress} finalOrder={finalOrder} notify={notify} />
+                  )}
+                  {showKOTExistMOdal && (
+                        <KOTExistAlertModal
+                              show={showKOTExistMOdal}
+                              hide={() => {
+                                    setShowKOTExistModal(false);
+                              }}
+                              IPAddress={IPAddress}
+                              finalOrder={finalOrder}
+                              notify={notify}
+                        />
                   )}
             </div>
       );
