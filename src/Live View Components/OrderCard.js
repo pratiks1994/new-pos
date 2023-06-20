@@ -22,7 +22,7 @@ function OrderCard({ order, idx }) {
       const navigate = useNavigate();
       const [showSettleModal, setShowSettleModal] = useState(false);
 
-      const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId, print_count, tip, paymentType, customerPaid, settleAmount }) => {
+      const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId, print_count, tip, paymentType, customerPaid, settleAmount,multipay }) => {
             let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, {
                   orderStatus,
                   orderId,
@@ -33,6 +33,7 @@ function OrderCard({ order, idx }) {
                   paymentType,
                   customerPaid,
                   settleAmount,
+                  multipay
             });
             return data;
       };
@@ -111,6 +112,7 @@ function OrderCard({ order, idx }) {
                         customerPaid: null,
                         tip: null,
                         settleAmount: null,
+                        multipay:null
                   });
             }
       };
@@ -169,13 +171,13 @@ function OrderCard({ order, idx }) {
                   </div>
                   <div className={styles.statusBtn}>
                         <div className={styles.orderTotal}>₹ {order.total.toFixed(2)}</div>
-                        <button style={getBtnTheme(order.order_status, order.order_type, order.print_count).style} onClick={handleClick} disabled={isLoading}>
+                        <button style={getBtnTheme(order.order_status, order.order_type, order.print_count).style} onClick={handleClick} disabled={isLoading }>
                               {" "}
                               {isLoading ? "Loading..." : getBtnTheme(order.order_status, order.order_type, order.print_count).btnName}
                         </button>
                   </div>
                   {showSettleModal && (
-                        <SettleOrderModal show={showSettleModal} hide={() => setShowSettleModal(false)} order={order} orderMutation={orderMutation} isLoading={isLoading} />
+                        <SettleOrderModal show={showSettleModal} hide={() => setShowSettleModal(false)} order={order} orderMutation={orderMutation} />
                   )}
             </motion.div>
       );

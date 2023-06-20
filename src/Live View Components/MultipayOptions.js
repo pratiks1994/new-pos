@@ -24,7 +24,7 @@ function MultipayOptions({ paymentDetail, setPaymentDetail, orderTotal }) {
                   const finalMultipay = newMultipay.map((option) => {
                         if (option.name === "cod") {
                               const newCodAmount = Math.round(orderTotal) - total;
-                              const amount = newCodAmount < 0 || !newCodAmount ? "invalid amount" : newCodAmount.toString();
+                              const amount = newCodAmount < 0 ? "invalid amount" : newCodAmount.toString();
                               return { ...option, amount };
                         }
                         return option;

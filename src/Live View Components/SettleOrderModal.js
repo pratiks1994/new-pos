@@ -59,6 +59,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
                   customerPaid: paymentDetail.customerPaid,
                   tip: paymentDetail.tip,
                   settleAmount: paymentDetail.settleAmount,
+                  multipay: paymentDetail.multipay,
             });
 
             hide();
@@ -148,10 +149,13 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
                                     </Col>
                               </Row>
                         )}
-                        {paymentDetail.paymentType === "multipay" && <MultipayOptions paymentDetail={paymentDetail} setPaymentDetail={setPaymentDetail} orderTotal={order.total}/>}
+                        {paymentDetail.paymentType === "multipay" && <MultipayOptions paymentDetail={paymentDetail} setPaymentDetail={setPaymentDetail} orderTotal={order.total} />}
                   </Modal.Body>
                   <Modal.Footer className={styles.footer}>
-                        <button className={styles.saveBtn} onClick={handleSettle} disabled={isLoading}>
+                        <button
+                              className={styles.saveBtn}
+                              onClick={handleSettle}
+                              disabled={isLoading || paymentDetail.multipay[6].amount === "invalid amount" || paymentDetail.customerReturn === "Amount is less"}>
                               {" "}
                               Save & Settle
                         </button>

@@ -8,6 +8,11 @@
       border-radius: 5px;
 }
 
+.field input:disabled{
+      background-color: rgb(218, 218, 218);
+}
+
+
 .field {
       padding: 5px 0px;
 }
@@ -24,4 +29,13 @@
     transform: scale(0.98);
     background-color: rgb(219, 0, 0);
     color: white;
+}
+
+
+button:hover{
+transform: scale(1.02);
+}
+
+button:active{
+      transform: scale(0.99);
 }
