@@ -30,7 +30,7 @@ function TableCard({ order }) {
       //       return data;
       // };
 
-      const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId, print_count, tip, paymentType, customerPaid, settleAmount }) => {
+      const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId, print_count, tip, paymentType, customerPaid, settleAmount,multipay }) => {
             let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, {
                   orderStatus,
                   orderId,
@@ -41,6 +41,8 @@ function TableCard({ order }) {
                   paymentType,
                   customerPaid,
                   settleAmount,
+                  multipay
+
             });
             return data;
       };
@@ -80,6 +82,9 @@ function TableCard({ order }) {
                         customerPaid: null,
                         tip: null,
                         settleAmount: null,
+                        multipay:null
+
+
                   });
             }
       };

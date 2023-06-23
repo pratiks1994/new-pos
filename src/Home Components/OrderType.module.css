@@ -2,7 +2,10 @@
   background-color: rgb(67, 67, 67);
   color: white;
   height: 45px;
-  border-left: 0.5px solid rgb(144, 139, 139);
+  /* border-left: 0.5px solid rgb(144, 139, 139); */
+  /* border: 0.5px solid gray; */
+  border: none;
+
 }
 
 .orderTypeDetail{
@@ -10,6 +13,7 @@
    background: white;
    border: 0.5px solid  rgb(163, 161, 161) ;
    font-size: 13px;
+
 }
 
 .orderIcon{
@@ -26,7 +30,7 @@
 }
 
 .orderIcon:hover{
-   color: rgb(177, 1, 1);
+   color: rgb(212, 0, 0);
 }
 
 

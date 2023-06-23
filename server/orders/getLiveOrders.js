@@ -7,17 +7,7 @@ const db2 = new Database("restaurant.sqlite", {});
 
 const getLiveOrders = () => {
       try {
-            // const liveOrdersType1 = db2
-            //       .prepare(
-            //             "SELECT id,order_number,customer_name,complete_address,phone_number,order_type,dine_in_table_no,description,item_total,total_discount,total_tax,delivery_charges,total,payment_type,order_status,created_at,print_count FROM orders WHERE order_type IN ('Delivery','Pick Up') AND order_status NOT IN ('delivered','picked_up')"
-            //       )
-            //       .all([]);
-
-            // const liveOrdersType2 = db2
-            //       .prepare(
-            //             "SELECT id,order_number,customer_name,complete_address,phone_number,order_type,dine_in_table_no,description,item_total,total_discount,total_tax,delivery_charges,total,payment_type,order_status,created_at,print_count FROM orders WHERE order_type='Dine In' AND order_status='accepted' AND settle_amount IS NULL"
-            //       )
-            //       .all([]);
+          
 
             const liveOrders = db2
                   .prepare(

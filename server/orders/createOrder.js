@@ -21,7 +21,7 @@ const createOrder = (order) => {
 
       let userId;
       let restaurantId = 1;
-      let orderId
+      let orderId;
       const {
             customerName,
             customerContact,
@@ -98,19 +98,18 @@ const createOrder = (order) => {
                   ]);
 
             const cartTrans = db2.transaction((orderCart, orderId) => {
-
                   const prepareItem = db2.prepare(
-                        "INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id) VALUES (?,?,?,?,?,?,?,?)"
+                        "INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id,description) VALUES (?,?,?,?,?,?,?,?,?)"
                   );
 
                   const prepareTax = db2.prepare("INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)");
-                  
+
                   const prepareToppings = db2.prepare("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)");
 
                   orderCart.forEach((item) => {
-                        const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax,variant_display_name } = item;
+                        const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax, variant_display_name,itemNotes } = item;
 
-                        const itemInfo = prepareItem.run([orderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variant_display_name, variation_id]);
+                        const itemInfo = prepareItem.run([orderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variant_display_name, variation_id,itemNotes]);
 
                         const taxTrans = db2.transaction((itemTax, orderItemId) => {
                               itemTax.forEach((tax) => {
@@ -136,7 +135,7 @@ const createOrder = (order) => {
             });
 
             cartTrans(orderCart, orderInfo.lastInsertRowid);
-            orderId = orderInfo.lastInsertRowid
+            orderId = orderInfo.lastInsertRowid;
       });
 
       orderTrans(userId);
@@ -237,8 +236,8 @@ const createOrder = (order) => {
       //             // });
       //       }
       // );
-//  console.log(`userId ${userId}, orderId ${orderId}`)
-      return ({userId,orderId});
+      //  console.log(`userId ${userId}, orderId ${orderId}`)
+      return { userId, orderId };
 };
 
 module.exports = { createOrder };

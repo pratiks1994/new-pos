@@ -25,7 +25,9 @@ const { updateKOTUserId } = require("./KOT/updateKOTUserId");
 const Database = require("better-sqlite3");
 const { updatePrinter } = require("./printers/updatePrinter");
 const { getOldKOTs } = require("./KOT/getOldKOTs");
+const {getMenuData} = require("./menuData/getMenuData")
 const db2 = new Database("restaurant.sqlite", {});
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -54,6 +56,12 @@ app.get("/categories", async (req, res) => {
       let categories = await getCategories(db);
       res.status(200).json(categories);
 });
+
+app.get("/menuData", (req, res) => {
+      const menuData = getMenuData();
+      res.status(200).json(menuData);
+});
+
 
 // app.get("/categories/:id", async (req, res) => {
 //    let id = req.params.id;

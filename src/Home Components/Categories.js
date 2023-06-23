@@ -22,7 +22,7 @@ function Categories({ getActiveId }) {
       // api call everytime component Mounts to get FULL MENU items and set as bigMenu redux state
 
       const getCategories = async () => {
-            let { data } = await axios.get(`http://${IPAddress}:3001/categories`);
+            let { data } = await axios.get(`http://${IPAddress}:3001/menuData`);
 
             return data;
       };

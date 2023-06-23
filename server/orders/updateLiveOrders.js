@@ -13,10 +13,10 @@ const updateLiveOrders = (db, data) => {
                         db2.transaction(() => {
                               const updateOrderStatement = db2.prepare(
                                     `UPDATE orders SET settle_amount = ${settleAmount !== "" ? settleAmount : "total"},
-                                 user_paid = ${customerPaid !== "" ? customerPaid : "total"},
-                                 tip = ${tip !== "" ? tip : 0},
-                                 payment_type = ?
-                                 WHERE id = ?`
+                                    user_paid = ${customerPaid !== "" ? customerPaid : "total"},
+                                    tip = ${tip !== "" ? tip : 0},
+                                    payment_type = ?
+                                    WHERE id = ?`
                               );
 
                               updateOrderStatement.run([paymentType, orderId]);
@@ -25,9 +25,9 @@ const updateLiveOrders = (db, data) => {
                                     const multipayPrepare = db2.prepare("INSERT INTO multipays (order_id, payment_type, amount) VALUES (?, ?, ?)");
 
                                     multipay.forEach((partPay) => {
-                                          if ((+partPay.amount)) {
+                                          if (+partPay.amount) {
                                                 multipayPrepare.run([orderId, partPay.name, partPay.amount]);
-                                              }
+                                          }
                                     });
                               }
                         })();
