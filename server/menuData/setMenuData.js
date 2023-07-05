@@ -11,7 +11,7 @@ const setMenuData = async () => {
             headers: {
                   Accept: "*/*",
                   "User-Agent": "Thunder Client (https://www.thunderclient.com)",
-                  Authorization: "Bearer cAvQwn2tjnS8ynb9",
+                  Authorization: `Bearer ${process.env.API_TOKEN}`,
                   "content-type": "multipart/form-data; boundary=---011000010111000001101001",
             },
             data: '-----011000010111000001101001\r\nContent-Disposition: form-data; name="restaurant_code"\r\n\r\n1\r\n-----011000010111000001101001--\r\n',
