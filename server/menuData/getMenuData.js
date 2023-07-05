@@ -9,6 +9,7 @@ const getMenuData = () => {
       );
 
       const taxesPrepare = db2.prepare("SELECT id,name,tax FROM taxes WHERE id=?");
+
       const variationsPrepare = db2.prepare(
             "SELECT item_variation.variation_id,item_variation.id as item_variation_id, item_variation.price, variations.name ,variations.display_name FROM item_variation JOIN variations ON item_variation.variation_id=variations.id WHERE item_variation.item_id=? AND item_variation.status=1 ORDER BY item_variation.priority ASC "
       );
@@ -66,6 +67,9 @@ const getMenuData = () => {
 
       return categotiesWithItems;
 };
+
+
+
 
 // const getMenuData = () => {
 //       const prepareQuery = db2.prepare(`

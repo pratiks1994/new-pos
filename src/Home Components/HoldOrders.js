@@ -1,13 +1,14 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { useQuery } from "react-query";
 import { useSelector, useDispatch } from "react-redux";
 import HoldOrderCard from "./HoldOrderCard";
 import styles from "./HoldOrders.module.css";
 import { v4 } from "uuid";
-import socket from "../Utils/Socket";
+// import getSocket from "../Utils/Socket";
 import { setActive } from "../Redux/UIActiveSlice";
+import useSocket from "../Utils/useSocket";
 
 function HoldOrders({ showHoldOrders, setShowHoldOrders }) {
       const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
@@ -21,14 +22,21 @@ function HoldOrders({ showHoldOrders, setShowHoldOrders }) {
             return data;
       };
 
-      useEffect(() => {
-            socket.on("holdOrders", (holdOrders) => {
-                  setHoldOrders(() => [...holdOrders]);
-                  dispatch(setActive({ key: "holdOrderCount", name: holdOrders.length }));
-            });
+      // useEffect(() => {
+      //       const socket = getSocket();
 
-            return () => socket.off("holdOrders");
-      }, [socket]);
+      //       socket.on("holdOrders", (holdOrders) => {
+      //             setHoldOrders(() => [...holdOrders]);
+      //             dispatch(setActive({ key: "holdOrderCount", name: holdOrders.length }));
+      //       });
+
+      //       return () => socket.off("holdOrders");
+      // }, []);
+
+      useSocket("holdOrders", (holdOrders) => {
+            setHoldOrders(() => [...holdOrders]);
+            dispatch(setActive({ key: "holdOrderCount", name: holdOrders.length }));
+      });
 
       const { status, isLoading, isError } = useQuery("holdOrders", getHoldOrders, {
             refetchInterval: 500000,

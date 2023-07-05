@@ -4,45 +4,62 @@ import { useSelector, useDispatch } from "react-redux";
 import { setSystem } from "../Redux/serverConfigSlice";
 import { redirect, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useMutation } from "react-query";
+import axiosInstance from "../Feature Components/axiosGlobal";
 
 function ServerConfig() {
-      const [err, setErr] = useState("");
-      const [isLoading, setIsLoding] = useState(false);
       const { systemType, IPAddress } = useSelector((state) => state.serverConfig);
+      const [clientLoading, setClientLoading] = useState(false);
+      const [errorMsg, setErrorMsg] = useState("");
 
       const dispatch = useDispatch();
       const navigate = useNavigate();
+
+      const getServerStatus = async () => {
+            const { data } = await axios.get(`http://${IPAddress}:3001/ping`, { timeout: 1000 });
+            // console.log(data)
+            return data;
+      };
 
       const handleChange = (e) => {
             let { name, value } = e.target;
             dispatch(setSystem({ name, value }));
       };
 
-      const handleClick = async (system) => {
-            setErr("");
-            setIsLoding(true);
-            if (system === "server") {
-                  let res = await window.apiKey.request("setup", system);
-            }
+      const {
+            mutate: serverMutation,
+            isLoading,
+            isError,
+            error,
+      } = useMutation({
+            mutationKey: "serverStatus",
+            mutationFn: getServerStatus,
+            cacheTime: 0,
+            onSuccess: (data) => {
+                  console.log(data);
+                  IPAddress && localStorage.setItem("IP", IPAddress);
+                  systemType && localStorage.setItem("systemType", systemType);
+                  navigate("Home");
+            },
+            onError: () => {
+                  setClientLoading(false);
+                  setErrorMsg("server is not responding");
+            },
+            onSettled: () => {
+                  setClientLoading(false);
+            },
+      });
 
-            setTimeout(async () => {
+      const handleClick = async (system) => {
+            setClientLoading(true);
+            if (system === "server") {
                   try {
-                        console.log("server");
-                        const { status } = await axios.get(`http://${IPAddress}:3001/ping`);
-                        if (status === 200) {
-                              IPAddress && localStorage.setItem("IP", IPAddress);
-                              systemType && localStorage.setItem("systemType", systemType);
-                              navigate("Home");
-                        } else {
-                              setErr("server not responding");
-                              setIsLoding(false);
-                              navigate(".");
-                        }
+                        let res = await window.apiKey.request("setup", system);
                   } catch (err) {
-                        setErr("server not responding");
-                        setIsLoding(false);
+                        setErrorMsg("Server did not start");
                   }
-            }, 400);
+            }
+            serverMutation();
       };
 
       useEffect(() => {
@@ -51,7 +68,9 @@ function ServerConfig() {
             }
       }, []);
 
-      if (!localStorage.getItem("systemType")) {
+      if (isLoading || clientLoading) {
+            return <div className={styles.serverConfig}>LOADING....</div>;
+      } else {
             return (
                   <div className={styles.serverConfig}>
                         <div className={styles.main}>
@@ -84,15 +103,13 @@ function ServerConfig() {
                                     <label>Server IP Address :</label>
                                     <input type="text" className={styles.ipAddress} name="IPAddress" value={IPAddress} placeholder="192.168.1.208" onChange={handleChange} />
                               </div>
-                              {err && <div className={styles.err}> {err} </div>}
-                              <button className={styles.btn} onClick={() => handleClick(systemType)}>
+                              {isError && <div className={styles.err}> {errorMsg} </div>}
+                              <button className={styles.btn} onClick={() => handleClick(systemType)} disabled={systemType.length === 0 || IPAddress.trim().length === 0}>
                                     {isLoading ? "loading..." : "next"}
                               </button>
                         </div>
                   </div>
             );
-      } else {
-            return <div className={styles.serverConfig}>LOADING....</div>;
       }
 }
 

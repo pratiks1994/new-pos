@@ -25,9 +25,10 @@ const { updateKOTUserId } = require("./KOT/updateKOTUserId");
 const Database = require("better-sqlite3");
 const { updatePrinter } = require("./printers/updatePrinter");
 const { getOldKOTs } = require("./KOT/getOldKOTs");
-const {getMenuData} = require("./menuData/getMenuData")
+const { getMenuData } = require("./menuData/getMenuData");
+const { setMenuData } = require("./menuData/setMenuData");
+// const { Socket } = require("socket.io-client");
 const db2 = new Database("restaurant.sqlite", {});
-
 
 const app = express();
 const httpServer = createServer(app);
@@ -50,6 +51,11 @@ const openDb = () => {
       return db;
 };
 
+// io.on("getIntitalKOTs", (socket) => {
+//       const liveKOTs = getLiveKOT();
+//       socket.emit("KOTs", liveKOTs);
+// });
+
 app.get("/categories", async (req, res) => {
       console.log("rq recieved");
       const db = openDb();
@@ -62,7 +68,6 @@ app.get("/menuData", (req, res) => {
       res.status(200).json(menuData);
 });
 
-
 // app.get("/categories/:id", async (req, res) => {
 //    let id = req.params.id;
 //    let items = await getData(id);
@@ -71,7 +76,7 @@ app.get("/menuData", (req, res) => {
 // });
 
 app.get("/ping", async (req, res) => {
-      res.sendStatus(200);
+      res.status(200).json({ status: "success" });
 });
 
 app.get("/liveOrders", (req, res) => {
@@ -248,6 +253,12 @@ app.post("/includeKOTsAndCreateOrder", (req, res) => {
       io.emit("orders", orders);
       const liveKOTs = getLiveKOT();
       io.emit("KOTs", liveKOTs);
+});
+
+app.post("/updateDatabase", (req, res) => {
+      console.log("update");
+      setMenuData();
+      res.sendStatus(200);
 });
 
 httpServer.listen(3001, (err) => {

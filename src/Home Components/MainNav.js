@@ -13,10 +13,10 @@ import { resetFinalOrder } from "../Redux/finalOrderSlice";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import ConfigSideBar from "./ConfigSideBar";
-
 import HoldOrders from "./HoldOrders";
 import { setActive } from "../Redux/UIActiveSlice";
 import { ToastContainer } from "react-toastify";
+import updateDatabase from "../Utils/updateDatabase";
 
 function MainNav() {
       const [showHoldOrders, setShowHoldOrders] = useState(false);
@@ -70,7 +70,7 @@ function MainNav() {
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faStore} />
                                     </Link>
                                     <Link>
-                                          <FontAwesomeIcon className={styles.LinkIcon} icon={faBowlFood} />
+                                          <FontAwesomeIcon className={styles.LinkIcon} icon={faBowlFood} onClick={updateDatabase}/>
                                     </Link>
                                     <Link to="LiveView/OrderView">
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faUsersViewfinder} />

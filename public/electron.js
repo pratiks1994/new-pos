@@ -104,7 +104,8 @@ app.on("web-contents-created", (event, contents) => {
 });
 
 ipcMain.handle("setup", async (event, data) => {
-      const posServer = fork("../POS/server/server");
+      const posServer =  fork("../POS/server/server");
+      return ({status: "started" })
       // const posServer = require("../server/server");
 
       // const serverProcess = spawn('node', ["../POS/server/server"]);

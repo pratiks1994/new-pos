@@ -17,10 +17,10 @@ import getDisplayName from "../Utils/getDisplayName";
 
 function OrderCard({ order, idx }) {
       const { IPAddress } = useSelector((state) => state.serverConfig);
-      // const queryClient = useQueryClient();
       const dispatch = useDispatch();
       const navigate = useNavigate();
       const [showSettleModal, setShowSettleModal] = useState(false);
+      // const queryClient = useQueryClient();
 
       const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId, print_count, tip, paymentType, customerPaid, settleAmount,multipay }) => {
             let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, {

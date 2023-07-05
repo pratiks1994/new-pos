@@ -1,14 +1,15 @@
-import React, { useEffect } from "react";
+import Reac from "react";
 import styles from "./KOTView.module.css";
 import { setKOT, modifyKOT } from "../Redux/KOTSlice";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import { useQuery } from "react-query";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid";
 import KOTCards from "./KOTCards";
-import { useState } from "react";
-import socket from "../Utils/Socket";
+// import { useState } from "react";
+// import getSocket from "../Utils/Socket";
 import { motion } from "framer-motion";
+import useSocket from "../Utils/useSocket";
 
 function KOTView() {
       const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
@@ -30,23 +31,19 @@ function KOTView() {
             },
       });
 
-      // {
-      //       queryKey: ['todos'],
-      //       queryFn: async () => {
-      //         const res = await axios.get('/api/data')
-      //         return res.data
-      //       },
-      //       // Refetch the data every second
-      //       refetchInterval: intervalMs,
-      //     }
+      useSocket("KOTs", (data) => {
+            dispatch(setKOT({ data }));
+      });
 
-      useEffect(() => {
-            socket.on("KOTs", (data) => {
-                  dispatch(setKOT({ data }));
-            });
+      // useEffect(() => {
+      //       const socket = getSocket();
+      //       // socket.emit("getInitialKOTs");
+      //       socket.on("KOTs", (data) => {
+      //             dispatch(setKOT({ data }));
+      //       });
 
-            return () => socket.off("KOTs");
-      }, [socket]);
+      //       return () => socket.off("KOTs");
+      // }, []);
 
       if (KOTs) {
             return (

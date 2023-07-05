@@ -42,6 +42,10 @@
   
 }
 
+.btn:disabled{
+   background-color: gray;
+}
+
 .ipAddress{
    margin-left: 10px;
    padding-inline: 5px;

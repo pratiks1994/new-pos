@@ -1,8 +1,9 @@
 import { io } from "socket.io-client";
 
-const IPAddress = localStorage.getItem("IP")
-console.log(IPAddress)
+const getSocket =  () => {
+      const IPAddress = localStorage.getItem("IP");
+      const socket = io(`http://${IPAddress}:3001`); // Replace with your server URL
+      return socket;
+};
 
-const socket = io(`http://${IPAddress}:3001`); // Replace with your server URL
-
-export default socket;
+export default getSocket;

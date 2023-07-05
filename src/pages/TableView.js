@@ -7,7 +7,8 @@ import { v4 } from "uuid";
 import TableCard from "../TableView Components/TableCard";
 import { modifyCartData } from "../Redux/finalOrderSlice";
 import { useNavigate } from "react-router-dom";
-import socket from "../Utils/Socket";
+import getSocket from "../Utils/Socket";
+import useSocket from "../Utils/useSocket";
 
 function TableView() {
       const [orders, setOrders] = useState([]);
@@ -45,14 +46,20 @@ function TableView() {
       //       refetchIntervalInBackground: 1000000,
       // });
 
-      useEffect(() => {
-            socket.on("orders", (orders) => {
-                  console.log("orders");
-                  setOrders(() => [...orders]);
-            });
+      // useEffect(() => {
+      // const socket = getSocket()
 
-            return () => socket.off("orders");
-      }, [socket]);
+      //       socket.on("orders", (orders) => {
+      //             console.log("orders");
+      //             setOrders(() => [...orders]);
+      //       });
+
+      //       return () => socket.off("orders");
+      // }, []);
+
+      useSocket("orders", (data) => {
+            setOrders(() => [...data]);
+      });
 
       const handleClick = (orderType) => {
             dispatch(modifyCartData({ orderType }));

@@ -1,21 +1,21 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import styles from "./OrderView.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faBorderAll, faUtensils, faPersonBiking, faBasketShopping, faWifi, faPersonDotsFromLine } from "@fortawesome/free-solid-svg-icons";
 import { useSelector, useDispatch } from "react-redux";
 import { setActive } from "../Redux/UIActiveSlice";
-import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import OrderCard from "./OrderCard";
-import { v4 } from "uuid";
-import socket from "../Utils/Socket";
 import { motion } from "framer-motion";
 import axiosInstance from "../Feature Components/axiosGlobal";
-
+import useSocket from "../Utils/useSocket";
 
 function OrderView() {
-      // const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
+      const dispatch = useDispatch();
+      const { liveViewOrderType } = useSelector((state) => state.UIActive);
       const [orders, setOrders] = useState([]);
-      const queryClient = useQueryClient();
+      // const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
+      // const queryClient = useQueryClient();
       // const DineInStatus = ["accepted", "printed", "settled"];
 
       const swiggy = (
@@ -30,18 +30,16 @@ function OrderView() {
             </svg>
       );
 
-      const dispatch = useDispatch();
-      const { liveViewOrderType } = useSelector((state) => state.UIActive);
 
       const controls = [
-            { name: "all", display_name:"All", icon: <FontAwesomeIcon icon={faBorderAll} /> },
-            { name: "dine_in", display_name:"Dine In", icon: <FontAwesomeIcon icon={faUtensils} /> },
-            { name: "delivery" ,display_name:"Delivery", icon: <FontAwesomeIcon icon={faPersonBiking} /> },
-            { name: "pick_up" ,display_name:"Pick Up", icon: <FontAwesomeIcon icon={faBasketShopping} /> },
-            { name: "online" ,display_name:"Online", icon: <FontAwesomeIcon icon={faWifi} /> },
-            { name: "other" ,display_name:"Other", icon: <FontAwesomeIcon icon={faPersonDotsFromLine} /> },
-            { name: "swiggy" ,display_name:"Swiggy", icon: swiggy },
-            { name: "zomato" ,display_name:"Zomato", icon: zomato },
+            { name: "all", display_name: "All", icon: <FontAwesomeIcon icon={faBorderAll} /> },
+            { name: "dine_in", display_name: "Dine In", icon: <FontAwesomeIcon icon={faUtensils} /> },
+            { name: "delivery", display_name: "Delivery", icon: <FontAwesomeIcon icon={faPersonBiking} /> },
+            { name: "pick_up", display_name: "Pick Up", icon: <FontAwesomeIcon icon={faBasketShopping} /> },
+            { name: "online", display_name: "Online", icon: <FontAwesomeIcon icon={faWifi} /> },
+            { name: "other", display_name: "Other", icon: <FontAwesomeIcon icon={faPersonDotsFromLine} /> },
+            { name: "swiggy", display_name: "Swiggy", icon: swiggy },
+            { name: "zomato", display_name: "Zomato", icon: zomato },
       ];
 
       const handleControl = (name) => {
@@ -51,7 +49,7 @@ function OrderView() {
 
       const getLiveOrders = async () => {
             // let { data } = await axios.get(`http://${IPAddress}:3001/liveorders`);
-            let {data} = await axiosInstance.get("/liveorders")
+            let { data } = await axiosInstance.get("/liveorders");
             return data;
       };
 
@@ -76,15 +74,19 @@ function OrderView() {
             },
       });
 
-      useEffect(() => {
-            socket.on("orders", (orders) => {
-                  setOrders(() => [...orders]);
-            });
+      useSocket("orders", (orders) => {
+            setOrders(() => [...orders]);
+      });
 
+      // useEffect(() => {
+      //       const socket = getSocket();
 
+      //       socket.on("orders", (orders) => {
+      //             setOrders(() => [...orders]);
+      //       });
 
-            return () => socket.off("orders");
-      }, [socket]);
+      //       return () => socket.off("orders");
+      // }, []);
 
       // const orderMutation = useMutation({
       //       mutationFn: updateLiveOrders,
