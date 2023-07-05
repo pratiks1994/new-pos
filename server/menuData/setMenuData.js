@@ -2,8 +2,9 @@ const Database = require("better-sqlite3");
 const axios = require("axios");
 const db3 = new Database("./server/restaurant.sqlite", {});
 
-const setMenuData = async () => {
+const setMenuData = async (token) => {
       let start = Date.now();
+      console.log(process.env.REACT_APP_API_TOKEN)
 
       var options = {
             method: "POST",
@@ -11,7 +12,7 @@ const setMenuData = async () => {
             headers: {
                   Accept: "*/*",
                   "User-Agent": "Thunder Client (https://www.thunderclient.com)",
-                  Authorization: `Bearer ${process.env.API_TOKEN}`,
+                  Authorization: `Bearer ${token}`,
                   "content-type": "multipart/form-data; boundary=---011000010111000001101001",
             },
             data: '-----011000010111000001101001\r\nContent-Disposition: form-data; name="restaurant_code"\r\n\r\n1\r\n-----011000010111000001101001--\r\n',
@@ -237,7 +238,7 @@ const setMenuData = async () => {
                         headers: {
                               Accept: "*/*",
                               "User-Agent": "Thunder Client (https://www.thunderclient.com)",
-                              Authorization: `Bearer ${process.env.API_TOKEN}`,
+                              Authorization: `Bearer ${token}`,
                               "content-type": "multipart/form-data; boundary=---011000010111000001101001",
                         },
                         data: { restaurant_code: 1, page: i },
@@ -247,7 +248,6 @@ const setMenuData = async () => {
                         data: { data: customers },
                   } = await axios(options);
                   allCustomers = [...allCustomers, ...customers];
-
                   if (customers.length < 2000) {
                         db3.transaction(() => {
                               for (const customer of allCustomers) {

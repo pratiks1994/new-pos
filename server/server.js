@@ -256,8 +256,8 @@ app.post("/includeKOTsAndCreateOrder", (req, res) => {
 });
 
 app.post("/updateDatabase", (req, res) => {
-      console.log("update");
-      setMenuData();
+     const {token} =req.body
+      setMenuData(token);
       res.sendStatus(200);
 });
 
