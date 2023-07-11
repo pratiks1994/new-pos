@@ -568,3 +568,27 @@ const setMenuData = async (token) => {
 };
 
 module.exports = { setMenuData };
+
+// DELETE FROM categories;
+// DELETE FROM variations;
+// DELETE FROM restaurants;
+// DELETE FROM addongroups;
+// DELETE FROM addongroupitems;
+// DELETE FROM addongroup_item_variation;
+// DELETE FROM items;
+// DELETE FROM item_variation;
+// DELETE FROM taxes;
+// DELETE FROM dine_in_tables;
+// DELETE FROM groups;
+// DELETE FROM users;
+// DELETE FROM users_groups;
+// DELETE FROM prices;
+// DELETE FROM restaurant_prices;
+// DELETE FROM order_types;
+// DELETE FROM item_restaurant_prices;
+// DELETE FROM orders;
+// DELETE FROM order_item_addongroupitems;
+// DELETE FROM order_item_taxes;
+// DELETE FROM order_items;
+// DELETE FROM brands;
+// DELETE FROM attributes;

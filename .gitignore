@@ -11,6 +11,7 @@
 # production
 /build
 /dist
+/thunder-tests
 
 # misc
 .DS_Store

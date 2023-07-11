@@ -6,7 +6,7 @@ import { setMenuItems } from "../Redux/menuItemsSlice";
 
 function CategoryItem({ display_name, id, setActive, active }) {
      const dispatch = useDispatch();
-     const bigMenu = useSelector(state=>state.bigMenu)
+     const {categories} = useSelector(state=>state.bigMenu)
      const isCartActionDisable = useSelector(state=>state.UIActive.isCartActionDisable)
 
 
@@ -15,7 +15,7 @@ function CategoryItem({ display_name, id, setActive, active }) {
      const handleClick = (id) => {
           setActive(id);
           // const { data } = await axios.get(`http://localhost:3001/categories/${id}`);
-          let {items} = bigMenu.find(category=>category.id===id)
+          let {items} = categories.find(category=>category.id===id)
 
           dispatch(setMenuItems({ items }));
      };

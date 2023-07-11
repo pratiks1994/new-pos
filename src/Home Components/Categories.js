@@ -9,7 +9,7 @@ import { useQuery } from "react-query";
 function Categories({ getActiveId }) {
       // const [categories, setCategories] = useState([]);
 
-      const categories = useSelector((state) => state.bigMenu);
+      const {categories} = useSelector((state) => state.bigMenu);
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const [active, setActive] = useState();
 
@@ -30,13 +30,14 @@ function Categories({ getActiveId }) {
       //   react query api call for data chashing, loading and error state management
       const { data, status, isLoading } = useQuery("bigMenu", getCategories, {
             staleTime: 1200000,
+            onSuccess:(data)=> dispatch(setBigMenu({ data }))
       });
 
-      useEffect(() => {
-            if (status === "success") {
-                  dispatch(setBigMenu({ data }));
-            }
-      }, [status, data]);
+      // useEffect(() => {
+      //       if (status === "success") {
+      //             dispatch(setBigMenu({ data }));
+      //       }
+      // }, [status, data]);
 
       return (
             <div className={`${styles.categoryList}`}>

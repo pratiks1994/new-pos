@@ -193,7 +193,7 @@ app.put("/liveOrders", (req, res) => {
 
 app.get("/users", async (req, res) => {
       const db = openDb();
-      const userSuggest = await getUserSuggest(db, req.query);
+      const userSuggest = getUserSuggest(db, req.query);
       res.status(200).json(userSuggest);
 });
 

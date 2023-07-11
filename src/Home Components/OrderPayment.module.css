@@ -58,5 +58,6 @@ button svg {
 }
 
 .paymentBreakdownToggle:hover {
-      transform: translateX(-50%) scale(1.05);
+      transform: translateX(-50%) scale(1.05) ;
+      /* transform: translateX(-50%) rotate(0.5turn); */
 }

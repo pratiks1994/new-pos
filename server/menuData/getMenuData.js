@@ -2,74 +2,83 @@ const Database = require("better-sqlite3");
 const db2 = new Database("restaurant.sqlite", {});
 
 const getMenuData = () => {
-      const categoryPrepare = db2.prepare("SELECT id,restaurant_id,name,display_name,item_count FROM categories WHERE restaurant_id=1 AND status=1");
+	const categoryPrepare = db2.prepare("SELECT id,restaurant_id,name,display_name,item_count FROM categories WHERE restaurant_id=1 AND status=1");
 
-      const itemsPrepare = db2.prepare(
-            "SELECT id,category_id,name,display_name,attribute,description,is_spicy,has_jain,has_variation,order_type,price,description,has_addon,in_stock,tag,item_tax AS tax FROM items WHERE category_id=? AND status=1 AND restaurant_id=1 ORDER BY priority ASC"
-      );
+	const itemsPrepare = db2.prepare(
+		"SELECT id,category_id,name,display_name,attribute,description,is_spicy,has_jain,has_variation,order_type,price,description,has_addon,in_stock,tag,item_tax AS tax FROM items WHERE category_id=? AND status=1 AND restaurant_id=1 ORDER BY priority ASC"
+	);
 
-      const taxesPrepare = db2.prepare("SELECT id,name,tax FROM taxes WHERE id=?");
+	const taxesPrepare = db2.prepare("SELECT id,name,tax FROM taxes WHERE id=?");
 
-      const variationsPrepare = db2.prepare(
-            "SELECT item_variation.variation_id,item_variation.id as item_variation_id, item_variation.price, variations.name ,variations.display_name FROM item_variation JOIN variations ON item_variation.variation_id=variations.id WHERE item_variation.item_id=? AND item_variation.status=1 ORDER BY item_variation.priority ASC "
-      );
+	const variationsPrepare = db2.prepare(
+		"SELECT item_variation.variation_id,item_variation.id as item_variation_id, item_variation.price, variations.name ,variations.display_name FROM item_variation JOIN variations ON item_variation.variation_id=variations.id WHERE item_variation.item_id=? AND item_variation.status=1 ORDER BY item_variation.priority ASC "
+	);
 
-      const addonGroupsPrepare = db2.prepare(
-            "SELECT addongroups.id AS addongroup_id, addongroups.name,addongroups.display_name FROM addongroups JOIN addongroup_item_variation ON addongroup_item_variation.addongroup_id=addongroups.id WHERE addongroup_item_variation.item_variation_id=? AND addongroups.status=1 ORDER BY addongroups.priority ASC "
-      );
+	const addonGroupsPrepare = db2.prepare(
+		"SELECT addongroups.id AS addongroup_id, addongroups.name,addongroups.display_name FROM addongroups JOIN addongroup_item_variation ON addongroup_item_variation.addongroup_id=addongroups.id WHERE addongroup_item_variation.item_variation_id=? AND addongroups.status=1 ORDER BY addongroups.priority ASC "
+	);
 
-      const addonsPrepare = db2.prepare("SELECT id,attribute,addongroup_id,name,display_name,price FROM addongroupitems WHERE addongroup_id=? AND status=1 ORDER BY priority ASC");
+	const addonsPrepare = db2.prepare("SELECT id,attribute,addongroup_id,name,display_name,price FROM addongroupitems WHERE addongroup_id=? AND status=1 ORDER BY priority ASC");
 
-      const categories = categoryPrepare.all([]);
+	const areaStmt = db2.prepare("SELECT id,restaurant_id,restaurant_price_id,area FROM areas");
 
-      const categotiesWithItems = categories.map((category) => {
-            const items = itemsPrepare.all([category.id]);
+	const dineInTablesStmt = db2.prepare("SELECT * FROM dine_in_tables WHERE restaurant_id= 1 AND area_id=?");
 
-            const itemsWithVariations = items.map((item) => {
-                  if (item.has_variation == 1) {
-                        const variations = variationsPrepare.all([item.id]);
+	const areas = areaStmt.all([]);
 
-                        const variationsWithAddons = variations.map((variation) => {
-                              const addonGroup = addonGroupsPrepare.all([variation.item_variation_id]);
+	const areasWithTable = areas.map((area) => {
+		const dineInTables = dineInTablesStmt.all([area.id]);
+		return { ...area, tables: dineInTables };
+	});
+	// console.log(dineInTables)
 
-                              const addonGroupWithAddons = addonGroup.map((group) => {
-                                    const addons = addonsPrepare.all(group.addongroup_id);
-                                    return { ...group, addonItems: addons };
-                              });
+	const categories = categoryPrepare.all([]);
+	
+	const categoriesWithItems = categories.map((category) => {
+		const items = itemsPrepare.all([category.id]);
 
-                              return { ...variation, addonGroups: addonGroupWithAddons };
-                        });
+		const itemsWithVariations = items.map((item) => {
+			if (item.has_variation == 1) {
+				const variations = variationsPrepare.all([item.id]);
 
-                        const taxes = item.tax.split(",").map((tax) => {
-                              return taxesPrepare.get([+tax]);
-                        });
+				const variationsWithAddons = variations.map((variation) => {
+					const addonGroup = addonGroupsPrepare.all([variation.item_variation_id]);
 
-                        return {
-                              ...item,
-                              variations: variationsWithAddons,
-                              item_tax: taxes,
-                        };
-                  } else {
-                        const taxes = item.tax.split(",").map((tax) => {
-                              return taxesPrepare.get([+tax]);
-                        });
+					const addonGroupWithAddons = addonGroup.map((group) => {
+						const addons = addonsPrepare.all(group.addongroup_id);
+						return { ...group, addonItems: addons };
+					});
 
-                        return {
-                              ...item,
-                              item_tax: taxes,
-                              variations: [],
-                        };
-                  }
-            });
+					return { ...variation, addonGroups: addonGroupWithAddons };
+				});
 
-            return { ...category, items: itemsWithVariations };
-      });
+				const taxes = item.tax.split(",").map((tax) => {
+					return taxesPrepare.get([+tax]);
+				});
 
-      return categotiesWithItems;
+				return {
+					...item,
+					variations: variationsWithAddons,
+					item_tax: taxes,
+				};
+			} else {
+				const taxes = item.tax.split(",").map((tax) => {
+					return taxesPrepare.get([+tax]);
+				});
+
+				return {
+					...item,
+					item_tax: taxes,
+					variations: [],
+				};
+			}
+		});
+
+		return { ...category, items: itemsWithVariations };
+	});
+
+	return { categories: categoriesWithItems, areas: areasWithTable };
 };
-
-
-
 
 // const getMenuData = () => {
 //       const prepareQuery = db2.prepare(`

@@ -14,6 +14,7 @@
     font-weight: 600;
     color: rgb(49, 49, 49);
     cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
 }
 
 .total {
@@ -40,4 +41,8 @@
 .container {
     position: relative  ;
     height: fit-content;
+}
+
+.tableNo{
+    font-weight: 700;
 }

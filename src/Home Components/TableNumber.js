@@ -21,7 +21,7 @@ function TableNumber({showDetailType}) {
 
   return (
     <div className={showTableNumber}>
-      <span className='mx-2'>please enter Table No.</span><input type="number" min="0" value={tableNumber} onChange={(e)=>hanndleChange(e)  }/>
+      <span className='mx-2'>please enter Table No.</span><input type="number" min={0} step={1} pattern="[0-9]*" inputMode="numeric" value={tableNumber} onChange={(e)=>hanndleChange(e)  }/>
     </div>
   )
 }
