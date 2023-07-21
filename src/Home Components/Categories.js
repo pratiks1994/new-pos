@@ -7,47 +7,52 @@ import { setBigMenu } from "../Redux/bigMenuSlice";
 import { useQuery } from "react-query";
 
 function Categories({ getActiveId }) {
-      // const [categories, setCategories] = useState([]);
+	// const [categories, setCategories] = useState([]);
 
-      const {categories} = useSelector((state) => state.bigMenu);
-      const { IPAddress } = useSelector((state) => state.serverConfig);
-      const [active, setActive] = useState();
+	const { categories } = useSelector((state) => state.bigMenu);
+	const { IPAddress } = useSelector((state) => state.serverConfig);
+	const [active, setActive] = useState();
 
-      useEffect(() => {
-            getActiveId(active);
-      }, [active]);
+	useEffect(() => {
+		getActiveId(active);
+	}, [active]);
 
-      const dispatch = useDispatch();
+	const dispatch = useDispatch();
 
-      // api call everytime component Mounts to get FULL MENU items and set as bigMenu redux state
+	// api call everytime component Mounts to get FULL MENU items and set as bigMenu redux state
 
-      const getCategories = async () => {
-            let { data } = await axios.get(`http://${IPAddress}:3001/menuData`);
+	const getCategories = async () => {
+		let { data } = await axios.get(`http://${IPAddress}:3001/menuData`);
+		return data;
+	};
 
-            return data;
-      };
+	//   react query api call for data chashing, loading and error state management
+	const { data, status, isLoading } = useQuery("bigMenu", getCategories, {
+		staleTime: 1200000,
+		onSuccess: (data) => dispatch(setBigMenu({ data })),
+	});
 
-      //   react query api call for data chashing, loading and error state management
-      const { data, status, isLoading } = useQuery("bigMenu", getCategories, {
-            staleTime: 1200000,
-            onSuccess:(data)=> dispatch(setBigMenu({ data }))
-      });
+	const categoryList = (
+		<div className={`${styles.categoryList}`}>
+			{isLoading ? (
+				<div>Loading...</div>
+			) : (
+				categories.map((cat) =>
+					cat.items.length > 0 ? (
+						<CategoryItem
+							key={cat.id}
+							id={cat.id}
+							display_name={cat.display_name}
+							setActive={setActive}
+							active={active}
+						/>
+					) : null
+				)
+			)}
+		</div>
+	);
 
-      // useEffect(() => {
-      //       if (status === "success") {
-      //             dispatch(setBigMenu({ data }));
-      //       }
-      // }, [status, data]);
-
-      return (
-            <div className={`${styles.categoryList}`}>
-                  {isLoading ? (
-                        <div>Loading...</div>
-                  ) : (
-                        categories.map((cat) => <CategoryItem key={cat.id} id={cat.id} display_name={cat.display_name} setActive={setActive} active={active} />)
-                  )}
-            </div>
-      );
+	return categoryList;
 }
 
 export default Categories;
@@ -72,7 +77,6 @@ export default Categories;
 // 	PRIMARY KEY("id" AUTOINCREMENT)
 // );
 
-
 // CREATE TABLE "kot_items" (
 // 	"id"	integer NOT NULL,
 // 	"kot_id"	integer DEFAULT NULL,
@@ -93,7 +97,6 @@ export default Categories;
 // 	PRIMARY KEY("id" AUTOINCREMENT)
 // );
 
-
 // CREATE TABLE "order_item_addongroupitems" (
 // 	"id"	integer NOT NULL,
 // 	"order_item_id"	integer DEFAULT NULL,
@@ -108,7 +111,6 @@ export default Categories;
 // 	CONSTRAINT "order_item_addongroupitems_ibfk_2" FOREIGN KEY("addongroupitem_id") REFERENCES "addongroupitems"("id") ON DELETE RESTRICT ON UPDATE RESTRICT
 // );
 
-
 // CREATE TABLE "order_item_taxes" (
 // 	"id"	integer NOT NULL,
 // 	"order_item_id"	integer DEFAULT NULL,
@@ -122,7 +124,6 @@ export default Categories;
 // 	PRIMARY KEY("id" AUTOINCREMENT)
 // );
 
-
 // CREATE TABLE "multipays" (
 // 	"id"	INTEGER NOT NULL UNIQUE,
 // 	"order_id"	INTEGER,
@@ -132,7 +133,6 @@ export default Categories;
 // 	"updated_at"	timestamp DEFAULT (datetime('now', 'localtime')),
 // 	PRIMARY KEY("id" AUTOINCREMENT)
 // );
-
 
 // CREATE TABLE "order_item_taxes" (
 // 	"id"	integer NOT NULL,
@@ -167,7 +167,6 @@ export default Categories;
 // 	CONSTRAINT "order_items_ibfk_2" FOREIGN KEY("order_id") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE,
 // 	PRIMARY KEY("id" AUTOINCREMENT)
 // );
-
 
 // CREATE TABLE "orders" (
 // 	"id"	integer NOT NULL,

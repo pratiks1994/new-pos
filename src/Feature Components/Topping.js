@@ -34,4 +34,4 @@ function Topping({ type, price, id }) {
       );
 }
 
-export default  memo(Topping);
+export default  memo(Topping)

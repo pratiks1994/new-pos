@@ -16,7 +16,7 @@
 }
 
 .variant:hover{
-   background-color: brown;
+   background-color: rgb(168, 59, 59);
    transform: scale(1.03);
 }
 
@@ -25,6 +25,6 @@
 }
 
 .variant.selected{
-   background-color: brown ;
+   background-color: rgb(163, 10, 10) ;
 }
 

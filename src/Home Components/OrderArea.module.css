@@ -48,3 +48,16 @@
    font-size: 13px;
    
 }
+
+.emptyCart{
+   width: 100%;
+   height: 100%;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+.noItemsImg{
+   min-height: 200px;
+   opacity: 0.3;
+}

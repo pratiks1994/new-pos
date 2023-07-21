@@ -1,5 +1,6 @@
 const Database = require("better-sqlite3");
-const db2 = new Database("restaurant.sqlite", {});
+const db2 = new Database("./server/restaurant.sqlite", {});
+// const db2 = new Database("restaurant.sqlite", {});
 
 const getMenuData = () => {
 	const categoryPrepare = db2.prepare("SELECT id,restaurant_id,name,display_name,item_count FROM categories WHERE restaurant_id=1 AND status=1");
@@ -11,7 +12,7 @@ const getMenuData = () => {
 	const taxesPrepare = db2.prepare("SELECT id,name,tax FROM taxes WHERE id=?");
 
 	const variationsPrepare = db2.prepare(
-		"SELECT item_variation.variation_id,item_variation.id as item_variation_id, item_variation.price, variations.name ,variations.display_name FROM item_variation JOIN variations ON item_variation.variation_id=variations.id WHERE item_variation.item_id=? AND item_variation.status=1 ORDER BY item_variation.priority ASC "
+		"SELECT item_variation.variation_id,item_variation.restaurant_price_id as restaurantPriceId,item_variation.id as item_variation_id, item_variation.price, variations.name ,variations.display_name FROM item_variation JOIN variations ON item_variation.variation_id=variations.id WHERE item_variation.item_id=? AND item_variation.status=1 ORDER BY item_variation.priority ASC "
 	);
 
 	const addonGroupsPrepare = db2.prepare(
@@ -23,6 +24,7 @@ const getMenuData = () => {
 	const areaStmt = db2.prepare("SELECT id,restaurant_id,restaurant_price_id,area FROM areas");
 
 	const dineInTablesStmt = db2.prepare("SELECT * FROM dine_in_tables WHERE restaurant_id= 1 AND area_id=?");
+	const restaurantPricesStmt = db2.prepare("SELECT restaurant_price_id,price FROM item_restaurant_prices WHERE item_id=?");
 
 	const areas = areaStmt.all([]);
 
@@ -33,11 +35,13 @@ const getMenuData = () => {
 	// console.log(dineInTables)
 
 	const categories = categoryPrepare.all([]);
-	
+
 	const categoriesWithItems = categories.map((category) => {
 		const items = itemsPrepare.all([category.id]);
 
 		const itemsWithVariations = items.map((item) => {
+			item.restaurantPrices = restaurantPricesStmt.all([item.id]);
+
 			if (item.has_variation == 1) {
 				const variations = variationsPrepare.all([item.id]);
 

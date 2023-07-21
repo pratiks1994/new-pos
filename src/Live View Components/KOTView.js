@@ -21,7 +21,7 @@ function KOTView() {
             return data;
       };
 
-      let { status, isLoading, isError } = useQuery({
+      let { data, status, isLoading, isError } = useQuery({
             queryKey: ["KOTs"],
             queryFn: getKOT,
             refetchInterval: 500000,
@@ -34,6 +34,8 @@ function KOTView() {
       useSocket("KOTs", (data) => {
             dispatch(setKOT({ data }));
       });
+
+      
 
       // useEffect(() => {
       //       const socket = getSocket();

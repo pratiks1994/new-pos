@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./OrderArea.module.css";
 import FinalOrder from "./FinalOrder";
 import { useSelector, useDispatch } from "react-redux";
+import emptyCartImg from "../icons/no-order.png"
 
 function OrderArea() {
       const orderItems = useSelector((state) => state.finalOrder.orderCart);
@@ -15,9 +16,11 @@ function OrderArea() {
                   </div>
 
                   <div className={styles.finalOrder}>
-                        {orderItems.map((item) => (
+                        {orderItems.length ? orderItems.map((item) => (
                               <FinalOrder key={item.currentOrderItemId} {...item} />
-                        ))}
+                        )) : null
+                        // <div className={styles.emptyCart}> <img className={styles.noItemsImg} src={emptyCartImg} /> </div>
+                            }
                   </div>
             </div>
       );

@@ -4,9 +4,10 @@ import styles from "./ItemModalBody.module.css";
 import Topping from "./Topping";
 import { useSelector } from "react-redux";
 
-function ItemModalBody({ id }) {
+function ItemModalBody({ id , restaurantPriceVariations}) {
       const menuItems = useSelector((state) => state.menuItems);
       const selectedVariantId = useSelector((state) => state.currentItem.variation_id);
+      // const {restaurantPriceId}= useSelector(state=> state.UIActive)
 
       let item = menuItems.find((item) => item.id === id);
 
@@ -19,9 +20,10 @@ function ItemModalBody({ id }) {
                   <div className={styles.variation}>
                         <div className="ms-2"> Variation</div>
                         <div className="d-flex flex-wrap">
-                              {variants.map((variant) => (
+                              {restaurantPriceVariations.map((variant) => (
                                     <Variant key={variant.variation_id} {...variant} />
-                              ))}
+                              
+                             ))}
                         </div>
                   </div>
                   {addonGroups.map((group) => (

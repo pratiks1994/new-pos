@@ -12,6 +12,9 @@ import Configuration from "./pages/Configuration.js";
 import PrinterConfig from "./pages/PrinterConfig.js";
 import PrintersList from "./pages/PrintersList.js";
 import EditPrinter from "./pages/EditPrinter.js";
+import PrinterAssign from "./pages/PrinterAssign.js";
+import AssignBill from "./pages/AssignBill.js";
+import AssignKot from "./pages/AssignKot.js";
 
 function Main() { 
       return (
@@ -33,6 +36,11 @@ function Main() {
                                           <Route path="PrintersList">
                                                 <Route index element={<PrintersList />} />
                                                 <Route path=":printerId" element={<EditPrinter />} />
+                                                <Route path="printerAssign/:printerId">
+                                                      <Route index  element={<PrinterAssign/>}/>
+                                                      <Route path="assignKot" element={<AssignKot/>}/>
+                                                      <Route path="assignBill" element={<AssignBill/>}/>
+                                                </Route>      
                                           </Route>
                                     </Route>
                               </Route>

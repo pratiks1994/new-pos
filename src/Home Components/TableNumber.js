@@ -1,29 +1,96 @@
-import React from 'react'
-import styles from "./TableNumber.module.css"
-import { useSelector,useDispatch } from 'react-redux'
-import { modifyCartData } from '../Redux/finalOrderSlice'
+import React, { useEffect } from "react";
+import styles from "./TableNumber.module.css";
+import { useSelector, useDispatch } from "react-redux";
+import { changePriceOnAreaChange, modifyCartData } from "../Redux/finalOrderSlice";
+import { setActive } from "../Redux/UIActiveSlice";
 
+function TableNumber({ showDetailType }) {
+	let { tableNumber, orderCart } = useSelector((state) => state.finalOrder);
+	let { areas, categories } = useSelector((state) => state.bigMenu);
+	let { restaurantPriceId } = useSelector((state) => state.UIActive);
+	let dispatch = useDispatch();
 
-function TableNumber({showDetailType}) {
+	const hanndleChange = (e) => {
+		let tableNo = e.target.value;
+		let area = areas.find((area) => area.tables.some((table) => table.table_no === tableNo));
+		let areaName = area?.area || "Other";
+		let restaurantPriceId = area?.restaurant_price_id || null;
 
-  let {tableNumber} = useSelector(state => state.finalOrder)
-  let dispatch = useDispatch()
+		dispatch(setActive({ key: "restaurantPriceId", name: restaurantPriceId }));
 
-  const hanndleChange = (e) => {
+		dispatch(modifyCartData({ tableNumber: tableNo }));
+		dispatch(modifyCartData({ tableArea: areaName }));
+	};
 
-    let tableNumber = e.target.value ;
-    dispatch(modifyCartData({tableNumber}))
+	useEffect(() => {
+		// const start = performance.now();
 
-  }
+		let timeOut = setTimeout(() => {
+			if (orderCart.length) {
+				const newCartItems = orderCart.map((cartItem) => {
+					for (const category of categories) {
+						for (const item of category.items) {
+							if (item.id === cartItem.itemId) {
+								let newPrice = null;
 
- 
-  let showTableNumber = showDetailType==="tableNumber" ? `${styles.show} ${styles.tableNumber}` : `${styles.tableNumber}`
+								if (cartItem.variation_id) {
+									for (const variation of item.variations) {
+										if (variation.variation_id === cartItem.variation_id && variation.restaurantPriceId === restaurantPriceId) {
+											newPrice = variation.price;
+											// return { ...cartItem, basePrice: variation.price };
+										}
+									}
+								} else {
+									if (restaurantPriceId === null) {
+										newPrice = item.price;
+										// return { ...cartItem, basePrice: item.price };
+									} else {
+										for (const restaurantPrice of item.restaurantPrices) {
+											if (restaurantPrice.restaurant_price_id === restaurantPriceId) {
+												newPrice = restaurantPrice.price;
+												// return { ...item, basePrice: restaurantPrice.price };
+											}
+										}
+									}
+								}
 
-  return (
-    <div className={showTableNumber}>
-      <span className='mx-2'>please enter Table No.</span><input type="number" min={0} step={1} pattern="[0-9]*" inputMode="numeric" value={tableNumber} onChange={(e)=>hanndleChange(e)  }/>
-    </div>
-  )
+								let toppingPrice = cartItem.itemTotal - cartItem.basePrice;
+								let newitemTotal = newPrice + toppingPrice;
+								let newMultiItemTotal = cartItem.itemQty * newitemTotal;
+								let newTaxes = item.item_tax.map((tax) => {
+									return { id: tax.id, name: tax.name, tax: (tax.tax / 100) * newMultiItemTotal };
+								});
+
+								return { ...cartItem, basePrice: newPrice, itemTotal: newitemTotal, multiItemTotal: newMultiItemTotal, itemTax: newTaxes };
+							}
+						}
+					}
+				});
+
+				dispatch(changePriceOnAreaChange({ newCartItems }));
+			}
+		}, 500);
+
+		// console.log("time", performance.now() - start);
+		return () => clearTimeout(timeOut);
+	}, [restaurantPriceId]);
+
+	let showTableNumber = showDetailType === "tableNumber" ? `${styles.show} ${styles.tableNumber}` : `${styles.tableNumber}`;
+
+	return (
+		<div className={showTableNumber}>
+			<span className="mx-2">please enter Table No.</span>
+			<input
+				type="number"
+				min={0}
+				step={1}
+				pattern="[0-9]*"
+				inputMode="numeric"
+				value={tableNumber}
+				onChange={(e) => hanndleChange(e)}
+			/>
+		</div>
+	);
 }
 
-export default TableNumber
+export default TableNumber;

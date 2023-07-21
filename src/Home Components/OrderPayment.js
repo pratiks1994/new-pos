@@ -9,12 +9,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { calculateCartTotal, resetFinalOrder } from "../Redux/finalOrderSlice";
 import { modifyCartData } from "../Redux/finalOrderSlice";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
+
 import "react-toastify/dist/ReactToastify.css";
 import { useQueryClient, useMutation } from "react-query";
 import { setActive } from "../Redux/UIActiveSlice";
 import OrderExistAlertModal from "./OrderExistAlertModal";
 import KOTExistAlertModal from "./KOTExistAlertModal";
+import notify from "../Feature Components/notify";
 
 function OrderPayment() {
       // get finalOrder state from redux store
@@ -27,31 +28,7 @@ function OrderPayment() {
 
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const dispatch = useDispatch();
-      const notify = (status, msg) => {
-            if (status === "success") {
-                  toast.success(msg, {
-                        position: "top-center",
-                        autoClose: 2000,
-                        hideProgressBar: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        theme: "colored",
-                  });
-            } else {
-                  toast.warn(msg, {
-                        position: "top-right",
-                        autoClose: 2000,
-                        hideProgressBar: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        theme: "colored",
-                  });
-            }
-      };
+
 
       // add payment method to finalOrder redux state
       const handleChange = (e) => {

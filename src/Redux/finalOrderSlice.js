@@ -8,6 +8,7 @@ const finalOrderSlice = createSlice({
             customerContact: "8238267210",
             customerAdd: "Rk Empire nr nana Mauva circle 9th floor 905 rajkot ",
             customerLocality: "Rajkot 360004",
+            tableArea:"",
             orderCart: [],
             subTotal: 0,
             tax: 0,
@@ -148,6 +149,7 @@ const finalOrderSlice = createSlice({
                         orderType: "delivery",
                         orderComment: "",
                         cartTotal: 0,
+                        tableArea:""
                   };
             },
 
@@ -188,6 +190,13 @@ const finalOrderSlice = createSlice({
                               itemTax: item.itemTax,
                         };
                   });
+            },
+
+            changePriceOnAreaChange : (state,action)=>{
+
+           state.orderCart = action.payload.newCartItems
+
+
             },
 
             liveOrderToCart: (state, action) => {
@@ -248,4 +257,5 @@ export const {
       holdToFinalOrder,
       liveOrderToCart,
       addItemNotes,
+      changePriceOnAreaChange
 } = finalOrderSlice.actions;

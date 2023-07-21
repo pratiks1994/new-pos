@@ -347,11 +347,6 @@ const setMenuData = async (token) => {
 			}
 
 			for (const order of orders) {
-				// let stmt = "";
-				// Object.keys(order.orderitems[0]).forEach((key) => {
-				//       stmt = stmt + "item." + key + ",";
-				// });
-				// console.log(stmt);
 
 				orderstmt.run(
 					order.id,

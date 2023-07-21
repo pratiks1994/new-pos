@@ -3,7 +3,7 @@ import styles from "./DineInArea.module.css";
 import ActiveTableCard from "./ActiveTableCard";
 import InactiveTableCard from "./InactiveTableCard";
 
-function DineInArea({ area }) {
+function DineInArea({ area ,restaurantPriceId}) {
 	return (
 		<div className={styles.areaSection}>
 			<div className={styles.areaTitle}>{area.area}</div>
@@ -24,6 +24,7 @@ function DineInArea({ area }) {
 							<InactiveTableCard
 								key={table.id}
 								table={table}
+								restaurantPriceId={restaurantPriceId}
 							/>
 						);
 					}

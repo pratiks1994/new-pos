@@ -105,6 +105,7 @@ function TableView() {
 							<DineInArea
 								area={area}
 								key={area.id}
+								restaurantPriceId={area.restaurant_price_id}
 							/>
 						);
 					} else {

@@ -7,12 +7,13 @@ import { modifyCartData } from "../Redux/finalOrderSlice";
 import { useNavigate } from "react-router-dom";
 import { setActive } from "../Redux/UIActiveSlice";
 
-function InactiveTableCard({ table }) {
+function InactiveTableCard({ table ,restaurantPriceId}) {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
 
 	const handleTableClick = (tableNo) => {
         dispatch(resetFinalOrder())
+		dispatch(setActive({key:"restaurantPriceId",name:restaurantPriceId}))
 		dispatch(setActive({key:"isCartActionDisable",name:false}))
 		dispatch(modifyCartData({ tableNumber: tableNo }));
 		dispatch(modifyCartData({ orderType: "dine_in" }));

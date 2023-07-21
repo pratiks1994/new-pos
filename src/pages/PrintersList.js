@@ -64,7 +64,7 @@ function PrintersList() {
                                                                   <Link to={`${printer.id}`}>Edit</Link> | <Link>Remove</Link>
                                                             </td>
                                                             <td>
-                                                                  <Link>Assign</Link>
+                                                                  <Link to={`printerAssign/${printer.id}`}>Assign</Link>
                                                             </td>
                                                       </tr>
                                                 );

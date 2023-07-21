@@ -25,4 +25,4 @@ function Variant({ variation_id, item_variation_id, price, name, addonGroups,dis
       );
 }
 
-export default memo(Variant);
+export default memo(Variant)
