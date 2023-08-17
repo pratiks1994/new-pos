@@ -1,6 +1,11 @@
-const Database = require("better-sqlite3");
-const db2 = new Database("./server/restaurant.sqlite", {});
+// const Database = require("better-sqlite3");
+const { getDefaultScreenData } = require("../settings/getDefaultScreenData");
+
 // const db2 = new Database("restaurant.sqlite", {});
+// const db2 = new Database("restaurant.sqlite", {});
+
+const { getDb } = require("../common/getDb");
+const db2 = getDb();
 
 const getMenuData = () => {
 	const categoryPrepare = db2.prepare("SELECT id,restaurant_id,name,display_name,item_count FROM categories WHERE restaurant_id=1 AND status=1");
@@ -32,7 +37,8 @@ const getMenuData = () => {
 		const dineInTables = dineInTablesStmt.all([area.id]);
 		return { ...area, tables: dineInTables };
 	});
-	// console.log(dineInTables)
+
+	const defaultSettings = getDefaultScreenData();
 
 	const categories = categoryPrepare.all([]);
 
@@ -56,7 +62,9 @@ const getMenuData = () => {
 					return { ...variation, addonGroups: addonGroupWithAddons };
 				});
 
-				const taxes = item.tax.split(",").map((tax) => {
+				const itemTaxarray = item.tax ? item.tax.split(",") : [];
+
+				const taxes = itemTaxarray.map((tax) => {
 					return taxesPrepare.get([+tax]);
 				});
 
@@ -66,7 +74,8 @@ const getMenuData = () => {
 					item_tax: taxes,
 				};
 			} else {
-				const taxes = item.tax.split(",").map((tax) => {
+				const itemTaxarray = item.tax ? item.tax.split(",") : [];
+				const taxes = itemTaxarray.map((tax) => {
 					return taxesPrepare.get([+tax]);
 				});
 
@@ -81,7 +90,7 @@ const getMenuData = () => {
 		return { ...category, items: itemsWithVariations };
 	});
 
-	return { categories: categoriesWithItems, areas: areasWithTable };
+	return { categories: categoriesWithItems, areas: areasWithTable, defaultSettings };
 };
 
 // const getMenuData = () => {

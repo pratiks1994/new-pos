@@ -1,9 +1,10 @@
-const { dbAll, dbRun } = require("../common/dbExecute");
-const Database = require("better-sqlite3");
-const db2 = new Database("restaurant.sqlite", {});
 
-// dbAll(db, "SELECT * FROM KOT_items WHERE KOT_id = ?", [KOTs.id])
-// dbAll(db, "SELECT * FROM KOT_item_addongroupitems WHERE KOT_item_id = ?",[KOTItems.id])
+// const Database = require("better-sqlite3");
+// const db2 = new Database("restaurant.sqlite", {});
+
+const { getDb } = require("../common/getDb")
+const db2 = getDb()
+
 
 const getLiveKOT = () => {
       const liveKOTs = db2.prepare("SELECT * FROM kot WHERE kot_status = 'accepted'").all([]);

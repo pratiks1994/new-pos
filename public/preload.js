@@ -1,10 +1,9 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-
 ipcApi = {
-request : (chanel,data) => {
-   return ipcRenderer.invoke(chanel,data)}
-
-}
+	request: (chanel, payload) => {
+		return ipcRenderer.invoke(chanel, payload);
+	},
+};
 
 contextBridge.exposeInMainWorld("apiKey", ipcApi);

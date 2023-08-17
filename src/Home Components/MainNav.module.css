@@ -9,8 +9,13 @@
 }
 
 .bars {
-      margin-inline: 10px;
+      padding: 5px 10px;
       font-size: 22px;
+      transition: all 0.15s ease-in-out;
+}
+
+.bars:hover{
+      color: rgba(204, 0, 0, 0.897);
 }
 
 .LinkIcon {

@@ -22,21 +22,13 @@ function HoldOrders({ showHoldOrders, setShowHoldOrders }) {
             return data;
       };
 
-      // useEffect(() => {
-      //       const socket = getSocket();
-
-      //       socket.on("holdOrders", (holdOrders) => {
-      //             setHoldOrders(() => [...holdOrders]);
-      //             dispatch(setActive({ key: "holdOrderCount", name: holdOrders.length }));
-      //       });
-
-      //       return () => socket.off("holdOrders");
-      // }, []);
 
       useSocket("holdOrders", (holdOrders) => {
             setHoldOrders(() => [...holdOrders]);
             dispatch(setActive({ key: "holdOrderCount", name: holdOrders.length }));
       });
+
+
 
       const { status, isLoading, isError } = useQuery("holdOrders", getHoldOrders, {
             refetchInterval: 500000,
@@ -46,6 +38,7 @@ function HoldOrders({ showHoldOrders, setShowHoldOrders }) {
                   setHoldOrders(() => [...data]);
                   dispatch(setActive({ key: "holdOrderCount", name: data.length }));
             },
+            enabled : !!IPAddress
       });
 
       return (

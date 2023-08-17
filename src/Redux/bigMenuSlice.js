@@ -2,12 +2,13 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const bigMenuSlice = createSlice({
 	name: "bigMenu",
-	initialState: { categories: [], areas: [] },
+	initialState: { categories: [], areas: [],defaultSettings:{} },
 	reducers: {
 		setBigMenu: (state, action) => {
 			const { data } = action.payload;
 			state.categories = data.categories;
 			state.areas = data.areas;
+			state.defaultSettings = data.defaultSettings
 		},
 	},
 });

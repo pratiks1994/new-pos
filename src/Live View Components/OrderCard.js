@@ -14,13 +14,15 @@ import { setActive } from "../Redux/UIActiveSlice";
 import { motion } from "framer-motion";
 import SettleOrderModal from "./SettleOrderModal";
 import getDisplayName from "../Utils/getDisplayName";
+import { executeBillPrint } from "../Utils/executePrint";
+import { convertOrder } from "../Utils/convertOrder";
 
 function OrderCard({ order, idx }) {
       const { IPAddress } = useSelector((state) => state.serverConfig);
+      const printers = useSelector((state) => state.printerSettings);
       const dispatch = useDispatch();
       const navigate = useNavigate();
       const [showSettleModal, setShowSettleModal] = useState(false);
-      // const queryClient = useQueryClient();
 
       const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId, print_count, tip, paymentType, customerPaid, settleAmount,multipay }) => {
             let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, {
@@ -39,13 +41,11 @@ function OrderCard({ order, idx }) {
       };
 
       const { mutate: orderMutation, isLoading } = useMutation({
-            mutationFn: updateLiveOrders,
-            // onSettled: () => {
-            //       queryClient.invalidateQueries("liveOrders");
-            // },
+            mutationFn: updateLiveOrders
       });
 
       const getBtnTheme = (orderStatus, orderType, print_count) => {
+
             const themes = [
                   {
                         orderType: "delivery",
@@ -71,8 +71,9 @@ function OrderCard({ order, idx }) {
                   },
             ];
 
-            // const btnTheme = themes.find((theme) => theme.orderType === orderType).statuses.find((status) => status.status === orderStatus);
+            
             const theme = themes.find((theme) => theme.orderType === orderType);
+
             if (theme.orderType === "dine_in") {
                   return theme?.statuses.find((status) => status.print_count === print_count);
             } else {
@@ -98,15 +99,24 @@ function OrderCard({ order, idx }) {
             navigate("/Home");
       };
 
-      const handleClick = () => {
+      const handleClick = async () => {
+
+
+
             if (order.print_count === 1 && order.order_type === "dine_in") {
                   setShowSettleModal(true);
             } else {
-                  orderMutation({
+
+                  if (order.print_count === 0 && order.order_type === "dine_in") {
+                        const orderToPrint = convertOrder(order)
+                        await executeBillPrint(orderToPrint,printers)
+                  }
+
+                  await orderMutation({
                         orderStatus: order.order_status,
                         orderId: order.id,
                         orderType: order.order_type,
-                        KOTId: order.KOTDetail.id,
+                        KOTId: order.KOTDetail[0]?.id || 0,
                         print_count: order.print_count,
                         paymentType: null,
                         customerPaid: null,
@@ -136,7 +146,7 @@ function OrderCard({ order, idx }) {
                         </div>
                         <div>
                               <div>
-                                    KOT : {order.KOTDetail.token_no} | BILL : {order.order_number}
+                                    KOT : {order.KOTDetail.map(kot=>kot.token_no).join(",")} | BILL : {order.order_number}
                               </div>
                               <div>{getDisplayName(order.order_type)}</div>
                         </div>

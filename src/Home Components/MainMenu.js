@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-
 import styles from "./MainMenu.module.css";
 import Categories from "./Categories";
 import Items from "./Items";
@@ -10,6 +9,7 @@ function MainMenu() {
 	const { categories } = useSelector((state) => state.bigMenu);
 	const isCartActionDisable = useSelector((state) => state.UIActive.isCartActionDisable);
 	const dispatch = useDispatch();
+	
 	let activeCategoryId;
 	const searchItemRef = useRef("");
 

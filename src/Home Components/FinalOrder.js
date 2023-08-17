@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import styles from "./FinalOrder.module.css";
 import { incrementQty, decrementQty, removeItem } from "../Redux/finalOrderSlice";
 import { motion } from "framer-motion";

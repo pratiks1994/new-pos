@@ -1,15 +1,19 @@
 import React from "react";
 import styles from "./PrinterAssign.module.css";
 import { motion } from "framer-motion";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams} from "react-router-dom";
 import BackButton from "../Feature Components/BackButton";
 import SettingTile from "../Feature Components/SettingTile";
 import { v4 } from "uuid";
-import axiosInstance from "../Feature Components/axiosGlobal";
 import { useQuery } from "react-query";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 function PrinterAssign() {
 	const { printerId } = useParams();
+	const { IPAddress } = useSelector((state) => state.serverConfig);
+	
+
 	const navigate = useNavigate();
 	const printerAssignItems = [
 		{ title: "Assign to KOT", navigateTo: `assignKot` },
@@ -17,7 +21,7 @@ function PrinterAssign() {
 	];
 
 	const getPrinters = async () => {
-		const { data } = await axiosInstance.get(`/getPrinters`);
+		const { data } = await axios.get(`http://${IPAddress}:3001/getPrinters`);
 		return data;
 	};
 
@@ -29,6 +33,7 @@ function PrinterAssign() {
 	} = useQuery({
 		queryKey: "printers",
 		queryFn: getPrinters,
+		enabled : !IPAddress 
 	});
 
 	let printerName = printers?.find((printer) => +printer.id === +printerId)?.printer_display_name || "does not exist" ;

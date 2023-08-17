@@ -64,9 +64,9 @@
 
 .categoryCheckLebal {
 	display: flex;
-	justify-content: start;
+	justify-content: flex-start;
 	align-items: center;
-    color: rgb(141, 141, 141);
+    color: rgb(100, 100, 100);
 	gap: 10px;
 }
 

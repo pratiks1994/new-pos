@@ -1,20 +1,18 @@
-import React, { Children } from "react";
+import React from "react";
 import styles from "./PrintersList.module.css";
 import BackButton from "../Feature Components/BackButton";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-// import { useSelector, useDispatch } from "react-redux";
 import { useQuery } from "react-query";
-// import axios from "axios";
-// import { setPrinters } from "../Redux/printerSettingsSlice";
-import axiosInstance from "../Feature Components/axiosGlobal";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 function PrintersList() {
-      // const { IPAddress } = useSelector((state) => state.serverConfig);
-      // const dispatch = useDispatch();
+      const navigate = useNavigate();
+	const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
 
       const getPrinters = async () => {
-            const { data } = await axiosInstance.get(`/getPrinters`);
+            const { data } =  await axios.get(`http://${IPAddress}:3001/getPrinters`)
             return data;
       };
 
@@ -26,9 +24,9 @@ function PrintersList() {
       } = useQuery({
             queryKey: "printers",
             queryFn: getPrinters,
+            enabled:!IPAddress 
       });
 
-      const navigate = useNavigate();
 
       return (
             <motion.div className={styles.printersListBody} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1 }}>

@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./PrinterConfig.module.css";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { v4 } from "uuid";
 import BackButton from "../Feature Components/BackButton";
 import SettingTile from "../Feature Components/SettingTile.js";

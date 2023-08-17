@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styles from "./OrderView.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faBorderAll, faUtensils, faPersonBiking, faBasketShopping, faWifi, faPersonDotsFromLine } from "@fortawesome/free-solid-svg-icons";
@@ -7,16 +7,15 @@ import { setActive } from "../Redux/UIActiveSlice";
 import { useQuery } from "react-query";
 import OrderCard from "./OrderCard";
 import { motion } from "framer-motion";
-import axiosInstance from "../Feature Components/axiosGlobal";
+
 import useSocket from "../Utils/useSocket";
+import axios from "axios";
 
 function OrderView() {
 	const dispatch = useDispatch();
+	const { IPAddress } = useSelector((state) => state.serverConfig);
 	const { liveViewOrderType } = useSelector((state) => state.UIActive);
 	const [orders, setOrders] = useState([]);
-	// const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
-	// const queryClient = useQueryClient();
-	// const DineInStatus = ["accepted", "printed", "settled"];
 
 	const swiggy = (
 		<svg
@@ -58,60 +57,29 @@ function OrderView() {
 	};
 
 	const getLiveOrders = async () => {
-		// let { data } = await axios.get(`http://${IPAddress}:3001/liveorders`);
-		let { data } = await axiosInstance.get("/liveorders");
+		
+		let { data } = await axios.get(`http://${IPAddress}:3001/liveorders`);
 		return data;
 	};
 
-	// const updateLiveOrders = async ({ orderStatus, orderId }) => {
-	//       let updatedStatus;
-
-	//       const current = DineInStatus.findIndex((element) => element === orderStatus);
-	//       updatedStatus = DineInStatus[current + 1];
-
-	//       let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, { updatedStatus, orderId });
-	//       return data;
-	// };
 
 	const { data, status, isLoading, isStale } = useQuery({
 		queryKey: "liveOrders",
 		queryFn: getLiveOrders,
 		refetchInterval: 500000,
-		staleTime: 300000,
 		refetchIntervalInBackground: 500000,
-		refetchOnWindowFocus: true,
+		refetchOnWindowFocus: false,
 		onSuccess: (data) => {
 			setOrders(() => [...data]);
 		},
+		enabled: IPAddress !== ""
 	});
 
 	useSocket("orders", (orders) => {
+		console.log("orders socket emmit")
 		setOrders(() => [...orders]);
 	});
 
-	// useEffect(() => {
-	//       const socket = getSocket();
-
-	//       socket.on("orders", (orders) => {
-	//             setOrders(() => [...orders]);
-	//       });
-
-	//       return () => socket.off("orders");
-	// }, []);
-
-	// const orderMutation = useMutation({
-	//       mutationFn: updateLiveOrders,
-	//       onSettled: () => {
-	//             console.log("mutation ran");
-	//             queryClient.invalidateQueries("liveOrders");
-	//       },
-	// });
-
-	// const updateOrderStatus = (orderStatus, orderId) => {
-	//       orderMutation.mutate({ orderStatus, orderId });
-	// };
-
-	// console.log(orders);
 
 	return (
 		<motion.div

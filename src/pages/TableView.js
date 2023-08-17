@@ -21,9 +21,9 @@ function TableView() {
 		const ListedTableNo = []; // to list all the tables available in databse
 
 		const areasWithOrders = areas?.map((area) => {
+
 			const updatedTableWithOrder = area.tables.map((table) => {
 				ListedTableNo.push(table.table_no);
-
 				const orderOnTable = orders.filter((order) => order.order_type === "dine_in" && order.dine_in_table_no === table.table_no);
 				return { ...table, orders: orderOnTable };
 			});
@@ -46,7 +46,7 @@ function TableView() {
 		return [...areasWithOrders, otherArea];
 	};
 
-	// console.log(matchOrderAndTables(orders, areas));
+
 	const getLiveOrders = async () => {
 		let { data } = await axios.get(`http://${IPAddress}:3001/liveorders`);
 		return data;
@@ -58,6 +58,7 @@ function TableView() {
 		onSuccess: (data) => {
 			setOrders(() => [...data]);
 		},
+		enabled: !!IPAddress
 	});
 
 	const getCategories = async () => {
@@ -71,6 +72,7 @@ function TableView() {
 		onSuccess: (data) => {
 			dispatch(setBigMenu({ data }));
 		},
+		enabled: !!IPAddress
 	});
 
 	useSocket("orders", (data) => {

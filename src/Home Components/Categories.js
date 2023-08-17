@@ -5,6 +5,8 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setBigMenu } from "../Redux/bigMenuSlice";
 import { useQuery } from "react-query";
+import { setPrinters } from "../Redux/printerSettingsSlice";
+import sortPrinters from "../Utils/shortPrinters";
 
 function Categories({ getActiveId }) {
 	// const [categories, setCategories] = useState([]);
@@ -22,14 +24,54 @@ function Categories({ getActiveId }) {
 	// api call everytime component Mounts to get FULL MENU items and set as bigMenu redux state
 
 	const getCategories = async () => {
-		let { data } = await axios.get(`http://${IPAddress}:3001/menuData`);
+		let res = await axios.get(`http://${IPAddress}:3001/menuData`);
+		
+		return res.data;
+	};
+
+	// const getServerData = async () => {
+	// 	let data = await window.apiKey.request("getServerData", {})
+	// 	return data;
+	// };
+
+	
+
+	// const { data: serverData } = useQuery({
+	// 	queryKey: ["serverData"],
+	// 	queryFn: getServerData,
+	// 	onSuccess: (data) => {
+	// 		dispatch(setSystem({ name: "IPAddress", value: data.ip }));
+	// 		dispatch(setSystem({ name: "systemType", value: data.system_type }));
+	// 	},
+
+	// 	onError: () => {
+	// 		dispatch(setSystem({ name: "IPAddress", value: "192.168.1.108" }));
+	// 		dispatch(setSystem({ name: "systemType", value: "client" }));
+	// 	},
+	// });
+
+	//   react query api call for data chashing, loading and error state management
+	const { data, status, isLoading } = useQuery({
+		queryKey: ["bigMenu"],
+		queryFn: getCategories,
+		staleTime: 1200000,
+		onSuccess: (data) => dispatch(setBigMenu({ data })),
+		enabled : IPAddress !== ""
+	});
+
+	const getPrinters = async () => {
+		const { data } = await axios.get(`http://${IPAddress}:3001/getPrinters`);
 		return data;
 	};
 
-	//   react query api call for data chashing, loading and error state management
-	const { data, status, isLoading } = useQuery("bigMenu", getCategories, {
-		staleTime: 1200000,
-		onSuccess: (data) => dispatch(setBigMenu({ data })),
+	useQuery({
+		queryKey: ["printers"],
+		queryFn: getPrinters,
+		onSuccess: (printers) => {
+			const FullPrintersData = sortPrinters(printers);
+			dispatch(setPrinters({ FullPrintersData }));
+		},
+		enabled : IPAddress !== ""
 	});
 
 	const categoryList = (

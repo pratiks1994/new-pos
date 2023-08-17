@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import styles from "./FinalOrderItemModal.module.css";
-import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { Row, Col } from "react-bootstrap";
 import { useDispatch } from "react-redux";

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState} from "react";
 import styles from "./Item.module.css";
 import CenteredModal from "../Feature Components/CenteredModal";
 import ItemModalBody from "../Feature Components/ItemModalBody";
@@ -8,7 +8,7 @@ import { addOrderItem } from "../Redux/finalOrderSlice";
 import { v4 } from "uuid";
 import { motion } from "framer-motion";
 
-function Item({ name, id, variations, has_variation, price, display_name, item_tax, restaurantPrices }) {
+function Item({ name, id, variations, has_variation, price, display_name, item_tax, restaurantPrices,category_id }) {
 	const dispatch = useDispatch();
 
 	const [modelShow, setModalShow] = useState(false);
@@ -43,7 +43,7 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 			let defaultVariantId = restaurantPriceVariations[0].variation_id;
 			let defaultVariantPrice = restaurantPriceVariations[0].price;
 			let defaultVariantDisplayName = restaurantPriceVariations[0].display_name;
-			dispatch(addCurrentItem({ id, name, orderItemId, defaultVariantName, defaultVariantId, defaultVariantPrice, defaultVariantDisplayName }));
+			dispatch(addCurrentItem({ id, name, orderItemId, defaultVariantName, defaultVariantId, defaultVariantPrice, defaultVariantDisplayName,category_id }));
 		} else {
                   
 			const RestaurantItemPrice = restaurantPriceId ? restaurantPrices.find((price) => price.restaurant_price_id === restaurantPriceId).price : price;
@@ -56,6 +56,7 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 				variation_id: "",
 				variantName: "",
 				variant_display_name: "",
+				categoryId : category_id,
 				basePrice: RestaurantItemPrice,
 				toppings: [],
 				itemTotal: RestaurantItemPrice,

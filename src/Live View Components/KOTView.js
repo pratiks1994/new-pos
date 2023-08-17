@@ -1,19 +1,17 @@
-import Reac from "react";
 import styles from "./KOTView.module.css";
-import { setKOT, modifyKOT } from "../Redux/KOTSlice";
+import { setKOT } from "../Redux/KOTSlice";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import { useQuery } from "react-query";
-// import { v4 as uuidv4 } from "uuid";
 import KOTCards from "./KOTCards";
-// import { useState } from "react";
-// import getSocket from "../Utils/Socket";
 import { motion } from "framer-motion";
 import useSocket from "../Utils/useSocket";
 
 function KOTView() {
       const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
+
       const KOTs = useSelector((state) => state.KOTs);
+
       const dispatch = useDispatch();
 
       const getKOT = async () => {
@@ -29,23 +27,16 @@ function KOTView() {
             onSuccess: (data) => {
                   dispatch(setKOT({ data }));
             },
+            enabled : IPAddress !== ""
       });
 
       useSocket("KOTs", (data) => {
+            console.log("socket ran",data)
             dispatch(setKOT({ data }));
       });
 
       
 
-      // useEffect(() => {
-      //       const socket = getSocket();
-      //       // socket.emit("getInitialKOTs");
-      //       socket.on("KOTs", (data) => {
-      //             dispatch(setKOT({ data }));
-      //       });
-
-      //       return () => socket.off("KOTs");
-      // }, []);
 
       if (KOTs) {
             return (

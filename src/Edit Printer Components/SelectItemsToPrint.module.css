@@ -68,9 +68,9 @@
 	position: relative;
 	display: flex;
 	white-space: nowrap;
-	justify-content: start;
+	justify-content: flex-start;
 	align-items: center;
-	color: rgb(141, 141, 141);
+	color: rgb(88, 88, 88);
 	gap: 12px;
 }
 

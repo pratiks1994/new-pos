@@ -64,7 +64,7 @@ function Configuration() {
             { name: "Bill / KOT Print", icon: BilKotPrintIcon, navigateTo: "printerConfig" },
             { name: "Tax", icon: TaxIcon, navigateTo: "../LiveView/KOTView" },
             { name: "Discount", icon: DiscountIcon, navigateTo: "" },
-            { name: "Billing Screen", icon: BillingStationIcon, navigateTo: "" },
+            { name: "Billing Screen", icon: BillingStationIcon, navigateTo: "billingScreenConfig" },
             { name: "Settings", icon: SettingsIcon, navigateTo: "" },
             { name: "online config", icon: OnlineOrderIcon, navigateTo: "" },
             { name: "Menu Item ON/OFF", icon: MenuOnOffIcon, navigateTo: "" },

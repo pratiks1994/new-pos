@@ -1,41 +1,44 @@
 .ConfigSideBarMain {
-      background-color: rgb(48, 48, 48) !important;
-      color: white;
-      width: 300px !important;
-      padding: 20px 0px !important;
+	background-color: rgba(48, 48, 48, 0.897) !important;
+	color: white;
+	width: 300px !important;
+	padding: 20px 0px !important;
 }
 
 .ConfigSideBarHeader {
-      color: white;
-      padding-left: 32px;
-      font-size: 22px;
-      font-weight: 500;
+	color: white;
+	padding-left: 32px;
+	font-size: 22px;
+	font-weight: 500;
 }
 
 .ConfigSideBarBody {
-      padding: 20px 0px !important;
+	padding: 20px 0px !important;
 }
 
 .items {
-      display: flex;
-      width: 100%;
-      padding: 15px 25px;
-      text-decoration: none;
+	display: flex;
+	width: 100%;
+	padding: 15px 25px;
+	text-decoration: none;
 }
 
 .items:hover {
-      background-color: rgb(77, 77, 77);
+	background-color: rgb(77, 77, 77);
 }
 
 .itemIcon {
-      color: white;
-      width: 30px;
-      filter: invert(100) brightness(1.6);
+	color: white;
+	width: 30px;
+	filter: invert(100) brightness(1.6);
 }
 
 .itemName {
-      padding-left: 40px;
-      font-size: 17px;
-      font-weight: 400;
-      color: white;
+	padding-left: 40px;
+	font-size: 17px;
+	font-weight: 400;
+	color: white;
 }
+
+
+

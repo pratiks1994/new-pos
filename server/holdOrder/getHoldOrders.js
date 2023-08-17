@@ -1,25 +1,26 @@
-const { dbAll, dbRun } = require("../common/dbExecute");
+// const { dbAll, dbRun } = require("../common/dbExecute");
 
-const getHoldOrders = async (db) => {
-      const holdOrders = await dbAll(db, "SELECT * FROM hold_orders", []);
+const { getDb } = require("../common/getDb");
+const db2 = getDb();
 
-      const holdOrdersWithItems = Promise.all(
-            holdOrders.map(async (order) => {
-                  const holdOrderItems = await dbAll(db, "SELECT * FROM hold_order_items  WHERE Hold_order_id = ?", [order.id]);
+const getHoldOrders =  () => {
+	const holdOrders = db2.prepare("SELECT * FROM hold_orders").all();
+	// const holdOrders = await dbAll(db, "SELECT * FROM hold_orders", []);
 
-                  const itemsWithAddons = await Promise.all(
-                        holdOrderItems.map(async (item) => {
-                              const itemAddons = await dbAll(db, "SELECT * FROM hold_order_item_addongroupitems WHERE hold_order_item_id = ?", [item.id]);
+	const holdOrdersWithItems = holdOrders.map((order) => {
+		const holdOrderItems = db2.prepare("SELECT * FROM hold_order_items  WHERE Hold_order_id = ?").all([order.id]);
+		// const holdOrderItems = await dbAll(db, "SELECT * FROM hold_order_items  WHERE Hold_order_id = ?", [order.id]);
 
-                              return { ...item, toppings: itemAddons, itemTax: JSON.parse(item.itemTax) };
-                        })
-                  );
+		const itemsWithAddons = holdOrderItems.map((item) => {
+			const itemAddons = db2.prepare("SELECT * FROM hold_order_item_addongroupitems WHERE hold_order_item_id = ?").all([item.id]);
 
-                  return { ...order, orderCart: itemsWithAddons };
-            })
-      );
+			return { ...item, toppings: itemAddons, itemTax: JSON.parse(item.itemTax) };
+		});
 
-      return holdOrdersWithItems;
+		return { ...order, orderCart: itemsWithAddons };
+	});
+
+	return holdOrdersWithItems;
 };
 
 module.exports = { getHoldOrders };

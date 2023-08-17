@@ -88,11 +88,13 @@
 
 .configItemLink:hover {
       color: rgb(66, 66, 66);
+      background-color: white;
       transform: scale(1.03);
 }
 
 .configItemLink:hover .itemIcon {
       filter: grayscale(0);
+
 }
 
 .configRestaurantTitle{

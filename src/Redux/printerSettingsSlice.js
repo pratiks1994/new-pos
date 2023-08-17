@@ -5,8 +5,8 @@ const printerSettingsSlice = createSlice({
       initialState: [],
       reducers: {
             setPrinters: (state, action) => {
-                  const { data } = action.payload;
-                  return [...data];
+                  const { FullPrintersData} = action.payload;
+                  return [...FullPrintersData];
             },
       },
 });

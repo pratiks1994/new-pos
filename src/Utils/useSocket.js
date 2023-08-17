@@ -1,15 +1,26 @@
 import { io } from "socket.io-client";
 import { useEffect } from "react";
-const IPAddress = localStorage.getItem("IP");
-const socket = io(`http://${IPAddress}:3001`);
+import { useSelector } from "react-redux";
+
+let socket = null;
 
 const useSocket = (event, callBack) => {
-    
-      useEffect(() => {
-            // socket.emit("getInitialKOTs");
-            socket.on(event, callBack);
-            return () => socket.off(event, callBack);
-      }, []);
+	const ipAddress = useSelector((state) => state.serverConfig.IPAddress);
+
+	useEffect(() => {
+		console.log("socket ip", ipAddress);
+
+		if (!socket && ipAddress) {
+			socket = io(`http://${ipAddress}:3001`);
+		}
+
+		socket?.on(event, callBack);
+
+		console.log(socket);
+		return () => {
+			socket?.off(event, callBack);
+		};
+	}, []);
 };
 
 export default useSocket;

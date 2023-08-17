@@ -1,5 +1,4 @@
-const Database = require("better-sqlite3");
-const db2 = new Database("restaurant.sqlite", {});
+
 
 const mergeKOTandOrder = (order, KOTitems) => {
       let totalKOTTax = 0;
@@ -39,7 +38,7 @@ const mergeKOTandOrder = (order, KOTitems) => {
             ...order,
             cartTotal: order.cartTotal + totalKOTCartTotal + totalKOTTax,
             tax: order.tax + totalKOTTax,
-            orderCart: [...order.orderCart, ...formatedKOTItmes],
+            orderCart: [...formatedKOTItmes,...order.orderCart],
             subTotal: order.subTotal + totalKOTCartTotal - totalKOTTax,
       };
 };

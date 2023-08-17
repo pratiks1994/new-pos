@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+.sqlite
 
 # testing
 /coverage
@@ -12,6 +13,7 @@
 /build
 /dist
 /thunder-tests
+/POS.git
 
 # misc
 .DS_Store
@@ -26,3 +28,6 @@ yarn-debug.log*
 yarn-error.log*
 
 restaurant.sqlite
+restaurant - Copy.sqlite
+restaurant-server.sqlite
+

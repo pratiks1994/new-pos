@@ -1,8 +1,7 @@
 import React from "react";
 import styles from "./SelectCategoriesToPrint.module.css";
-import { useDispatch, useSelector } from "react-redux";
 
-function SelectCategoriesToPrint({ selectedCategory, setSelectedCategory, categories }) {
+function SelectCategoriesToPrint({ selectedCategory, setSelectedCategory, categories,setSelectedItems }) {
 	const handleChange = (id) => {
 		setSelectedCategory((prev) => {
 			if (prev.selectedCategoryIds.includes(id)) {
@@ -13,7 +12,14 @@ function SelectCategoriesToPrint({ selectedCategory, setSelectedCategory, catego
 		});
 	};
 
-	
+	const handleAllCategoryChange = (e) => {
+
+
+		setSelectedCategory((prev) => ({ ...prev, allSelected: !prev.allSelected }));
+		setSelectedItems(prev => ({...prev, allSelected: e.target.checked}))
+		
+		
+	};
 	return (
 		<main className={styles.categoryBody}>
 			<header className={styles.header}>
@@ -26,7 +32,7 @@ function SelectCategoriesToPrint({ selectedCategory, setSelectedCategory, catego
 							name="Allcategory"
 							id="Allcategory"
 							checked={selectedCategory.allSelected}
-							onChange={() => setSelectedCategory((prev) => ({ ...prev, allSelected: !prev.allSelected }))}
+							onChange={handleAllCategoryChange}
 						/>
 						All Category
 					</label>
@@ -50,7 +56,7 @@ function SelectCategoriesToPrint({ selectedCategory, setSelectedCategory, catego
 										checked={isSelected}
 										onChange={() => handleChange(category.id)}
 									/>
-									{category.name}
+									{category.display_name}
 								</label>
 							</div>
 						);

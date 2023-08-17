@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import styles from "./LiveViewNav.module.css";
 import { Link, NavLink, useLocation, useResolvedPath } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";

@@ -1,12 +1,16 @@
-const { dbAll, dbRun } = require("../common/dbExecute");
-const Database = require("better-sqlite3");
-const db2 = new Database("restaurant.sqlite", {});
+// const { dbAll, dbRun } = require("../common/dbExecute");
+// const Database = require("better-sqlite3");
+// const db2 = new Database("restaurant.sqlite", {});
+
+const { getDb } = require("../common/getDb")
+const db2 = getDb()
+
 
 const getLiveOrders = () => {
 	try {
 		const liveOrders = db2
 			.prepare(
-				"SELECT id, order_number, customer_name, complete_address, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, total_tax, delivery_charges, total, payment_type, order_status, created_at, print_count FROM orders WHERE (order_type IN ('delivery', 'pick_up') AND order_status NOT IN ('delivered', 'picked_up')) OR (order_type = 'dine_in' AND order_status = 'accepted' AND settle_amount IS NULL)"
+				"SELECT id, order_number, customer_name, complete_address, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, total_tax, delivery_charges, total, payment_type, order_status, created_at, print_count FROM orders WHERE (order_type IN ('delivery', 'pick_up') AND order_status NOT IN ('delivered', 'picked_up','rejected','pending','pending_payment')) OR (order_type = 'dine_in' AND order_status = 'accepted' AND settle_amount IS NULL)"
 			)
 			.all([]);
 
@@ -17,7 +21,7 @@ const getLiveOrders = () => {
 
 		const liveOrdersWithItems = liveOrders.map((order) => {
 			const orderItems = prepareItem.all([order.id]);
-			const KOTDetail = prapareKOT.get([order.id]);
+			const KOTDetail = prapareKOT.all([order.id]);
 
 			const itemsWithAddons = orderItems.map((item) => {
 				const itemAddons = prepareToppings.all([item.id]);

@@ -1,8 +1,11 @@
 // const { dbAll, dbRun } = require("../common/dbExecute");
-const Database = require("better-sqlite3");
-const db2 = new Database("restaurant.sqlite", {});
+// const Database = require("better-sqlite3");
+// const db2 = new Database("restaurant.sqlite", {});
+const { getDb } = require("../common/getDb")
+const db2 = getDb()
 
-const updateLiveOrders = (db, data) => {
+
+const updateLiveOrders = (data) => {
       let { orderStatus, orderId, orderType, KOTId, print_count, tip, settleAmount, customerPaid, paymentType, multipay } = data;
 
       if (orderType === "dine_in") {

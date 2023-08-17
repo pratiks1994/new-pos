@@ -5,8 +5,10 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { resetFinalOrder } from "../Redux/finalOrderSlice";
 import { useMutation } from "react-query";
+import { executeKotPrint } from "../Utils/executePrint";
 
-function OrderExistAlertModal({ show, hide, IPAddress, finalOrder, notify }) {
+
+function OrderExistAlertModal({ show, hide, IPAddress, finalOrder, notify ,printers}) {
       const dispatch = useDispatch();
 
       const handleConfirm = async (finalOrder) => {
@@ -17,8 +19,10 @@ function OrderExistAlertModal({ show, hide, IPAddress, finalOrder, notify }) {
       const { mutate, isLoading } = useMutation({      
             mutationKey: "updateOrderAndCreateKOT",
             mutationFn: handleConfirm,
-            onSuccess: (data) => {
+            onSuccess: async (data) => {
+                  console.log(data)
                   hide();
+                  await executeKotPrint({...finalOrder,kotTokenNo:data}, printers);
                   dispatch(resetFinalOrder());
                   notify("success", "Orders and KOT updated");
             },

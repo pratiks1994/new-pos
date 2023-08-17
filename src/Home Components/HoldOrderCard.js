@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import styles from "./HoldOrderCard.module.css";
 import { useMutation, useQueryClient } from "react-query";
 import { useSelector, useDispatch } from "react-redux";
@@ -7,7 +7,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function HoldOrderCard({ order, setShowHoldOrders }) {
-      const queryClient = useQueryClient();
       const dispatch = useDispatch();
       const { IPAddress } = useSelector((state) => state.serverConfig);
       const navigate = useNavigate();
@@ -21,8 +20,8 @@ function HoldOrderCard({ order, setShowHoldOrders }) {
       });
 
       const setAsFinalOrder = async (order) => {
-            await dispatch(holdToFinalOrder({ order }));
-            await holdOrderMutation.mutate(order.id);
+            dispatch(holdToFinalOrder({ order }));
+            holdOrderMutation.mutate(order.id);
             await setShowHoldOrders(false);
             navigate("/Home");
       };

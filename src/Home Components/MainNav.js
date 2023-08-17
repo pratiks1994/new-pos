@@ -9,31 +9,38 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStore, faBowlFood, faUsersViewfinder, faTruck, faCirclePause, faBellConcierge, faBell, faUser, faPowerOff, faPhone } from "@fortawesome/free-solid-svg-icons";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { resetFinalOrder } from "../Redux/finalOrderSlice";
+import { modifyCartData, resetFinalOrder } from "../Redux/finalOrderSlice";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import ConfigSideBar from "./ConfigSideBar";
 import HoldOrders from "./HoldOrders";
 import { setActive } from "../Redux/UIActiveSlice";
 import { ToastContainer } from "react-toastify";
-import updateDatabase from "../Utils/updateDatabase";
 
 function MainNav() {
       const [showHoldOrders, setShowHoldOrders] = useState(false);
       const [showConfigSideBar, setShowConfigSideBar] = useState(false);
       const { holdOrderCount } = useSelector((state) => state.UIActive);
+      const defaultSettings = useSelector(state => state.bigMenu.defaultSettings)
       const dispatch = useDispatch();
       const navigate = useNavigate();
+
+ 
 
       const handleClose = () => {
             localStorage.removeItem("IP");
             localStorage.removeItem("systemType");
       };
 
+
+
       const getNewOrderPage = () => {
             dispatch(resetFinalOrder());
+            // dispatch(modifyCartData({}))
             dispatch(setActive({ key: "isCartActionDisable", name: false }));
-            navigate("/Home");
+            dispatch(modifyCartData({orderType:defaultSettings.default_order_type || "delivery"}))
+            dispatch(modifyCartData({paymentMethod:defaultSettings.default_payment_type || "cash"}))
+            defaultSettings.default_view==="table_view" ? navigate("/Home/tableView") :navigate("/Home");
       };
 
       return (
@@ -43,7 +50,7 @@ function MainNav() {
                               <div className="d-flex justify-content-start flex-nowrap align-items-center">
                                     <FontAwesomeIcon className={styles.bars} icon={faBars} onClick={() => setShowConfigSideBar(true)} />
                                     <Navbar.Brand href="#" className="fw-bolder text-danger fs-4 ps-1">
-                                          Martino'z
+                                          Martino'z 0.3.25
                                     </Navbar.Brand>
 
                                     <Button variant="danger" size="sm" className="mx-2 py-1 px-2 fw-bold text-nowrap" onClick={getNewOrderPage}>
@@ -66,11 +73,11 @@ function MainNav() {
                                           </div>
                                     </Link>
 
-                                    <Link to="/">
+                                    <Link to="/serverConfig">
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faStore} />
                                     </Link>
-                                    <Link>
-                                          <FontAwesomeIcon className={styles.LinkIcon} icon={faBowlFood} onClick={updateDatabase}/>
+                                    <Link to="/POSConfig">
+                                          <FontAwesomeIcon className={styles.LinkIcon} icon={faBowlFood} />
                                     </Link>
                                     <Link to="LiveView/OrderView">
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faUsersViewfinder} />

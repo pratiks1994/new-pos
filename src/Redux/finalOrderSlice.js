@@ -4,6 +4,7 @@ const finalOrderSlice = createSlice({
       name: "finalOrder",
       initialState: {
             id: "",
+            printCount:0,
             customerName: "emerging coders",
             customerContact: "8238267210",
             customerAdd: "Rk Empire nr nana Mauva circle 9th floor 905 rajkot ",
@@ -15,7 +16,7 @@ const finalOrderSlice = createSlice({
             deliveryCharge: 0,
             packagingCharge: 0,
             discount: 0,
-            paymentMethod: "Cash",
+            paymentMethod: "cash",
             tableNumber: "",
             personCount: 0,
             orderType: "delivery",
@@ -135,6 +136,7 @@ const finalOrderSlice = createSlice({
                         order_status: "accepted",
                         customerName: "",
                         customerContact: "",
+                        printCount:0,
                         customerAdd: "",
                         customerLocality: "",
                         orderCart: [],
@@ -143,7 +145,7 @@ const finalOrderSlice = createSlice({
                         deliveryCharge: 0,
                         packagingCharge: 0,
                         discount: 0,
-                        paymentMethod: "Cash",
+                        paymentMethod: "cash",
                         tableNumber: "",
                         personCount: 0,
                         orderType: "delivery",
@@ -169,6 +171,7 @@ const finalOrderSlice = createSlice({
                   state.orderType = order.order_type;
                   state.cartTotal = order.total;
                   state.orderComment = order.description;
+                  state.printCount = 0
 
                   state.orderCart = order.orderCart.map((item) => {
                         let toppings = item.toppings.map((topping) => {
@@ -179,6 +182,7 @@ const finalOrderSlice = createSlice({
                               currentOrderItemId: item.currentOrderItemId,
                               itemQty: item.quantity,
                               itemId: item.item_id,
+                              categoryId:item.category_id,
                               itemName: item.item_name,
                               variation_id: item.variation_id,
                               variationName: item.variation_name,
@@ -188,6 +192,7 @@ const finalOrderSlice = createSlice({
                               multiItemTotal: item.multiItemTotal,
                               itemIdentifier: item.itemIdentifier,
                               itemTax: item.itemTax,
+
                         };
                   });
             },

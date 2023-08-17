@@ -1,8 +1,8 @@
 import React from "react";
 import styles from "./OrderArea.module.css";
 import FinalOrder from "./FinalOrder";
-import { useSelector, useDispatch } from "react-redux";
-import emptyCartImg from "../icons/no-order.png"
+import { useSelector } from "react-redux";
+
 
 function OrderArea() {
       const orderItems = useSelector((state) => state.finalOrder.orderCart);
