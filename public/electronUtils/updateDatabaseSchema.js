@@ -35,7 +35,26 @@ const updateDatabaseSchema = (latestDbVersion, db2) => {
 						await db2.prepare(addColumnQuery).run();
 						console.log("Column 'salary' added.");
 					},
-				}
+				},
+				// {
+				// 	targetVersion: 5,
+				// 	action:  () => {
+				// 		// Function to add a new column
+				// 		const addchildIds =  `ALTER TABLE "taxes" ADD "child_ids" varchar(255) DEFAULT NULL`
+				// 		const addparentTaxRow = `INSERT INTO taxes (restaurant_id,name,tax,order_types,status,priority,child_ids) VALUES (?,?,?,?,?,?,?) WHERE id=?`
+				// 		const addPriceType = `ALTER TABLE "items" ADD "price_type" INTEGER DEFAULT 1`;
+				// 		const addParentTax = `ALTER TABLE "items" ADD "parent_tax" INTEGER DEFAULT 5`;
+				// 		const addTaxToOrderItemsColumn = `ALTER TABLE order_items ADD COLUMN tax REAL` ; 
+				// 		const addTaxIdToOrderItemsColumn =  `ALTER TABLE order_items ADD COLUMN tax_id INTEGER`
+				// 		const addTaxToKotItemsColumn = `ALTER TABLE kot_items ADD COLUMN tax REAL` ; 
+				// 		const addTaxIdToKotItemsColumn =  `ALTER TABLE order_items ADD COLUMN tax_id INTEGER`
+				// 		const updatedefaultConfig = "UPDATE restaurants SET configuration=?" ;
+
+				// 		db2.prepare(addchildIds).run()
+				// 		db2.prepare(addparentTaxRow).run([1,"GST",5,'1,2,3',1,3,'3,4'])
+
+				// 	},
+				// }
 				// Add more target versions and corresponding actions here
 			];
 
@@ -47,6 +66,7 @@ const updateDatabaseSchema = (latestDbVersion, db2) => {
 						await map.action(); // Execute the corresponding action
 					}
 				}
+
 				db2.prepare("UPDATE startup_config SET value = ? WHERE name = 'db_version'").run(latestDbVersion);
 			})();
 		}
