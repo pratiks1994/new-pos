@@ -1,22 +1,21 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "react-bootstrap";
 import styles from "./OrderPayment.module.css";
 import PaymentBreakdown from "./PaymentBreakdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useSelector, useDispatch } from "react-redux";
-import { calculateCartTotal, resetFinalOrder } from "../Redux/finalOrderSlice";
+import { resetFinalOrder } from "../Redux/finalOrderSlice";
 import { modifyCartData } from "../Redux/finalOrderSlice";
 import axios from "axios";
-
 import "react-toastify/dist/ReactToastify.css";
 import { useQueryClient, useMutation } from "react-query";
 import { setActive } from "../Redux/UIActiveSlice";
 import OrderExistAlertModal from "./OrderExistAlertModal";
 import KOTExistAlertModal from "./KOTExistAlertModal";
 import notify from "../Feature Components/notify";
-import  {  executeBillPrint, executeKotPrint } from "../Utils/executePrint";
+import { executeBillPrint, executeKotPrint } from "../Utils/executePrint";
 import { convertOrder } from "../Utils/convertOrder";
 
 function OrderPayment() {
@@ -65,7 +64,6 @@ function OrderPayment() {
 		}
 	};
 
-
 	const saveAndPrintOrder = async (finalOrder, printers) => {
 		if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
 			notify("err", "please Enter Table No.");
@@ -81,7 +79,7 @@ function OrderPayment() {
 				return;
 			}
 
-			const orderToPrint = convertOrder(data.order)
+			const orderToPrint = convertOrder(data.order);
 
 			await executeBillPrint(orderToPrint, printers);
 
@@ -119,13 +117,13 @@ function OrderPayment() {
 
 		if (finalOrder.orderCart.length !== 0) {
 			let res = await axios.post(`http://${IPAddress}:3001/KOT`, finalOrder);
-			console.log(res.data)
+			console.log(res.data);
 
 			if (res.statusText === "OK" && !res.data.orderExist) {
 				finalOrder = { ...finalOrder, kotTokenNo: res.data.kotTokenNo };
 
 				await executeKotPrint(finalOrder, printers);
-				
+
 				queryClient.invalidateQueries("KOTs");
 
 				notify("success", "KOT Success");
@@ -189,28 +187,7 @@ function OrderPayment() {
 	};
 	//  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store
 
-	useEffect(() => {
-		let subTotal = 0;
-		finalOrder.orderCart.forEach((item) => {
-			subTotal += item.multiItemTotal;
-		});
-
-		let tax = finalOrder.orderCart.reduce((totalTax, item) => {
-			return (
-				totalTax +
-				item.itemTax.reduce((singleTax, tax) => {
-					return singleTax + tax.tax;
-				}, 0)
-			);
-		}, 0);
-
-		let cartTotal = subTotal + tax;
-
-		dispatch(calculateCartTotal({ subTotal, tax, cartTotal }));
-	}, [finalOrder.orderCart, dispatch]);
-
 	
-
 	const [showPaymentBreakdown, setShowPaymentBreakdown] = useState(false);
 
 	const chevronPosition = showPaymentBreakdown ? <FontAwesomeIcon icon={faCaretDown} /> : <FontAwesomeIcon icon={faCaretUp} />;

@@ -5,20 +5,22 @@ import { incrementQty, decrementQty, removeItem } from "../Redux/finalOrderSlice
 import { motion } from "framer-motion";
 import FinalOrderItemModal from "./FinalOrderItemModal";
 
-function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantName, multiItemTotal, itemTax, toppings, itemNotes }) {
+function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantName, multiItemTotal, itemTax, toppings, itemNotes, defaultPriceType }) {
 	const [showItemModal, setShowItemModal] = useState(false);
+
+	const totalTax = itemTax.reduce((acc, tax) => (acc += tax.tax), 0);
 
 	const dispatch = useDispatch();
 
-	const addQty = (id) => {
+	const addQty = id => {
 		dispatch(incrementQty({ id }));
 	};
 
-	const removeQty = (id) => {
+	const removeQty = id => {
 		dispatch(decrementQty({ id }));
 	};
 
-	const remove = (itemId) => {
+	const remove = itemId => {
 		dispatch(removeItem({ itemId }));
 	};
 
@@ -30,9 +32,39 @@ function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantN
 			exit={{ opacity: 0, scale: 0.5 }}
 			animate={{ opacity: 1, scale: 1 }}
 			transition={{ duration: 0.15 }}>
-			<div
+			<div className={styles.itemNameContainer}>
+				<div
+					className={styles.removeBtn}
+					onClick={() => {
+						remove(currentOrderItemId);
+					}}>
+					x
+				</div>
+				<div
+					className={styles.itemName}
+					onClick={e => {
+						setShowItemModal(true);
+						e.stopPropagation();
+					}}>
+					{itemName} {variantName ? `- ${variantName}` : null}
+				</div>
+			</div>
+			<div className={styles.quantityControls}>
+				<div className={styles.minusBtn} onClick={() => removeQty(currentOrderItemId)}>
+					-
+				</div>
+				<div className={styles.itemQuantity}>{itemQty}</div>
+				<div className={styles.plusbtn} onClick={() => addQty(currentOrderItemId)}>
+					+
+				</div>
+			</div>
+			<div className={styles.itemPrice}>
+				<div>{defaultPriceType === "with_tax" ? (multiItemTotal + totalTax).toFixed(2) : multiItemTotal.toFixed(2)}</div>
+			</div>
+
+			{/* <div
 				className={styles.name}
-				onClick={(e) => {
+				onClick={e => {
 					setShowItemModal(true);
 					e.stopPropagation();
 				}}>
@@ -59,7 +91,8 @@ function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, variantN
 					+
 				</button>
 			</div>
-			<div className={styles.total}>{multiItemTotal.toFixed(2)}</div>
+			<div className={styles.total}>{defaultPriceType === "with_tax" ? (multiItemTotal + totalTax).toFixed(2) : multiItemTotal.toFixed(2)}</div> */}
+
 			{showItemModal && (
 				<FinalOrderItemModal
 					show={showItemModal}

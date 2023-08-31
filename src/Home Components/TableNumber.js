@@ -5,26 +5,24 @@ import { changePriceOnAreaChange, modifyCartData } from "../Redux/finalOrderSlic
 import { setActive } from "../Redux/UIActiveSlice";
 
 function TableNumber({ showDetailType }) {
-	let { tableNumber, orderCart } = useSelector((state) => state.finalOrder);
-	let { areas, categories } = useSelector((state) => state.bigMenu);
-	let { restaurantPriceId } = useSelector((state) => state.UIActive);
-	let dispatch = useDispatch();
+	const { tableNumber, orderCart } = useSelector((state) => state.finalOrder);
+	const { areas, categories, defaultSettings } = useSelector((state) => state.bigMenu);
+	const { restaurantPriceId } = useSelector((state) => state.UIActive);
+	const dispatch = useDispatch();
 
 	const hanndleChange = (e) => {
 		let tableNo = e.target.value;
 		let area = areas.find((area) => area.tables.some((table) => table.table_no === tableNo));
 		let areaName = area?.area || "Other";
-		let restaurantPriceId = area?.restaurant_price_id || null;
+		let updatedRestaurantPriceId = area?.restaurant_price_id || +defaultSettings.default_restaurant_price || null;
 
-		dispatch(setActive({ key: "restaurantPriceId", name: restaurantPriceId }));
-
+		dispatch(setActive({ key: "restaurantPriceId", name: updatedRestaurantPriceId }));
 		dispatch(modifyCartData({ tableNumber: tableNo }));
 		dispatch(modifyCartData({ tableArea: areaName }));
 	};
 
 	useEffect(() => {
 		// const start = performance.now();
-
 		let timeOut = setTimeout(() => {
 			if (orderCart.length) {
 				const newCartItems = orderCart.map((cartItem) => {
@@ -58,7 +56,7 @@ function TableNumber({ showDetailType }) {
 								let newitemTotal = newPrice + toppingPrice;
 								let newMultiItemTotal = cartItem.itemQty * newitemTotal;
 								let newTaxes = item.item_tax.map((tax) => {
-									return { id: tax.id, name: tax.name, tax: (tax.tax / 100) * newMultiItemTotal };
+									return { id: tax.id, name: tax.name, tax: (tax.tax / 100) * newitemTotal };
 								});
 
 								return { ...cartItem, basePrice: newPrice, itemTotal: newitemTotal, multiItemTotal: newMultiItemTotal, itemTax: newTaxes };
@@ -81,6 +79,7 @@ function TableNumber({ showDetailType }) {
 		<div className={showTableNumber}>
 			<span className="mx-2">please enter Table No.</span>
 			<input
+			    className="px-2"
 				type="number"
 				min={0}
 				step={1}

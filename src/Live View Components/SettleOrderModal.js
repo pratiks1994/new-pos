@@ -4,7 +4,6 @@ import { Modal, Row, Col } from "react-bootstrap";
 import OtherPaymentOptions from "./OtherPaymentOptions";
 import MultipayOptions from "./MultipayOptions";
 
-
 function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 	const [paymentDetail, setPaymentDetail] = useState({
 		paymentType: "cod",
@@ -24,25 +23,25 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 	});
 	const otherOptions = ["upi_gpay", "upi_paytm", "upi_phonepe", "upi"];
 
-	const handleChange = useCallback((e) => {
+	const handleChange = useCallback(e => {
 		const { name, value } = e.target;
 
 		if (name === "paymentType") {
-			setPaymentDetail((prev) => {
+			setPaymentDetail(prev => {
 				return { ...prev, [name]: value, customerPaid: "", customerReturn: "", settleAmount: "" };
 			});
 			return;
 		}
 
 		if (name === "customerPaid") {
-			setPaymentDetail((prev) => {
+			setPaymentDetail(prev => {
 				const returnAmount = Math.round(value - order.total);
 				const customerReturn = returnAmount < 0 ? "Amount is less" : `₹ ${returnAmount}`;
 				return { ...prev, [name]: value, customerReturn: customerReturn };
 			});
 			return;
 		} else {
-			setPaymentDetail((prev) => ({ ...prev, [name]: value }));
+			setPaymentDetail(prev => ({ ...prev, [name]: value }));
 			return;
 		}
 	}, []);

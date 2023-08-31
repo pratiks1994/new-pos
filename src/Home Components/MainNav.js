@@ -25,18 +25,15 @@ function MainNav() {
       const dispatch = useDispatch();
       const navigate = useNavigate();
 
- 
 
-      const handleClose = () => {
-            localStorage.removeItem("IP");
-            localStorage.removeItem("systemType");
-      };
-
+      // const handleClose = () => {
+      //       localStorage.removeItem("IP");
+      //       localStorage.removeItem("systemType");
+      // };
 
 
       const getNewOrderPage = () => {
             dispatch(resetFinalOrder());
-            // dispatch(modifyCartData({}))
             dispatch(setActive({ key: "isCartActionDisable", name: false }));
             dispatch(modifyCartData({orderType:defaultSettings.default_order_type || "delivery"}))
             dispatch(modifyCartData({paymentMethod:defaultSettings.default_payment_type || "cash"}))
@@ -49,8 +46,8 @@ function MainNav() {
                         <Container fluid className="d-flex flex-nowrap">
                               <div className="d-flex justify-content-start flex-nowrap align-items-center">
                                     <FontAwesomeIcon className={styles.bars} icon={faBars} onClick={() => setShowConfigSideBar(true)} />
-                                    <Navbar.Brand href="#" className="fw-bolder text-danger fs-4 ps-1">
-                                          Martino'z 0.3.25
+                                    <Navbar.Brand  className="fw-bolder text-danger fs-4 ps-1">
+                                          Martino'z 0.3.26
                                     </Navbar.Brand>
 
                                     <Button variant="danger" size="sm" className="mx-2 py-1 px-2 fw-bold text-nowrap" onClick={getNewOrderPage}>
@@ -98,7 +95,7 @@ function MainNav() {
                                     <Link>
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faUser} />
                                     </Link>
-                                    <Link to="../" onClick={handleClose}>
+                                    <Link to="../" >
                                           <FontAwesomeIcon className={styles.LinkIcon} icon={faPowerOff} />
                                     </Link>
                               </div>

@@ -67,7 +67,14 @@
      border: 1px solid rgb(196, 3, 3);
      border-radius: 5px;
      text-decoration: none;
+     transition: all 100ms ease-in-out;
 }
+
+.backBtn:hover{
+     background-color: rgb(196, 3, 3) ;
+     color: white;
+}
+
 
 .filter.active {
      background-color: rgb(196, 3, 3);

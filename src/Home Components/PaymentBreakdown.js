@@ -25,8 +25,6 @@ function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
                setShowPaymentBreakdown(false)    
                
                }
-
-              
           };
 
           //   bind full document for listening click

@@ -3,7 +3,7 @@ const sortPrinters = (printers) => {
 		// const kotPrintCategories =  printer.kot_print_categories.split
 
 		const billPrintOrderTypes = printer.bill_print_ordertypes.length
-
+		
 			? printer.bill_print_ordertypes.split(",")?.map((orderType) => {
 					if (orderType === "1") {
 						return { orderType: "delivery", copyCount: +printer.bill_print_copy_count.split(",")[0] };

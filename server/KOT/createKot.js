@@ -29,8 +29,6 @@ const createKot = (order, userId, orderId) => {
 	// create token comparing date of last date and current kot date , reset token no if the date is changed
 
 	db2.transaction(() => {
-
-
 		const latestEntry = db2.prepare("SELECT created_at, token_no FROM kot ORDER BY ID DESC LIMIT 1").get([]);
 
 		const currentDate = new Date().getDate();
@@ -46,13 +44,15 @@ const createKot = (order, userId, orderId) => {
 
 		db2.transaction(() => {
 			const prepareItem = db2.prepare(
-				"INSERT INTO kot_items (kot_id,item_id,item_name,quantity,variation_name,variation_id,description,item_tax,price,final_price,item_addons) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+				"INSERT INTO kot_items (kot_id,item_id,item_name,quantity,variation_name,variation_id,description,tax,price,final_price,item_addon_items,tax_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
 			);
 
 			// const prepareToppings = db2.prepare("INSERT INTO KOT_item_addongroupitems (KOT_item_id,addongroupitem_id,name,quantity) VALUES (?,?,?,?)");
 
-			orderCart.forEach((item) => {
-				const { itemQty, itemId, itemName, variation_id, variantName, toppings, itemTax, itemTotal, multiItemTotal, variant_display_name } = item;
+			orderCart.forEach(item => {
+				const { itemQty, itemId, itemName, variation_id, variantName, toppings, itemTax, itemTotal, multiItemTotal, variant_display_name, parent_tax } = item;
+
+				const totalItemTax = itemTax.reduce((total, tax) => (total += tax.tax), 0);
 
 				const { lastInsertRowid: KOTItemId } = prepareItem.run([
 					KOTId,
@@ -62,10 +62,11 @@ const createKot = (order, userId, orderId) => {
 					variant_display_name,
 					variation_id,
 					orderComment,
-					JSON.stringify(itemTax),
+					totalItemTax,
 					itemTotal,
 					multiItemTotal,
 					JSON.stringify(toppings),
+					parent_tax,
 				]);
 			});
 		})();

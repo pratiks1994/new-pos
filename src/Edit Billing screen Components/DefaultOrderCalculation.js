@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./DefaultOrderCalculation.module.css";
 
-function DefaultOrderCalculation({ defaultOptions, setDefaulOpTions }) {
+function DefaultOrderCalculation({ defaultOptions, setDefaultOptions }) {
 	const calculationOptions = [
 		{
 			name: "default_round_off_options",
@@ -24,7 +24,19 @@ function DefaultOrderCalculation({ defaultOptions, setDefaulOpTions }) {
 				{ name: 2, displayName: 2 },
 				{ name: 3, displayName: 3 },
 			],
+		},{
+			name: "default_restaurant_price",
+			displayName: "Default Restaurant Price",
+			type: "select",
+			options: [
+				{ name: 1, displayName: 1 },
+				{ name: 2, displayName: 2 },
+				{ name: 3, displayName: 3 },
+				{ name: 4, displayName: 4 },
+
+			],
 		},
+		
 	];
 
 	return (
@@ -51,7 +63,7 @@ function DefaultOrderCalculation({ defaultOptions, setDefaulOpTions }) {
 													id={`${option.displayName}${item.displayName}`}
 													name={item.name}
 													checked={defaultOptions[item.name] === option.name}
-													onChange={() => setDefaulOpTions((prev) => ({ ...prev, [item.name]: option.name }))}
+													onChange={() => setDefaultOptions((prev) => ({ ...prev, [item.name]: option.name }))}
 												/>
 												<label htmlFor={`${option.displayName}${item.displayName}`}>{option.displayName}</label>
 											</div>
@@ -63,7 +75,7 @@ function DefaultOrderCalculation({ defaultOptions, setDefaulOpTions }) {
 											className={styles.selectOptions}
 											name={item.name}
 											value={defaultOptions[item.name]}
-											onChange={(e) => setDefaulOpTions((prev) => ({ ...prev, [item.name]: e.target.value }))}>
+											onChange={(e) => setDefaultOptions((prev) => ({ ...prev, [item.name]: e.target.value }))}>
 											{item.options.map((option) => {
 												return (
 													<option

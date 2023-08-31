@@ -43,6 +43,7 @@ const io = new Server(httpServer, {
 });
 
 
+
 io.on("connection", (socket) => {
     console.log("A client has connected:", socket.id);
 
@@ -238,6 +239,7 @@ app.post("/updateOrderAndCreateKOT", (req, res) => {
 
 app.post("/includeKOTsAndCreateOrder", (req, res) => {
 	const oldKOTs = getOldKOTs(req.body.tableNumber);
+	// console.log(oldKOTs)
 	const kotTokenNo = createKot(req.body);
 	let newFinalOrder = mergeKOTandOrder(req.body, oldKOTs);
 	const { userId, orderId, orderNo } = createOrder(newFinalOrder);

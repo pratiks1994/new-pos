@@ -115,8 +115,8 @@ const printKot = async (payload) =>{
 						? item.toppings
 								?.map((topping) => {
 									return `<article class="addonCard">
-												<div class="addonName">${topping.type} - </div>
-					  							<div class="addonQty">${topping.qty}</div>
+												<div class="addonName">${topping.name} - </div>
+					  							<div class="addonQty">${topping.quantity}</div>
 					  						</article>`;
 								})
 								.join(" ")
@@ -154,7 +154,7 @@ const printKot = async (payload) =>{
 	];
 
 	const options = {
-		preview: false,
+		preview: true,
 		margin: "0px 0px 0px 0px",
 		silent: true,
 		copies: 1,

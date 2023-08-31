@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import styles from "./Item.module.css";
 import CenteredModal from "../Feature Components/CenteredModal";
 import ItemModalBody from "../Feature Components/ItemModalBody";
@@ -8,17 +8,16 @@ import { addOrderItem } from "../Redux/finalOrderSlice";
 import { v4 } from "uuid";
 import { motion } from "framer-motion";
 
-function Item({ name, id, variations, has_variation, price, display_name, item_tax, restaurantPrices,category_id }) {
+function Item({ name, id, variations, has_variation, price, display_name, item_tax, restaurantPrices, category_id, parent_tax }) {
 	const dispatch = useDispatch();
-
-	const [modelShow, setModalShow] = useState(false);
+	const [modalShow, setModalShow] = useState(false);
 	const [err, setErr] = useState("");
-	const currentItem = useSelector((state) => state.currentItem);
-	const { restaurantPriceId } = useSelector((state) => state.UIActive);
+	const currentItem = useSelector(state => state.currentItem);
+	const { restaurantPriceId } = useSelector(state => state.UIActive);
+	const restaurantPriceVariations = variations.filter(variation => variation.restaurantPriceId === restaurantPriceId);
+	const totalTax = item_tax.reduce((acc, tax) => (acc += tax.tax), 0);
 
-	const restaurantPriceVariations = variations.filter((variation) => variation.restaurantPriceId === restaurantPriceId);
-
-	const getIdentifier = (item) => {
+	const getIdentifier = item => {
 		let { itemId, variation_id, toppings } = item;
 		let identifier = [itemId, variation_id];
 
@@ -27,9 +26,9 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 			.sort((a, b) => {
 				return a.id - b.id;
 			})
-			.forEach((topping) => {
+			.forEach(topping => {
 				identifier.push(topping.id);
-				identifier.push(topping.qty);
+				identifier.push(topping.quantity);
 			});
 
 		return identifier.join("_");
@@ -37,16 +36,20 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 
 	const addItem = (id, name) => {
 		let orderItemId = v4();
+		// const totalTaxPercent = item_tax.reduce((acc, tax) => {
+		// 	return (acc += tax.tax);
+		// }, 0) || 0;
+
 		if (has_variation === 1) {
 			setModalShow(true);
 			let defaultVariantName = restaurantPriceVariations[0].name;
 			let defaultVariantId = restaurantPriceVariations[0].variation_id;
 			let defaultVariantPrice = restaurantPriceVariations[0].price;
 			let defaultVariantDisplayName = restaurantPriceVariations[0].display_name;
-			dispatch(addCurrentItem({ id, name, orderItemId, defaultVariantName, defaultVariantId, defaultVariantPrice, defaultVariantDisplayName,category_id }));
+
+			dispatch(addCurrentItem({ id, name, orderItemId, defaultVariantName, defaultVariantId, defaultVariantPrice, defaultVariantDisplayName, category_id, parent_tax }));
 		} else {
-                  
-			const RestaurantItemPrice = restaurantPriceId ? restaurantPrices.find((price) => price.restaurant_price_id === restaurantPriceId).price : price;
+			const restaurantItemPrice = restaurantPriceId ? restaurantPrices.find(price => price.restaurant_price_id === restaurantPriceId).price : price;
 
 			let currentItem = {
 				currentOrderItemId: orderItemId,
@@ -56,17 +59,18 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 				variation_id: "",
 				variantName: "",
 				variant_display_name: "",
-				categoryId : category_id,
-				basePrice: RestaurantItemPrice,
+				categoryId: category_id,
+				basePrice: restaurantItemPrice,
 				toppings: [],
-				itemTotal: RestaurantItemPrice,
-				multiItemTotal: RestaurantItemPrice,
+				itemTotal: restaurantItemPrice,
+				multiItemTotal: restaurantItemPrice,
 				itemIdentifier: id,
 				itemNotes: "",
+				parent_tax: parent_tax,
 			};
 
-			const itemTax = item_tax.map((tax) => {
-				return { id: tax.id, name: tax.name, tax: (currentItem.multiItemTotal * tax.tax) / 100 };
+			const itemTax = item_tax.map(tax => {
+				return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 };
 			});
 
 			dispatch(addOrderItem({ ...currentItem, itemTax }));
@@ -81,8 +85,8 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 	const handleSave = () => {
 		let itemIdentifier = getIdentifier(currentItem);
 
-		const itemTax = item_tax.map((tax) => {
-			return { id: tax.id, name: tax.name, tax: (currentItem.multiItemTotal * tax.tax) / 100 };
+		const itemTax = item_tax.map(tax => {
+			return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 };
 		});
 
 		dispatch(addOrderItem({ ...currentItem, itemIdentifier, itemTax }));
@@ -100,24 +104,20 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 				transition={{ duration: 0.15 }}>
 				{display_name}
 			</motion.div>
-			{
+			{modalShow && (
 				<CenteredModal
-					show={modelShow}
+					show={modalShow}
 					onHide={handleCancel}
 					handleCancel={handleCancel}
 					handleSave={handleSave}
 					name={name}
 					err={err}
 					setErr={setErr}
-					body={
-						<ItemModalBody
-							id={id}
-							restaurantPriceVariations={restaurantPriceVariations}
-						/>
-					}
+					totalTax={totalTax}
 					total={currentItem.itemTotal}
+					body={<ItemModalBody id={id} restaurantPriceVariations={restaurantPriceVariations} totalTax={totalTax} />}
 				/>
-			}
+			)}
 		</>
 	);
 }

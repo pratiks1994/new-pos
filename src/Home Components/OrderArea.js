@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 
 function OrderArea() {
       const orderItems = useSelector((state) => state.finalOrder.orderCart);
+      const defaultPriceType = useSelector(state => state.bigMenu.defaultSettings.default_price_type)
 
       return (
             <div className={`${styles.orderArea} flex-shrink-1`}>
@@ -17,7 +18,7 @@ function OrderArea() {
 
                   <div className={styles.finalOrder}>
                         {orderItems.length ? orderItems.map((item) => (
-                              <FinalOrder key={item.currentOrderItemId} {...item} />
+                              <FinalOrder key={item.currentOrderItemId} {...item} defaultPriceType={defaultPriceType} />
                         )) : null
                         // <div className={styles.emptyCart}> <img className={styles.noItemsImg} src={emptyCartImg} /> </div>
                             }

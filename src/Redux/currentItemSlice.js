@@ -1,23 +1,26 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const initialCurrentItems = {
+	currentOrderItemId: "",
+	itemQty: 0,
+	itemId: "",
+	categoryId: "",
+	itemName: "",
+	variation_id: "",
+	variantName: "",
+	variant_display_name: "",
+	basePrice: 0,
+	toppings: [],
+	itemTotal: 0,
+	multiItemTotal: 0,
+	parent_tax: 0,
+	itemTax: [],
+	itemNotes: "",
+}
+
 const currentItemSlice = createSlice({
 	name: "currentItem",
-	initialState: {
-		currentOrderItemId: "",
-		itemQty: 0,
-		itemId: "",
-		categoryId:"",
-		itemName: "",
-		variation_id: "",
-		variantName: "",
-		variant_display_name: "",
-		basePrice: 0,
-		toppings: [],
-		itemTotal: 0,
-		multiItemTotal: 0,
-		itemTax: [],
-		itemNotes: "",
-	},
+	initialState: initialCurrentItems,
 
 	reducers: {
 		addCurrentItem: (state, action) => {
@@ -32,7 +35,8 @@ const currentItemSlice = createSlice({
 			state.toppings = [];
 			state.itemTotal = action.payload.defaultVariantPrice;
 			state.multiItemTotal = action.payload.defaultVariantPrice;
-			state.categoryId=action.payload.category_id
+			state.categoryId = action.payload.category_id;
+			state.parent_tax = action.payload.parent_tax
 		},
 
 		selectVariant: (state, action) => {
@@ -46,19 +50,13 @@ const currentItemSlice = createSlice({
 		},
 
 		addTopping: (state, action) => {
-			let { id, type, price } = action.payload;
-			//   console.log(id,type,price)
+			let { id, name, price } = action.payload;
 			let existingTopping = state.toppings.find((topping) => id === topping.id);
 
 			if (existingTopping) {
-				state.toppings.forEach((topping) => {
-					if (topping.id === existingTopping.id) {
-						topping.qty += 1;
-					}
-				});
+				existingTopping.quantity += 1;
 			} else {
-				const newTopping = { id, type, price, qty: 1 };
-				// console.log(newTopping)
+				const newTopping = { id, name, price, quantity: 1 };
 				state.toppings.push(newTopping);
 			}
 
@@ -72,31 +70,13 @@ const currentItemSlice = createSlice({
 		},
 
 		removeTopping: (state, action) => {
-			let { id, price } = action.payload;
-			// let itemQty = state.toppings.find((topping) => id === topping.id).qty;
-
-			// if (itemQty === 1) {
-			//       return {
-			//             ...state,
-			//             itemTotal: Number(state.itemTotal) - Number(price),
-			//             toppings: [...state.toppings.filter((topping) => id !== topping.id)],
-			//       };
-			// } else {
-			//       state.toppings.forEach((topping) => {
-			//             if (topping.id === id) {
-			//                   topping.qty -= 1;
-			//             }
-			//       });
-			// }
-			// state.itemTotal -= +price;
-			// state.multiItemTotal = state.itemTotal;
-
+			const { id, price } = action.payload;
 			let topping = state.toppings.find((topping) => id === topping.id);
 
-			if (topping.qty === 1) {
-				state.toppings = state.toppings.filter((topping) => !(topping.id === id && topping.qty === 1));
+			if (topping.quantity === 1) {
+				state.toppings = state.toppings.filter((topping) => !(topping.id === id && topping.quantity === 1));
 			} else {
-				topping.qty = topping.qty - 1;
+				topping.quantity = topping.quantity - 1;
 			}
 
 			state.itemTotal = state.itemTotal - +price;
@@ -104,20 +84,7 @@ const currentItemSlice = createSlice({
 		},
 
 		clearCurrentItem: (state, action) => {
-			state.currentOrderItemId = "";
-			state.itemId = "";
-			state.categoryId="" ;
-			state.itemName = "";
-			state.variation_id = "";
-			state.variantName = "";
-			state.basePrice = "";
-			state.toppings = [];
-			state.itemTotal = 0;
-			state.itemQty = 0;
-			state.multiItemTotal = 0;
-			state.itemTax = [];
-			state.itemNotes = "";
-			state.variant_display_name = "";
+			return initialCurrentItems
 		},
 	},
 });

@@ -17,7 +17,7 @@ function EditBillingScreen() {
 	const { IPAddress } = useSelector((state) => state.serverConfig);
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-	const [defaultOptions, setDefaulOpTions] = useState({
+	const [defaultOptions, setDefaultOptions] = useState({
 		default_view: "billing",
 		order_view_sort: "asc",
 		kot_view_sort: "asc",
@@ -25,6 +25,8 @@ function EditBillingScreen() {
 		default_payment_type: "cash",
 		default_round_off_options: "normal",
 		default_invoice_decimal: 2,
+		default_price_type : "with_tax",
+		default_restaurant_price : 0
 	});
 
 	const getDefaultScreenData = async () => {
@@ -37,7 +39,7 @@ function EditBillingScreen() {
 		queryFn: getDefaultScreenData,
 		refetchOnWindowFocus: false,
 		onSuccess: (data) => {
-			setDefaulOpTions((prev) => ({ ...prev, ...data }));
+			setDefaultOptions((prev) => ({ ...prev, ...data }));
 		},
 	});
 
@@ -89,11 +91,11 @@ function EditBillingScreen() {
 				<main className={styles.billingScreenOptions}>
 					<DefaultDisplayOptions
 						defaultOptions={defaultOptions}
-						setDefaulOpTions={setDefaulOpTions}
+						setDefaultOptions={setDefaultOptions}
 					/>
 					<DefaultOrderCalculation
 						defaultOptions={defaultOptions}
-						setDefaulOpTions={setDefaulOpTions}
+						setDefaultOptions={setDefaultOptions}
 					/>
 				</main>
 			) : null}

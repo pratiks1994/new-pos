@@ -1,6 +1,5 @@
 export async function executeBillAndKotPrint(order, printers) {
 	for (const printer of printers) {
-		
 		if (printer.billPrintStatus === 1) {
 			for (const orderType of printer.billPrintOrderTypes) {
 				if (orderType.orderType === order.orderType) {
@@ -21,7 +20,7 @@ export async function executeBillAndKotPrint(order, printers) {
 			const kotPrintCategoriesSet = new Set(printer.kotPrintCategories.split(","));
 			const kotPrintItemsSet = new Set(printer.kotPrintItems.split(","));
 
-			const filteredCart = order.orderCart.filter((item) => {
+			const filteredCart = order.orderCart.filter(item => {
 				const categoryId = item.categoryId.toString();
 				const itemId = item.itemId.toString();
 
@@ -61,16 +60,11 @@ export async function executeBillAndKotPrint(order, printers) {
 	}
 }
 
-
-
-
-
 export const executeBillPrint = async (order, printers) => {
 	for (const printer of printers) {
 		if (printer.billPrintStatus === 1) {
 			for (const orderType of printer.billPrintOrderTypes) {
 				if (orderType.orderType === order.orderType) {
-
 					for (let i = 0; i < orderType.copyCount; i++) {
 						console.log("billPrint", printer.printerName);
 
@@ -86,17 +80,13 @@ export const executeBillPrint = async (order, printers) => {
 	}
 };
 
-
-
-
 export const executeKotPrint = async (order, printers) => {
 	for (const printer of printers) {
-
 		if (printer.kotPrintStatus === 1) {
 			const kotPrintCategoriesSet = new Set(printer.kotPrintCategories.split(","));
 			const kotPrintItemsSet = new Set(printer.kotPrintItems.split(","));
 
-			const filteredCart = order.orderCart.filter((item) => {
+			const filteredCart = order.orderCart.filter(item => {
 				const categoryId = item.categoryId.toString();
 				const itemId = item.itemId.toString();
 
@@ -124,10 +114,9 @@ export const executeKotPrint = async (order, printers) => {
 							// console.log("kot Print on", printer.printerName);
 
 							try {
-									let responce = await window.apiKey.request("kotPrint", { data: newFilteredOrder, printerName: printer.printerName })
+								let responce = await window.apiKey.request("kotPrint", { data: newFilteredOrder, printerName: printer.printerName });
 
 								// let responce = await window.apiKey.request("printKot", { data: newFilteredOrder, printerName: printer.printerName });
-								
 							} catch (err) {
 								console.log(err);
 							}

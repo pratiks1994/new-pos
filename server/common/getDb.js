@@ -3,7 +3,6 @@ const dbPath = process.argv[2]
 
 function getDb() {
     const db2 = new Database(dbPath, {});
-	
 	return db2;
 }
 

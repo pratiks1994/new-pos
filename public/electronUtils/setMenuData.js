@@ -57,7 +57,7 @@ const setMenuData = async (token, syncCode, db2) => {
 		const addonItemstmt = db2.prepare("INSERT INTO addongroupitems (id,attribute,addongroup_id,name,display_name,price,status,priority,pp_id) VALUES (?,?,?,?,?,?,?,?,?)");
 
 		const itemstmt = db2.prepare(
-			"INSERT INTO items (id,restaurant_id, main_item_id, category_id, name, display_name, attribute, description, is_spicy, has_jain, tag, image, pp_image_url, status, priority, has_variation, order_type, packing_charges, has_addon, has_variation_addon, in_stock, suggest, in_stock_turn_on_time, variation_groupname, price, item_tax, bogo_item, pp_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+			"INSERT INTO items (id,restaurant_id, main_item_id, category_id, name, display_name, attribute, description, is_spicy, has_jain, tag, image, pp_image_url, status, priority, has_variation, order_type, packing_charges, has_addon, has_variation_addon, in_stock, suggest, in_stock_turn_on_time, variation_groupname, price, item_tax, bogo_item, pp_id,parent_tax,price_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 		);
 
 		const itemVariationstmt = db2.prepare("INSERT INTO item_variation (id,item_id,variation_id,price,restaurant_price_id) VALUES (?,?,?,?,?)");
@@ -66,7 +66,7 @@ const setMenuData = async (token, syncCode, db2) => {
 
 		const addonItemVariationstmt = db2.prepare("INSERT INTO addongroup_item_variation (id,addongroup_id,item_variation_id) VALUES (?,?,?) ");
 
-		const taxstmt = db2.prepare("INSERT INTO taxes (id,restaurant_id,main_tax_id,name,tax,order_types,status,priority,pp_id) VALUES (?,?,?,?,?,?,?,?,?)");
+		const taxstmt = db2.prepare("INSERT INTO taxes (id,restaurant_id,main_tax_id,name,tax,order_types,status,priority,pp_id,child_ids) VALUES (?,?,?,?,?,?,?,?,?,?)");
 
 		const dineInTablestmt = db2.prepare("INSERT INTO dine_in_tables (id,restaurant_id,area_id,uid,sid,table_no,qr_code,platform) VALUES (?,?,?,?,?,?,?,?)");
 
@@ -224,7 +224,7 @@ const setMenuData = async (token, syncCode, db2) => {
 			}
 
 			for (const tax of taxes) {
-				taxstmt.run(tax.id, tax.restaurant_id, tax.main_tax_id, tax.name, tax.tax, tax.order_types, tax.status, tax.priority, tax.pp_id);
+				taxstmt.run(tax.id, tax.restaurant_id, tax.main_tax_id, tax.name, tax.tax, tax.order_types, tax.status, tax.priority, tax.pp_id,tax.child_ids);
 			}
 
 			for (const category of categories) {
@@ -318,7 +318,9 @@ const setMenuData = async (token, syncCode, db2) => {
 					item.price,
 					item.item_tax,
 					item.bogo_item,
-					item.pp_id
+					item.pp_id,
+					item.parent_tax,
+					item.price_type
 				);
 
 				if (item.variations.length) {
@@ -349,84 +351,84 @@ const setMenuData = async (token, syncCode, db2) => {
 				}
 			}
 
-			for (const order of orders) {
-				orderstmt.run(
-					order.id,
-					order.user_id,
-					order.order_number,
-					order.restaurant_id,
-					order.customer_name,
-					order.complete_address,
-					order.delivery_lat,
-					order.delivery_long,
-					order.delivery_distance,
-					order.aerial_distance,
-					order.normal_delivery_radius,
-					order.rider_id,
-					order.phone_number,
-					order.city_id,
-					order.pincode,
-					order.user_address_id,
-					order.order_type,
-					order.dine_in_table_id,
-					order.dine_in_table_no,
-					order.description,
-					order.item_total,
-					order.total_discount,
-					order.total_tax,
-					order.delivery_charges,
-					order.total,
-					order.promo_id,
-					order.promo_code,
-					order.promo_discount,
-					order.platform,
-					order.app_version,
-					order.payment_type,
-					order.order_status,
-					order.reason,
-					order.pp_order_json,
-					order.ordered_at,
-					order.pg_order_id,
-					order.pg_payment_id,
-					order.created_at,
-					order.updated_at,
-					order.total,
-					order.total,
-					1,
-					0
-				);
+			// for (const order of orders) {
+			// 	orderstmt.run(
+			// 		order.id,
+			// 		order.user_id,
+			// 		order.order_number,
+			// 		order.restaurant_id,
+			// 		order.customer_name,
+			// 		order.complete_address,
+			// 		order.delivery_lat,
+			// 		order.delivery_long,
+			// 		order.delivery_distance,
+			// 		order.aerial_distance,
+			// 		order.normal_delivery_radius,
+			// 		order.rider_id,
+			// 		order.phone_number,
+			// 		order.city_id,
+			// 		order.pincode,
+			// 		order.user_address_id,
+			// 		order.order_type,
+			// 		order.dine_in_table_id,
+			// 		order.dine_in_table_no,
+			// 		order.description,
+			// 		order.item_total,
+			// 		order.total_discount,
+			// 		order.total_tax,
+			// 		order.delivery_charges,
+			// 		order.total,
+			// 		order.promo_id,
+			// 		order.promo_code,
+			// 		order.promo_discount,
+			// 		order.platform,
+			// 		order.app_version,
+			// 		order.payment_type,
+			// 		order.order_status,
+			// 		order.reason,
+			// 		order.pp_order_json,
+			// 		order.ordered_at,
+			// 		order.pg_order_id,
+			// 		order.pg_payment_id,
+			// 		order.created_at,
+			// 		order.updated_at,
+			// 		order.total,
+			// 		order.total,
+			// 		1,
+			// 		0
+			// 	);
 
-				db2.transaction(() => {
-					for (const item of order.orderitems) {
-						const item_addons = item.orderitemaddongroupitems.length ? JSON.stringify(item.orderitemaddongroupitems) : null;
+			// 	db2.transaction(() => {
+			// 		for (const item of order.orderitems) {
+			// 			const item_addons = item.orderitemaddongroupitems.length ? JSON.stringify(item.orderitemaddongroupitems) : null;
 
-						orderItemstmt.run(
-							item.id,
-							item.order_id,
-							item.item_id,
-							item.item_name,
-							item.item_discount,
-							item.price,
-							item.final_price,
-							item.quantity,
-							item.description,
-							item.variation_name,
-							item.variation_id,
-							item.contains_free_item,
-							item.main_order_item_id,
-							item.created_at,
-							item.updated_at,
-							item_addons
-						);
+			// 			orderItemstmt.run(
+			// 				item.id,
+			// 				item.order_id,
+			// 				item.item_id,
+			// 				item.item_name,
+			// 				item.item_discount,
+			// 				item.price,
+			// 				item.final_price,
+			// 				item.quantity,
+			// 				item.description,
+			// 				item.variation_name,
+			// 				item.variation_id,
+			// 				item.contains_free_item,
+			// 				item.main_order_item_id,
+			// 				item.created_at,
+			// 				item.updated_at,
+			// 				item_addons
+			// 			);
 
-						db2.transaction(() => {
-							for (const tax of item.orderitemtaxes) {
-								orderItemTaxesstmt.run(tax.id, tax.order_item_id, tax.tax_id, tax.tax, tax.tax_amount, tax.created_at, tax.updated_at);
-							}
-						})();
-					}
-				})();
-			}
+			// 			db2.transaction(() => {
+			// 				for (const tax of item.orderitemtaxes) {
+			// 					orderItemTaxesstmt.run(tax.id, tax.order_item_id, tax.tax_id, tax.tax, tax.tax_amount, tax.created_at, tax.updated_at);
+			// 				}
+			// 			})();
+			// 		}
+			// 	})();
+			// }
 
 			for (const addonVariation of addongroup_item_variations) {
 				addonItemVariationstmt.run(addonVariation.id, addonVariation.addongroup_id, addonVariation.item_variation_id);

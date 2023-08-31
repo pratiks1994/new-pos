@@ -14,20 +14,37 @@ const getOrder = (orderId) => {
 			)
 			.get([orderId]);
 
-		const prepareItem = db2.prepare("SELECT id,item_id,item_name,price,final_price,quantity,variation_name,variation_id FROM order_items WHERE order_id = ?");
+		const prepareItem = db2.prepare("SELECT id,item_id,item_name,price,final_price,quantity,variation_name,variation_id,tax_id,item_addon_items FROM order_items WHERE order_id = ?");
 		const prepareToppings = db2.prepare("SELECT addongroupitem_id,name,price,quantity FROM order_item_addongroupitems WHERE order_item_id = ?");
 		const prepareTax = db2.prepare("SELECT tax_id,tax_amount FROM order_item_taxes WHERE order_item_id = ?");
 		const prapareKOT = db2.prepare("SELECT id,token_no FROM kot WHERE order_id=?");
+		const parentTaxStmt = db2.prepare("SELECT child_ids FROM taxes where id=?");
+		const taxesStmt = db2.prepare("SELECT * FROM taxes where id = ? ");
 
 		const orderItems = prepareItem.all([order.id]);
 		const KOTDetail = prapareKOT.all([order.id]);
 
 		const itemsWithAddons = orderItems.map((item) => {
-			const itemAddons = prepareToppings.all([item.id]);
 
-			const itemTax = prepareTax.all([item.id]);
+			const childTaxesString = item.tax_id ? parentTaxStmt.get(item.tax_id) : { child_ids: "" };
 
-			return { ...item, itemAddons, itemTax };
+				const taxesIdArray = childTaxesString.child_ids.length ? childTaxesString.child_ids.split(",") : [];
+
+				const taxesArray = taxesIdArray.map(tax => {
+					const taxData = taxesStmt.get(tax);
+
+					const itemTax = { tax_id: taxData.id, tax_name: taxData.name, tax_percent: taxData.tax, tax_amount: (taxData.tax * item.price) / 100 };
+					return itemTax;
+				});
+
+
+
+
+			// const itemAddons = prepareToppings.all([item.id]);
+
+			// const itemTax = prepareTax.all([item.id]);\
+
+			return { ...item, itemAddons:JSON.parse(item.item_addon_items), itemTax:taxesArray };
 		});
 
 		return { ...order, items: itemsWithAddons, KOTDetail };

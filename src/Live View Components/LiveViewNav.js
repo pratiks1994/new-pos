@@ -1,14 +1,16 @@
 import React from "react";
 import styles from "./LiveViewNav.module.css";
-import { Link, NavLink, useLocation, useResolvedPath } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate, useResolvedPath } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setActive } from "../Redux/UIActiveSlice";
+import BackButton from "../Feature Components/BackButton";
 
 function LiveViewNav() {
       const { liveViewOrderStatus } = useSelector((state) => state.UIActive);
       const dispatch = useDispatch();
       const location = useLocation();
       const path = useResolvedPath();
+      const navigate = useNavigate()
 
       const handleClick = (name) => {
             const key = "liveViewOrderStatus";
@@ -49,6 +51,7 @@ function LiveViewNav() {
                               {" "}
                               &#x2190; Back
                         </Link>
+                      
                   </div>
             </nav>
       );

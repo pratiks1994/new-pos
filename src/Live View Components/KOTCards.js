@@ -7,94 +7,102 @@ import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import getDisplayName from "../Utils/getDisplayName";
 
-
-
-
 function KOTCards({ KOT, idx }) {
-      const { IPAddress } = useSelector((state) => state.serverConfig);
+	const { IPAddress } = useSelector(state => state.serverConfig);
 
-      const queryClient = useQueryClient();
+	// const queryClient = useQueryClient();
 
-      const updateKOT = async ({ id, order_id, order_type }) => {
-            let { data } = await axios.put(`http://${IPAddress}:3001/liveKot`, { id, order_id, order_type });
-            return data;
-      };
+	const updateKOT = async ({ id, order_id, order_type }) => {
+		let { data } = await axios.put(`http://${IPAddress}:3001/liveKot`, { id, order_id, order_type });
+		return data;
+	};
 
-      const {
-            mutate: KOTmutation,
-            isLoading,
-            isError,
-      } = useMutation({
-            mutationFn: updateKOT,
-            // onMutate: async (id) => {
-            //       await queryClient.cancelQueries({ queryKey: ["KOTs"] });
-            //       const previousKOTs = queryClient.getQueryData(["KOTs"]);
-            //       queryClient.setQueryData(["KOTs"], (oldKOTs) => {
-            //             return oldKOTs.filter((KOT) => KOT.id !== id);
-            //       });
-            //       return { previousKOTs };
-            // },
-            // onError: (err, id, context) => {
-            //       queryClient.setQueryData(["KOTs"], context.previousKOTs);
-            // },
+	const {
+		mutate: KOTmutation,
+		isLoading,
+		isError,
+	} = useMutation({
+		mutationFn: updateKOT,
+		// onMutate: async (id) => {
+		//       await queryClient.cancelQueries({ queryKey: ["KOTs"] });
+		//       const previousKOTs = queryClient.getQueryData(["KOTs"]);
+		//       queryClient.setQueryData(["KOTs"], (oldKOTs) => {
+		//             return oldKOTs.filter((KOT) => KOT.id !== id);
+		//       });
+		//       return { previousKOTs };
+		// },
+		// onError: (err, id, context) => {
+		//       queryClient.setQueryData(["KOTs"], context.previousKOTs);
+		// },
 
-            // onSettled: (data) => {
-            //       queryClient.invalidateQueries("KOTs");
-            // },
-      });
+		// onSettled: (data) => {
+		//       queryClient.invalidateQueries("KOTs");
+		// },
+	});
 
-      const getColor = (type) => (type !== "dine_in" ? { backgroundColor: "rgba(116, 116, 0, 0.87)" } : null);
+	const getColor = type => (type !== "dine_in" ? { backgroundColor: "rgba(116, 116, 0, 0.87)" } : null);
 
-      return (
-            <motion.div layout className={styles.KOTCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1, delay: idx * 0.03 }}>
-                  <div className={styles.CardHeader} style={getColor(KOT.order_type)}>
-                        <div>
-                              {KOT.table_no && <div>{KOT.table_no}</div>}
-                              <div>{getDisplayName(KOT.order_type)} </div>
-                        </div>
-                        <div className={styles.token}>
-                              <div>{KOT.token_no}</div>
-                              <div>Token No.</div>
-                        </div>
-                        <div>10:10</div>
-                  </div>
-                  {KOT.customer_name && (
-                        <div className={styles.KOTCustomerDetail}>
-                              <div>{KOT.customer_name}</div>
-                              <div>{KOT.phone_number}</div>
-                        </div>
-                  )}
-                  <div className={styles.KOTItemHeader}>
-                        <div>Item</div>
-                        <div>QTY.</div>
-                  </div>
-                  <div className={styles.KOTBiller}>
-                        <div>Biller (biller)</div>
-                  </div>
-                  {KOT.items.map((item) => {
-                        return (
-                              <div className={styles.KOTItemsDetail} key={uuidv4()}>
-                                    <div className={styles.KOTItemName}>
-                                          {item.item_name} {item.variation_name ? `- ${item.variation_name}` : null}{" "}
-                                          {item.item_addons.length
-                                                ? item.item_addons.map((addon) => (
-                                                        <span key={uuidv4()}>
-                                                              / {addon.type} ({addon.qty})
-                                                        </span>
-                                                  ))
-                                                : null}
-                                    </div>
-                                    <div className={styles.KOTItemQty}>{item.quantity}</div>
-                              </div>
-                        );
-                  })}
-                  <div className={styles.footer}>
-                        <button onClick={() => KOTmutation({ id: KOT.id, order_id: KOT.order_id, order_type: KOT.order_type })} disabled={isLoading}>
-                              {isLoading ? "loading..." : "Food Is Ready"}
-                        </button>
-                  </div>
-            </motion.div>
-      );
+	return (
+		<motion.div
+			layout
+			className={styles.KOTCard}
+			initial={{ opacity: 0, scale: 0.9 }}
+			animate={{ opacity: 1, scale: 1 }}
+			transition={{ duration: 0.1, delay: idx * 0.03 }}>
+			<div
+				className={styles.CardHeader}
+				style={getColor(KOT.order_type)}>
+				<div>
+					{KOT.table_no && <div>{KOT.table_no}</div>}
+					<div>{getDisplayName(KOT.order_type)} </div>
+				</div>
+				<div className={styles.token}>
+					<div>{KOT.token_no}</div>
+					<div>Token No.</div>
+				</div>
+				<div>10:10</div>
+			</div>
+			{KOT.customer_name && (
+				<div className={styles.KOTCustomerDetail}>
+					<div>{KOT.customer_name}</div>
+					<div>{KOT.phone_number}</div>
+				</div>
+			)}
+			<div className={styles.KOTItemHeader}>
+				<div>Item</div>
+				<div>QTY.</div>
+			</div>
+			<div className={styles.KOTBiller}>
+				<div>Biller (biller)</div>
+			</div>
+			{KOT.items.map(item => {
+				return (
+					<div
+						className={styles.KOTItemsDetail}
+						key={uuidv4()}>
+						<div className={styles.KOTItemName}>
+							{item.item_name} {item.variation_name ? `- ${item.variation_name}` : null}{" "}
+							{item.item_addons.length
+								? item.item_addons.map(addon => (
+										<span key={uuidv4()}>
+											/ {addon.name} ({addon.quantity})
+										</span>
+								  ))
+								: null}
+						</div>
+						<div className={styles.KOTItemQty}>{item.quantity}</div>
+					</div>
+				);
+			})}
+			<div className={styles.footer}>
+				<button
+					onClick={() => KOTmutation({ id: KOT.id, order_id: KOT.order_id, order_type: KOT.order_type })}
+					disabled={isLoading}>
+					{isLoading ? "loading..." : "Food Is Ready"}
+				</button>
+			</div>
+		</motion.div>
+	);
 }
 
 export default KOTCards;

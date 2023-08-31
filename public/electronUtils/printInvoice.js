@@ -105,7 +105,7 @@ const printInvoice = async (payload) =>{
 			item.toppings.forEach((topping) => {
 				const orderTopping = {
 					type: "text",
-					value: `<div> ${topping.type}[topping] : ${topping.qty} x ${topping.price} = ${topping.price * topping.qty}  </div>`,
+					value: `<div> ${topping.name}[topping] : ${topping.quantity} x ${topping.price} = ${topping.price * topping.quantity}  </div>`,
 					style: {
 						textAlign: "left",
 						fontStyle: "italic",
@@ -195,7 +195,7 @@ const printInvoice = async (payload) =>{
 	const printData = [...printDataHeader, ...printDataCustomer, ...printOrderHeader, ...printOrderDetail, ...printTotal, ...printTotalTax, ...printFooter];
 
 	const options = {
-		preview: false,
+		preview: true,
 		margin: "0px 0px 0px 0px",
 		silent: true,
 		copies: 1,

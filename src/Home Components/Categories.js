@@ -9,54 +9,29 @@ import { setPrinters } from "../Redux/printerSettingsSlice";
 import sortPrinters from "../Utils/shortPrinters";
 
 function Categories({ getActiveId }) {
-	// const [categories, setCategories] = useState([]);
-
 	const { categories } = useSelector((state) => state.bigMenu);
 	const { IPAddress } = useSelector((state) => state.serverConfig);
+	const dispatch = useDispatch();
 	const [active, setActive] = useState();
 
 	useEffect(() => {
 		getActiveId(active);
 	}, [active]);
 
-	const dispatch = useDispatch();
-
 	// api call everytime component Mounts to get FULL MENU items and set as bigMenu redux state
 
-	const getCategories = async () => {
+	const getBigMenu = async () => {
 		let res = await axios.get(`http://${IPAddress}:3001/menuData`);
-		
 		return res.data;
 	};
-
-	// const getServerData = async () => {
-	// 	let data = await window.apiKey.request("getServerData", {})
-	// 	return data;
-	// };
-
-	
-
-	// const { data: serverData } = useQuery({
-	// 	queryKey: ["serverData"],
-	// 	queryFn: getServerData,
-	// 	onSuccess: (data) => {
-	// 		dispatch(setSystem({ name: "IPAddress", value: data.ip }));
-	// 		dispatch(setSystem({ name: "systemType", value: data.system_type }));
-	// 	},
-
-	// 	onError: () => {
-	// 		dispatch(setSystem({ name: "IPAddress", value: "192.168.1.108" }));
-	// 		dispatch(setSystem({ name: "systemType", value: "client" }));
-	// 	},
-	// });
 
 	//   react query api call for data chashing, loading and error state management
 	const { data, status, isLoading } = useQuery({
 		queryKey: ["bigMenu"],
-		queryFn: getCategories,
+		queryFn: getBigMenu,
 		staleTime: 1200000,
 		onSuccess: (data) => dispatch(setBigMenu({ data })),
-		enabled : IPAddress !== ""
+		enabled: !!IPAddress,
 	});
 
 	const getPrinters = async () => {
@@ -71,7 +46,9 @@ function Categories({ getActiveId }) {
 			const FullPrintersData = sortPrinters(printers);
 			dispatch(setPrinters({ FullPrintersData }));
 		},
-		enabled : IPAddress !== ""
+		refetchIntervalInBackground: false,
+		refetchOnWindowFocus: false,
+		enabled: !!IPAddress,
 	});
 
 	const categoryList = (

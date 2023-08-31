@@ -14,26 +14,26 @@ const { updateDatabaseSchema } = require("./electronUtils/updateDatabaseSchema")
 const destinationFolder = app.isPackaged ? path.join(app.getAppPath(), "..", "..", "..", "..", "pos_db") : path.join(app.getAppPath(), "..", "..", "pos_db");
 const sourceFile = app.isPackaged ? path.join(app.getAppPath(), "..", "..", "posDatabse.sqlite") : path.join(app.getAppPath(), "posDatabse.sqlite");
 const destinationFile = app.isPackaged ? path.join(destinationFolder, "posDatabse.sqlite") : path.join(destinationFolder, "posDatabse.sqlite");
+
 let db2 = getLocalDb(destinationFile);
 let mainWindow;
 let serverProcess;
-const latestDbVersion = 4 ;
+const latestDbVersion = 4;
 
 // Create the native browser window.
 
 async function createWindow() {
-	mainWindow = new BrowserWindow	({
+	mainWindow = new BrowserWindow({
 		width: 1024,
 		height: 768,
-		minHeight: 768,
 		minWidth: 1024,
+		minHeight: 768,
 		// Set the path of an additional "preload" script that can be used to
 		// communicate between node-land and browser-land.
 		webPreferences: {
 			preload: path.join(__dirname, "preload.js"),
 		},
 	});
-
 
 	const appURL = app.isPackaged
 		? url.format({
@@ -43,7 +43,7 @@ async function createWindow() {
 		  })
 		: "http://localhost:3006/#/Home";
 
-		console.log(appURL)
+	console.log(appURL);
 
 	mainWindow.loadURL(appURL);
 }
@@ -51,6 +51,13 @@ async function createWindow() {
 app.on("ready", function () {
 	updateDatabaseSchema(latestDbVersion, db2);
 
+	if (!app.isPackaged) {
+		const { default: installExtension, REDUX_DEVTOOLS } = require("electron-devtools-installer");
+
+		installExtension(REDUX_DEVTOOLS)
+			.then(name => console.log(`Added Extension:  ${name}`))
+			.catch(err => console.log("An error occurred: ", err));
+	}
 	if (app.isPackaged) {
 		// autoUpdater.setFeedURL({
 		// 	requestHeaders: {},
@@ -63,36 +70,36 @@ app.on("ready", function () {
 		autoUpdater.checkForUpdatesAndNotify();
 	}
 });
-  
+
 autoUpdater.on("checking-for-update", () => {
 	console.log("Checking for update...");
 });
 
-autoUpdater.on("update-available", (info) => {
+autoUpdater.on("update-available", info => {
 	console.log("Update available.");
 });
 
-autoUpdater.on("update-not-available", (info) => {
+autoUpdater.on("update-not-available", info => {
 	console.log("Update not available.");
 });
 
-autoUpdater.on("error", (err) => {
+autoUpdater.on("error", err => {
 	console.log("Error in auto-updater. " + err);
 });
 
-autoUpdater.on("download-progress", (progressObj) => {
+autoUpdater.on("download-progress", progressObj => {
 	let log_message = "Download speed: " + progressObj.bytesPerSecond;
 	log_message = log_message + " - Downloaded " + progressObj.percent + "%";
 	log_message = log_message + " (" + progressObj.transferred + "/" + progressObj.total + ")";
 	console.log(log_message);
 });
 
-autoUpdater.on("update-downloaded", (info) => {
+autoUpdater.on("update-downloaded", info => {
 	console.log("Update downloaded");
 });
 
 function setupLocalFilesNormalizerProxy() {
-	protocol.registerHttpProtocol("file", (request) => {
+	protocol.registerHttpProtocol("file", request => {
 		console.log(request);
 		const url = request.url.substr(8);
 		return { path: path.normalize(`${__dirname}/${url}`) };
@@ -132,7 +139,6 @@ const allowedNavigationDestinations = "https://my-electron-app.com";
 app.on("web-contents-created", (event, contents) => {
 	contents.on("will-navigate", (event, navigationUrl) => {
 		const parsedUrl = new URL(navigationUrl);
-
 		if (!allowedNavigationDestinations.includes(parsedUrl.origin)) {
 			event.preventDefault();
 		}
@@ -169,13 +175,13 @@ ipcMain.handle("getServerData", async (event, payload) => {
 	const ipAddress = networkInterfaces["Ethernet"][1].address;
 	try {
 		// const db2 = getLocalDb(destinationFile);
+		console.log("getServerData ran");
 
-		const startUpData2 = db2.prepare("SELECT * FROM startup_config").all();
+		const startUpData = db2.prepare("SELECT * FROM startup_config").all();
 		const resultObject = {};
-		for (const item of startUpData2) {
+		for (const item of startUpData) {
 			resultObject[item.name] = item.value || null;
 		}
-
 		return resultObject;
 	} catch (err) {
 		console.log(err);
@@ -187,7 +193,6 @@ ipcMain.handle("syncDatabase", async (event, payload) => {
 	await setupMainDatabase(destinationFolder, sourceFile, destinationFile);
 
 	db2 = getLocalDb(destinationFile);
-
 	const responce = await setMenuData(payload.token, payload.syncCode, db2);
 	return responce;
 });

@@ -1,24 +1,32 @@
-export const convertOrder = (order) => {
+export const convertOrder = order => {
+
+	console.log(order)
+
+
 	const totalTaxes = [];
 
-	const orderCart = order.items.map((item) => {
-		let addonTotal = 0;
+	const orderCart = order.items.map(item => {
+		// let addonTotal = 0;
 
-		let toppings = item.itemAddons.map((topping) => {
-			addonTotal += +topping.price * +topping.quantity;
-			return { id: topping?.addongroupitem_id, type: topping?.name, price: topping?.price, qty: topping?.quantity };
-		});
+		// let toppings = item.itemAddons.map((topping) => {
+		// 	addonTotal += +topping.price * +topping.quantity;
 
-		let itemTax = item.itemTax.map((tax) => {
-			let existingTax = totalTaxes.find((totaltax) => totaltax.id === tax.tax_id);
+		// 	return { id: topping?.id, name: topping?.name, price: topping?.price, qty: topping?.quantity };
+		// });
+
+		const addonTotal = item.itemAddons.reduce((total, addon) => (total += +addon.price * +addon.quantity), 0);
+
+		// console.log(item.itemTax)
+
+
+		item.itemTax.forEach(tax => {
+			let existingTax = totalTaxes.find(totaltax => totaltax.id === tax.tax_id);
 
 			if (existingTax) {
-				existingTax.tax_amount += tax.tax_amount;
+				existingTax.tax_amount += tax.tax_amount * item.quantity;
 			} else {
-				totalTaxes.push({ id: tax.tax_id, name: `${tax.tax_id === 3 ? "CGST" : "SGST"}`, tax_amount: tax.tax_amount });
+				totalTaxes.push({ id: tax.tax_id, name: tax.tax_name , tax_amount: tax.tax_amount * item.quantity });
 			}
-
-			return { id: tax.tax_id, name: `${tax.tax_id === 3 ? "CGST" : "SGST"}`, tax: tax.tax_amount };
 		});
 
 		return {
@@ -29,14 +37,15 @@ export const convertOrder = (order) => {
 			variation_id: item.variation_id,
 			variationName: item.variation_name || "",
 			basePrice: item.price - addonTotal,
-			toppings: toppings,
+			toppings: item.itemAddons,
 			itemTotal: item.price,
 			multiItemTotal: item.final_price,
-			itemTax: itemTax,
+			itemTax: item.itemTax,
 		};
 	});
+	
 
-	const kotTokenNo = order.KOTDetail.map((kot) => kot.token_no).join(",");
+	const kotTokenNo = order.KOTDetail.map(kot => kot.token_no).join(",");
 
 	return {
 		kotTokenNo,

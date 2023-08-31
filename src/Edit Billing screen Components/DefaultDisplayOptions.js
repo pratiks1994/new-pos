@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./DefaultDisplayOptions.module.css";
 
-function DefaultDisplayOptions({ defaultOptions, setDefaulOpTions }) {
+function DefaultDisplayOptions({ defaultOptions, setDefaultOptions }) {
 	const displayOptions = [
 		{
 			name: "default_view",
@@ -46,6 +46,14 @@ function DefaultDisplayOptions({ defaultOptions, setDefaulOpTions }) {
 				{ name: "other", displayName: "Other" },
 			],
 		},
+		{
+			name: "default_price_type",
+			displayName: "Default Price Type",
+			options: [
+				{ name: "with_tax", displayName: "With Tax" },
+				{ name: "without_tax", displayName: "Without Tax" },
+			],
+		},
 	];
 
 	return (
@@ -71,7 +79,7 @@ function DefaultDisplayOptions({ defaultOptions, setDefaulOpTions }) {
 												id={`${option.displayName}${item.displayName}`}
 												name={item.name}
 												checked={defaultOptions[item.name] === option.name}
-												onChange={() => setDefaulOpTions((prev) => ({ ...prev, [item.name]: option.name }))}
+												onChange={() => setDefaultOptions((prev) => ({ ...prev, [item.name]: option.name }))}
 											/>
 											<label htmlFor={`${option.displayName}${item.displayName}`}>{option.displayName}</label>
 										</div>

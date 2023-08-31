@@ -1,266 +1,215 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const reCalculateOrderData = (state) => {
+	let subTotal = 0;
+	let totalTax = 0;
+	for (const item of state.orderCart) {
+		subTotal += item.multiItemTotal;
+	}
+
+	for (const item of state.orderCart) {
+		for (const taxItem of item.itemTax) {
+			totalTax += taxItem.tax * item.itemQty;
+		}
+	}
+
+	let cartTotal = subTotal + totalTax;
+	state.cartTotal = cartTotal;
+	state.tax = totalTax;
+	state.subTotal = subTotal;
+};
+
+const initialFinalOrder = {
+	id: "",
+	printCount: 0,
+	customerName: "emerging coders",
+	customerContact: "8238267210",
+	customerAdd: "Rk Empire nr nana Mauva circle 9th floor 905 rajkot ",
+	customerLocality: "Rajkot 360004",
+	tableArea: "",
+	orderCart: [],
+	subTotal: 0,
+	tax: 0,
+	deliveryCharge: 0,
+	packagingCharge: 0,
+	discount: 0,
+	paymentMethod: "cash",
+	tableNumber: "",
+	personCount: 0,
+	orderType: "delivery",
+	orderComment: "",
+	cartTotal: 0,
+	order_status: "accepted",
+};
+
 const finalOrderSlice = createSlice({
-      name: "finalOrder",
-      initialState: {
-            id: "",
-            printCount:0,
-            customerName: "emerging coders",
-            customerContact: "8238267210",
-            customerAdd: "Rk Empire nr nana Mauva circle 9th floor 905 rajkot ",
-            customerLocality: "Rajkot 360004",
-            tableArea:"",
-            orderCart: [],
-            subTotal: 0,
-            tax: 0,
-            deliveryCharge: 0,
-            packagingCharge: 0,
-            discount: 0,
-            paymentMethod: "cash",
-            tableNumber: "",
-            personCount: 0,
-            orderType: "delivery",
-            orderComment: "",
-            cartTotal: 0,
-            order_status: "accepted",
-      },
+	name: "finalOrder",
+	initialState: initialFinalOrder,
+	reducers: {
+		addOrderItem: (state, action) => {
+			let orderItem = action.payload;
+			let existingItem = state.orderCart.find((item) => item.itemIdentifier === orderItem.itemIdentifier);
+			if (existingItem) {
+				existingItem.itemQty += 1;
+				existingItem.multiItemTotal = existingItem.itemQty * existingItem.itemTotal;
+			} else {
+				state.orderCart.push(orderItem);
+			}
+			reCalculateOrderData(state);
+		},
 
-      reducers: {
-            addOrderItem: (state, action) => {
-                  let orderItem = action.payload;
-                  let existingItem = state.orderCart.find((item) => item.itemIdentifier === orderItem.itemIdentifier);
+		modifyCartData: (state, action) => {
+			let data = action.payload;
+			return { ...state, ...data };
+		},
 
-                  if (existingItem) {
-                        existingItem.itemQty += 1;
-                        // console.log(existingItem.itemQty)
-                        existingItem.multiItemTotal = existingItem.itemQty * existingItem.itemTotal;
+		incrementQty: (state, action) => {
+			let { id } = action.payload;
+			let existingItem = state.orderCart.find((item) => item.currentOrderItemId === id);
+			existingItem.itemQty += 1;
+			existingItem.multiItemTotal = existingItem.itemQty * existingItem.itemTotal;
 
-                        existingItem.itemTax = existingItem.itemTax.map((tax) => {
-                              const newTax = (tax.tax * existingItem.itemQty) / (existingItem.itemQty - 1);
-                              return { ...tax, tax: newTax };
-                        });
+			reCalculateOrderData(state);
+		},
 
-                        state.orderCart.forEach((item) => {
-                              if (item.id === existingItem.id) {
-                                    return existingItem;
-                              }
-                        });
-                  } else {
-                        return {
-                              ...state,
-                              orderCart: [...state.orderCart, orderItem],
-                        };
-                  }
-            },
-            modifyCartData: (state, action) => {
-                  let data = action.payload;
-                  // console.log(data);
+		addItemNotes: (state, action) => {
+			const { currentOrderItemId, notes } = action.payload;
+			let existingItem = state.orderCart.find((item) => item.currentOrderItemId === currentOrderItemId);
+			existingItem.itemNotes = notes;
+		},
 
-                  return { ...state, ...data };
-            },
+		decrementQty: (state, action) => {
+			let { id } = action.payload;
+			let existingItem = state.orderCart.find((item) => item.currentOrderItemId === id);
+			if (existingItem.itemQty > 1) {
+				existingItem.itemQty -= 1;
+				existingItem.multiItemTotal = existingItem.itemQty * existingItem.itemTotal;
+			}
 
-            incrementQty: (state, action) => {
-                  let { id } = action.payload;
+			reCalculateOrderData(state);
+		},
 
-                  state.orderCart.forEach((item) => {
-                        if (item.currentOrderItemId === id) {
-                              item.itemQty += 1;
-                              item.multiItemTotal = item.itemQty * item.itemTotal;
-                              item.itemTax = item.itemTax.map((tax) => {
-                                    const newTax = (tax.tax * item.itemQty) / (item.itemQty - 1);
-                                    return { ...tax, tax: newTax };
-                              });
-                        }
-                  });
-            },
+		removeItem: (state, action) => {
+			const { itemId } = action.payload;
+			state.orderCart = state.orderCart.filter((item) => item.currentOrderItemId !== itemId);
+			reCalculateOrderData(state);
+		},
 
-            addItemNotes: (state, action) => {
-                  const { currentOrderItemId, notes } = action.payload;
+		calculateCartTotal: (state, action) => {
+			state.cartTotal = action.payload.cartTotal;
+			state.tax = action.payload.tax;
+			state.subTotal = action.payload.subTotal;
+		},
 
-                  state.orderCart.forEach((item) => {
-                        if (item.currentOrderItemId === currentOrderItemId) {
-                              item.itemNotes = notes;
-                        }
-                  });
-            },
+		setCustomerDetail: (state, action) => {
+			const { name, addresses, number } = action.payload;
 
-            decrementQty: (state, action) => {
-                  let { id } = action.payload;
-                  state.orderCart.forEach((item) => {
-                        if (item.currentOrderItemId === id) {
-                              if (item.itemQty > 1) {
-                                    item.itemQty -= 1;
-                                    item.multiItemTotal = item.itemQty * item.itemTotal;
-                                    item.itemTax = item.itemTax.map((tax) => {
-                                          const newTax = (tax.tax * item.itemQty) / (item.itemQty + 1);
-                                          return { ...tax, tax: newTax };
-                                    });
-                              }
-                        }
-                  });
-            },
+			if (addresses.length) {
+				state.customerAdd = addresses[0].complete_address;
+				state.customerLocality = addresses[0].landmark;
+			} else {
+				state.customerAdd = "";
+				state.customerLocality = "";
+			}
 
-            removeItem: (state, action) => {
-                  const { itemId } = action.payload;
+			state.customerName = name;
+			state.customerContact = number;
+		},
 
-                  return {
-                        ...state,
-                        orderCart: [...state.orderCart.filter((item) => item.currentOrderItemId !== itemId)],
-                  };
-            },
+		resetFinalOrder: (state) => {
+			return initialFinalOrder;
+		},
 
-            calculateCartTotal: (state, action) => {
-                  state.cartTotal = action.payload.cartTotal;
-                  state.tax = action.payload.tax;
-                  state.subTotal = action.payload.subTotal;
-            },
+		holdToFinalOrder: (state, action) => {
+			const { order } = action.payload;
+			state.customerName = order.customer_name;
+			state.customerContact = order.phone_number;
+			state.customerAdd = order.complete_address;
+			state.customerLocality = order.landmark;
+			state.subTotal = order.item_total;
+			state.tax = order.total_tax;
+			state.deliveryCharge = order.delivery_charges;
+			state.packagingCharge = 0;
+			state.discount = order.total_discount;
+			state.paymentMethod = order.payment_type;
+			state.tableNumber = order.dine_in_table_no;
+			state.orderType = order.order_type;
+			state.cartTotal = order.total;
+			state.orderComment = order.description;
+			state.printCount = 0;
 
-            setCustomerDetail: (state, action) => {
-                  const { name, addresses, number } = action.payload;
+			state.orderCart = order.orderCart.map((item) => {
+				let toppings = item.toppings.map((topping) => {
+					return { id: topping.addongroupitem_id, type: topping.name, price: topping.price, qty: topping.quantity };
+				});
 
-                  if (addresses.length) {
-                        state.customerAdd = addresses[0].complete_address;
-                        state.customerLocality = addresses[0].landmark;
-                  } else {
-                        state.customerAdd = "";
-                        state.customerLocality = "";
-                  }
+				return {
+					currentOrderItemId: item.currentOrderItemId,
+					itemQty: item.quantity,
+					itemId: item.item_id,
+					categoryId: item.category_id,
+					itemName: item.item_name,
+					variation_id: item.variation_id,
+					variationName: item.variation_name,
+					basePrice: item.basePrice,
+					toppings: toppings,
+					itemTotal: item.itemTotal,
+					multiItemTotal: item.multiItemTotal,
+					itemIdentifier: item.itemIdentifier,
+					itemTax: item.itemTax,
+				};
+			});
+		},
 
-                  state.customerName = name;
-                  state.customerContact = number;
-            },
+		changePriceOnAreaChange: (state, action) => {
+			state.orderCart = action.payload.newCartItems;
+			reCalculateOrderData(state);
+		},
 
-            resetFinalOrder: (state) => {
-                  return {
-                        id: "",
-                        order_status: "accepted",
-                        customerName: "",
-                        customerContact: "",
-                        printCount:0,
-                        customerAdd: "",
-                        customerLocality: "",
-                        orderCart: [],
-                        subTotal: 0,
-                        tax: 0,
-                        deliveryCharge: 0,
-                        packagingCharge: 0,
-                        discount: 0,
-                        paymentMethod: "cash",
-                        tableNumber: "",
-                        personCount: 0,
-                        orderType: "delivery",
-                        orderComment: "",
-                        cartTotal: 0,
-                        tableArea:""
-                  };
-            },
+		liveOrderToCart: (state, action) => {
+			const { order } = action.payload;
+			state.customerName = order.customer_name;
+			state.customerContact = order.phone_number;
+			state.customerAdd = order.complete_address;
+			state.subTotal = order.item_total;
+			state.tax = order.total_tax;
+			state.deliveryCharge = order.delivery_charges;
+			state.packagingCharge = 0;
+			state.discount = order.total_discount;
+			state.paymentMethod = order.payment_type;
+			state.tableNumber = order.dine_in_table_no;
+			state.orderType = order.order_type;
+			state.cartTotal = order.total;
+			state.orderComment = order.description;
+			state.id = order.id;
+			state.order_status = order.order_status;
 
-            holdToFinalOrder: (state, action) => {
-                  const { order } = action.payload;
-                  state.customerName = order.customer_name;
-                  state.customerContact = order.phone_number;
-                  state.customerAdd = order.complete_address;
-                  state.customerLocality = order.landmark;
-                  state.subTotal = order.item_total;
-                  state.tax = order.total_tax;
-                  state.deliveryCharge = order.delivery_charges;
-                  state.packagingCharge = 0;
-                  state.discount = order.total_discount;
-                  state.paymentMethod = order.payment_type;
-                  state.tableNumber = order.dine_in_table_no;
-                  state.orderType = order.order_type;
-                  state.cartTotal = order.total;
-                  state.orderComment = order.description;
-                  state.printCount = 0
+			state.orderCart = order.items.map((item) => {
+				let toppings = item.itemAddons.map((topping) => {
+					return { id: topping?.addongroupitem_id, type: topping?.name, price: topping?.price, qty: topping?.quantity };
+				});
 
-                  state.orderCart = order.orderCart.map((item) => {
-                        let toppings = item.toppings.map((topping) => {
-                              return { id: topping.addongroupitem_id, type: topping.name, price: topping.price, qty: topping.quantity };
-                        });
+				let itemTax = item.itemTax.map((tax) => {
+					return { id: tax.tax_id, name: `${tax.tax_id === 3 ? "CGST" : "SGST"}`, tax: tax.tax_amount };
+				});
 
-                        return {
-                              currentOrderItemId: item.currentOrderItemId,
-                              itemQty: item.quantity,
-                              itemId: item.item_id,
-                              categoryId:item.category_id,
-                              itemName: item.item_name,
-                              variation_id: item.variation_id,
-                              variationName: item.variation_name,
-                              basePrice: item.basePrice,
-                              toppings: toppings,
-                              itemTotal: item.itemTotal,
-                              multiItemTotal: item.multiItemTotal,
-                              itemIdentifier: item.itemIdentifier,
-                              itemTax: item.itemTax,
-
-                        };
-                  });
-            },
-
-            changePriceOnAreaChange : (state,action)=>{
-
-           state.orderCart = action.payload.newCartItems
-
-
-            },
-
-            liveOrderToCart: (state, action) => {
-                  const { order } = action.payload;
-                  state.customerName = order.customer_name;
-                  state.customerContact = order.phone_number;
-                  state.customerAdd = order.complete_address;
-                  state.subTotal = order.item_total;
-                  state.tax = order.total_tax;
-                  state.deliveryCharge = order.delivery_charges;
-                  state.packagingCharge = 0;
-                  state.discount = order.total_discount;
-                  state.paymentMethod = order.payment_type;
-                  state.tableNumber = order.dine_in_table_no;
-                  state.orderType = order.order_type;
-                  state.cartTotal = order.total;
-                  state.orderComment = order.description;
-                  state.id = order.id;
-                  state.order_status = order.order_status;
-
-                  state.orderCart = order.items.map((item) => {
-                        let toppings = item.itemAddons.map((topping) => {
-                              return { id: topping?.addongroupitem_id, type: topping?.name, price: topping?.price, qty: topping?.quantity };
-                        });
-
-                        let itemTax = item.itemTax.map((tax) => {
-                              return { id: tax.tax_id, name: `${tax.tax_id === 3 ? "CGST" : "SGST"}`, tax: tax.tax_amount };
-                        });
-
-                        return {
-                              currentOrderItemId: item.id,
-                              itemQty: item.quantity,
-                              itemId: item.item_id,
-                              itemName: item.item_name,
-                              variation_id: item.variation_id,
-                              variationName: item.variation_name,
-                              basePrice: item.price,
-                              toppings: toppings,
-                              itemTotal: item.itemTotal,
-                              multiItemTotal: item.final_price,
-                              itemTax: itemTax,
-                        };
-                  });
-            },
-      },
+				return {
+					currentOrderItemId: item.id,
+					itemQty: item.quantity,
+					itemId: item.item_id,
+					itemName: item.item_name,
+					variation_id: item.variation_id,
+					variationName: item.variation_name,
+					basePrice: item.price,
+					toppings: toppings,
+					itemTotal: item.itemTotal,
+					multiItemTotal: item.final_price,
+					itemTax: itemTax,
+				};
+			});
+		},
+	},
 });
 
 export default finalOrderSlice.reducer;
-export const {
-      addOrderItem,
-      incrementQty,
-      decrementQty,
-      removeItem,
-      modifyCartData,
-      calculateCartTotal,
-      resetFinalOrder,
-      setCustomerDetail,
-      holdToFinalOrder,
-      liveOrderToCart,
-      addItemNotes,
-      changePriceOnAreaChange
-} = finalOrderSlice.actions;
+export const { addOrderItem, incrementQty, decrementQty, removeItem, modifyCartData, calculateCartTotal, resetFinalOrder, setCustomerDetail, holdToFinalOrder, liveOrderToCart, addItemNotes, changePriceOnAreaChange } = finalOrderSlice.actions;

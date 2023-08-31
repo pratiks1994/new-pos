@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import MainNav from "./Home Components/MainNav.js";
 import Home from "./pages/Home";
@@ -24,122 +24,137 @@ import axios from "axios";
 import { modifyCartData } from "./Redux/finalOrderSlice.js";
 import Loading from "./Feature Components/Loading.js";
 import POSConfig from "./pages/POSConfig.js";
+import { setActive } from "./Redux/UIActiveSlice.js";
+import { io } from "socket.io-client";
+import echo from "./Utils/echoConfig..js";
 
+function Main() {
+	const dispatch = useDispatch();
+	const navigate = useNavigate();
+	const { systemType, IPAddress } = useSelector(state => state.serverConfig);
 
-function Main() { 
-
-      const dispatch = useDispatch()
-      const navigate = useNavigate()
-      const { systemType, IPAddress } = useSelector((state) => state.serverConfig);
-      
-
-      const getServerData = async () => {
-		let data = await window.apiKey.request("getServerData", {})
+	const getServerData = async () => {
+		let data = await window.apiKey.request("getServerData", {});
 		return data;
 	};
 
-      
-      const getServerStatus = async () => {
+	useEffect(() => {
+		// const newSocketOne = io("http://192.168.1.92:6001	");
+		// const socketTwo = io("http://192.168.1.73:6001");
+
+		echo.channel("user-channel").listen("UserEvent", e => {
+			console.log(e);
+		});
+
+		echo.connector.socket.on("connecting", () => {
+			console.log("Echo is connecting...");
+		  });
+
+		 echo.connector.socket.on("connected", () => {
+			console.log("Echo is connected to the server");
+		  });
+
+		return () => {
+			echo.leaveChannel("user-channel")
+		};
+	}, []);
+
+	const getServerStatus = async () => {
 		const { data } = await axios.get(`http://${IPAddress}:3001/defaultScreenData`, { timeout: 4000 });
 		return data;
 	};
 
-	
-	const { data: serverData,isLoading:serverDataLoading } = useQuery({
+	const { data: serverData, isLoading: serverDataLoading } = useQuery({
 		queryKey: ["serverData"],
 		queryFn: getServerData,
-		onSuccess: async (data) => {
+		onSuccess: async data => {
+			if (!data.sync_code) {
+				navigate("./POSConfig");
+				return;
+			}
 
-                  if(!data.sync_code){
-                        navigate("./POSConfig")
-                        return
-                  }
-                  
-                  if(data.system_type === "server" && data.ip){
-                        await window.apiKey.request("setup",{IPAddress:data.ip})
-                  }
-                  
-                  if(data.ip)
-                  {
-			            dispatch(setSystem({ name: "IPAddress", value: data.ip }));
-			            dispatch(setSystem({ name: "systemType", value: data.system_type }));
-                  }
+			if (data.system_type === "server" && data.ip) {
+				await window.apiKey.request("setup", { IPAddress: data.ip });
+			}
 
-                  else{
-                        navigate("./serverConfig")
-                  }
+			if (data.ip) {
+				dispatch(setSystem({ name: "IPAddress", value: data.ip }));
+				dispatch(setSystem({ name: "systemType", value: data.system_type }));
+			} else {
+				navigate("./serverConfig");
+			}
 		},
 		onError: () => {
-			dispatch(setSystem({ name: "IPAddress", value: "192.168.1.108" }));
+			dispatch(setSystem({ name: "IPAddress", value: "192.168.1.84" }));
 			dispatch(setSystem({ name: "systemType", value: "client" }));
 		},
-            staleTime:5000000,
-            refetchOnWindowFocus:false,
-            refetchIntervalInBackground:false,
-            retry:false,
-            
+		staleTime: 5000000,
+		refetchOnWindowFocus: false,
+		refetchIntervalInBackground: false,
+		retry: false,
 	});
 
-      const { data,isLoading } = useQuery({
+	const { data, isLoading } = useQuery({
 		queryKey: ["defaultScreen"],
 		queryFn: getServerStatus,
-		onSuccess: async (data) => {
-
-                  // socket = io(`http://${IPAddress}:3001`);
-                  dispatch(modifyCartData({ orderType: data.default_order_type || "delivery"}));
+		onSuccess: async data => {
+			// socket = io(`http://${IPAddress}:3001`);
+			dispatch(modifyCartData({ orderType: data.default_order_type || "delivery" }));
 			dispatch(modifyCartData({ paymentMethod: data.default_payment_type || "cash" }));
+			dispatch(setActive({ key: "restaurantPriceId", name: +data.default_restaurant_price || null }));
 			data.default_view === "table_view" ? navigate("./Home/tableView") : navigate("./Home");
 		},
 		onError: () => {
-                  navigate("./")
+			navigate("./serverConfig");
 		},
-            refetchOnWindowFocus:false,
-            refetchIntervalInBackground:false,
-            staleTime:5000000,
-            retry:false,
-            enabled : !!IPAddress
+		refetchOnWindowFocus: false,
+		refetchIntervalInBackground: false,
+		staleTime: 5000000,
+		retry: false,
+		enabled: !!IPAddress,
 	});
 
-
-      return (
-            isLoading || serverDataLoading ? <div className={styles.loadingContainer}><Loading/></div> :
-            <div className={styles.main}>
-                  {/* <MainNav /> */}
-                  <Routes>
-                        <Route path="serverConfig" element={<ServerConfig />} />
-                        <Route path="POSConfig" element={<POSConfig/>} />
-                        <Route path="Home" element={<MainNav />}>
-                              <Route index element={<Home />} />
-                              <Route path="LiveView" element={<LiveView />}>
-                                    <Route path="OrderView" element={<OrderView />} />
-                                    <Route path="KOTView" element={<KOTView />} />
-                              </Route>
-                              <Route path="tableView" element={<TableView />} />
-                              <Route path="configuration">
-                                    <Route index element={<Configuration />} />
-                                    <Route path="billingScreenConfig">
-                                        <Route index element={<BillingScreenConfig/>}/>
-                                        <Route path="editBillingScreen" element={<EditBillingScreen/>}/>
-                                         
-                                     </Route>     
-                                    <Route path="printerConfig">
-                                          <Route index element={<PrinterConfig />} />
-                                          <Route path="PrintersList">
-                                                <Route index element={<PrintersList />} />
-                                                <Route path=":printerId" element={<EditPrinter />} />
-                                                <Route path="printerAssign/:printerId">
-                                                      <Route index  element={<PrinterAssign/>}/>
-                                                      <Route path="assignKot" element={<AssignKot/>}/>
-                                                      <Route path="assignBill" element={<AssignBill/>}/>
-                                                </Route>      
-                                          </Route>
-                                    </Route>
-                              </Route>
-                        </Route>
-                        {/* <Route path="*" element={<Navigate to="/" />} /> */}
-                  </Routes>
-            </div>
-      );
+	return isLoading || serverDataLoading ? (
+		<div className={styles.loadingContainer}>
+			<Loading />
+		</div>
+	) : (
+		<div className={styles.main}>
+			{/* <MainNav /> */}
+			<Routes>
+				<Route path="serverConfig" element={<ServerConfig />} />
+				<Route path="POSConfig" element={<POSConfig />} />
+				<Route path="Home" element={<MainNav />}>
+					<Route index element={<Home />} />
+					<Route path="LiveView" element={<LiveView />}>
+						<Route path="OrderView" element={<OrderView />} />
+						<Route path="KOTView" element={<KOTView />} />
+					</Route>
+					<Route path="tableView" element={<TableView />} />
+					<Route path="configuration">
+						<Route index element={<Configuration />} />
+						<Route path="billingScreenConfig">
+							<Route index element={<BillingScreenConfig />} />
+							<Route path="editBillingScreen" element={<EditBillingScreen />} />
+						</Route>
+						<Route path="printerConfig">
+							<Route index element={<PrinterConfig />} />
+							<Route path="PrintersList">
+								<Route index element={<PrintersList />} />
+								<Route path=":printerId" element={<EditPrinter />} />
+								<Route path="printerAssign/:printerId">
+									<Route index element={<PrinterAssign />} />
+									<Route path="assignKot" element={<AssignKot />} />
+									<Route path="assignBill" element={<AssignBill />} />
+								</Route>
+							</Route>
+						</Route>
+					</Route>
+				</Route>
+				{/* <Route path="*" element={<Navigate to="/" />} /> */}
+			</Routes>
+		</div>
+	);
 }
 
 export default Main;

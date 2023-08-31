@@ -9,11 +9,13 @@ import { useNavigate } from "react-router-dom";
 import useSocket from "../Utils/useSocket";
 import { resetFinalOrder } from "../Redux/finalOrderSlice";
 import DineInArea from "../TableView Components/DineInArea";
+import { setActive } from "../Redux/UIActiveSlice";
 
 function TableView() {
 	const [orders, setOrders] = useState([]);
-	const { areas } = useSelector((state) => state.bigMenu);
+	const { areas, defaultSettings } = useSelector((state) => state.bigMenu);
 	const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
+	const defaultRestaurantPrice = defaultSettings.default_restaurant_price;
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 
@@ -21,7 +23,6 @@ function TableView() {
 		const ListedTableNo = []; // to list all the tables available in databse
 
 		const areasWithOrders = areas?.map((area) => {
-
 			const updatedTableWithOrder = area.tables.map((table) => {
 				ListedTableNo.push(table.table_no);
 				const orderOnTable = orders.filter((order) => order.order_type === "dine_in" && order.dine_in_table_no === table.table_no);
@@ -46,7 +47,6 @@ function TableView() {
 		return [...areasWithOrders, otherArea];
 	};
 
-
 	const getLiveOrders = async () => {
 		let { data } = await axios.get(`http://${IPAddress}:3001/liveorders`);
 		return data;
@@ -58,7 +58,7 @@ function TableView() {
 		onSuccess: (data) => {
 			setOrders(() => [...data]);
 		},
-		enabled: !!IPAddress
+		enabled: !!IPAddress,
 	});
 
 	const getCategories = async () => {
@@ -72,7 +72,7 @@ function TableView() {
 		onSuccess: (data) => {
 			dispatch(setBigMenu({ data }));
 		},
-		enabled: !!IPAddress
+		enabled: !!IPAddress,
 	});
 
 	useSocket("orders", (data) => {
@@ -82,6 +82,7 @@ function TableView() {
 	const handleClick = (orderType) => {
 		dispatch(resetFinalOrder());
 		dispatch(modifyCartData({ orderType }));
+		dispatch(setActive({ key: "restaurantPriceId", name: +defaultRestaurantPrice || null }));
 		navigate(`..${orderType === "dine_in" ? "?openTable=true" : ""}`);
 	};
 
