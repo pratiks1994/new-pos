@@ -1,11 +1,12 @@
 const { PosPrinter } = require("electron-pos-printer");
 
-const printInvoice = async (payload) =>{
-    const { data, printerName } = payload;
+const printInvoice = async payload => {
+	const { data, printerName } = payload;
 
 	const fullDate = new Date();
 	const date = `${fullDate.getDate()}/${fullDate.getMonth() + 1}/${fullDate.getFullYear()}`;
 	const time = `${fullDate.getHours()}:${fullDate.getMinutes()}:${fullDate.getSeconds()}`;
+
 
 	const printDataHeader = [
 		{
@@ -70,8 +71,8 @@ const printInvoice = async (payload) =>{
 	const printOrderHeader = [
 		{
 			type: "text",
-			value: `<div style="flex : 8" > Item </div>
-                  <div style="flex : 3; text-align:center" > QTY </div> 
+			value: `<div style="flex : 7" > Item </div>
+                  <div style="flex : 2; text-align:center" > QTY </div> 
                   <div style="flex : 3; text-align:center "> Price </div>
                   <div style="flex : 3; text-align:center"> Amount </div>`,
 			style: {
@@ -90,22 +91,22 @@ const printInvoice = async (payload) =>{
 
 	let printOrderDetail = [];
 
-	data.orderCart.forEach((item) => {
+	data.orderCart.forEach(item => {
 		const orderitem = {
 			type: "text",
-			value: `<div style="flex : 8" > ${item.itemName} ${item.variationName} </div>
-                  <div style="flex : 3 ; text-align:center"> x${item.itemQty} </div> 
-                  <div style="flex : 3 ; text-align:center" > ${item.itemTotal} </div>
+			value: `<div style="flex : 7" > ${item.itemName} ${item.variationName} </div>
+                  <div style="flex : 2 ; text-align:center"> x${item.itemQty} </div> 
+                  <div style="flex : 3 ; text-align:center" > ${item.itemTotal.toFixed(2)} </div>
                   <div style="flex : 3 ; text-align:center"> ${item.multiItemTotal.toFixed(2)}</div>`,
 			style: { textAlign: "left", fontSize: "13px", display: "flex", justifyContent: "space-between", margin: "5px 8px 5px 8px", fontFamily: "Roboto" },
 		};
 		printOrderDetail.push(orderitem);
 
 		if (item.toppings) {
-			item.toppings.forEach((topping) => {
+			item.toppings.forEach(topping => {
 				const orderTopping = {
 					type: "text",
-					value: `<div> ${topping.name}[topping] : ${topping.quantity} x ${topping.price} = ${topping.price * topping.quantity}  </div>`,
+					value: `<div> ${topping.name}[topping] : ${topping.quantity} x ${topping.price.toFixed(0)} = ${(topping.price * topping.quantity).toFixed(2)}  </div>`,
 					style: {
 						textAlign: "left",
 						fontStyle: "italic",
@@ -115,7 +116,7 @@ const printInvoice = async (payload) =>{
 						margin: "5px 8px 5px 20px",
 						fontFamily: "Roboto",
 					},
-				};
+				};	
 
 				printOrderDetail.push(orderTopping);
 			});
@@ -125,7 +126,7 @@ const printInvoice = async (payload) =>{
 	const printTotal = [
 		{
 			type: "text",
-			value: `<div style="padding-left:65px" > Item Qty : ${data.orderCart.length}  </div>
+			value: `<div style="padding-left:65px" > Item Qty : ${data.totalQty}  </div>
                   <div style="" > Sub Total :</div> 
                   <div style="padding-right : 10px" > ${data.subTotal.toFixed(2)} </div>`,
 			style: {
@@ -143,7 +144,7 @@ const printInvoice = async (payload) =>{
 
 	let printTotalTax = [];
 
-	data.totalTaxes.forEach((tax) => {
+	data.totalTaxes.forEach(tax => {
 		printTotalTax.push({
 			type: "text",
 			value: `<div style="padding-left:65px" > ${tax.name} </div>
@@ -207,11 +208,9 @@ const printInvoice = async (payload) =>{
 		dpi: 300,
 	};
 
-	PosPrinter.print(printData, options).catch((error) => {
+	PosPrinter.print(printData, options).catch(error => {
 		console.error(error);
 	});
+};
 
-
-}
-
-module.exports = {printInvoice}
+module.exports = { printInvoice };

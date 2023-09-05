@@ -6,26 +6,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { useGetPrintersQuery } from "../Utils/customQueryHooks";
 
 function PrintersList() {
 	const navigate = useNavigate();
-	const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
-
-	const getPrinters = async () => {
-		const { data } = await axios.get(`http://${IPAddress}:3001/getPrinters`);
-		return data;
-	};
-
-	const {
-		data: printers,
-		isLoading,
-		isError,
-		error,
-	} = useQuery({
-		queryKey: "printers",
-		queryFn: getPrinters,
-		enabled: !IPAddress,
-	});
+	const {data:printers,isLoading,isError,error} = useGetPrintersQuery()
 
 	return (
 		<motion.div

@@ -57,7 +57,7 @@ const getMenuData = () => {
 				return taxData;
 			});
 
-			if (item.price_type === 2) {
+			if (item.price_type === 1) {
 				item.price = item.price / (1 + totalTax / 100);
 
 				item.restaurantPrices = item.restaurantPrices.map(restaurantPrices => {
@@ -69,14 +69,14 @@ const getMenuData = () => {
 				const variations = variationsPrepare.all([item.id]);
 
 				const variationsWithAddons = variations.map(variation => {
-					const priceWithoutTaxes = item.price_type === 2 ? variation.price / (1 + totalTax / 100) : variation.price;
+					const priceWithoutTaxes = item.price_type === 1 ? variation.price / (1 + totalTax / 100) : variation.price;
 
 					const addonGroup = addonGroupsPrepare.all([variation.item_variation_id]);
 
 					const addonGroupWithAddons = addonGroup.map(group => {
 						const addons = addonsPrepare.all(group.addongroup_id);
 
-						if (item.price_type === 2) {
+						if (item.price_type === 1) {
 							for (const addon of addons) {
 								addon.price = addon.price / (1 + totalTax / 100);
 							}

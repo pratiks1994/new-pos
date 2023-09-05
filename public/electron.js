@@ -11,9 +11,11 @@ const { printInvoice } = require("./electronUtils/printInvoice");
 const { setupMainDatabase } = require("./electronUtils/setupMainDatabse");
 const { getLocalDb } = require("./electronUtils/getLocalDb");
 const { updateDatabaseSchema } = require("./electronUtils/updateDatabaseSchema");
+
 const destinationFolder = app.isPackaged ? path.join(app.getAppPath(), "..", "..", "..", "..", "pos_db") : path.join(app.getAppPath(), "..", "..", "pos_db");
 const sourceFile = app.isPackaged ? path.join(app.getAppPath(), "..", "..", "posDatabse.sqlite") : path.join(app.getAppPath(), "posDatabse.sqlite");
 const destinationFile = app.isPackaged ? path.join(destinationFolder, "posDatabse.sqlite") : path.join(destinationFolder, "posDatabse.sqlite");
+
 
 let db2 = getLocalDb(destinationFile);
 let mainWindow;

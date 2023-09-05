@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import styles from "./TableView.module.css";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import axios from "axios";
 import { setBigMenu } from "../Redux/bigMenuSlice";
 import { useSelector, useDispatch } from "react-redux";
@@ -10,76 +10,28 @@ import useSocket from "../Utils/useSocket";
 import { resetFinalOrder } from "../Redux/finalOrderSlice";
 import DineInArea from "../TableView Components/DineInArea";
 import { setActive } from "../Redux/UIActiveSlice";
+import { useGetLiveOrdersQuery, useGetMenuQuery, useGetMenuQuery2 } from "../Utils/customQueryHooks";
+import { matchOrderAndTables } from "../Utils/matchOrderAndTables";
 
 function TableView() {
-	const [orders, setOrders] = useState([]);
-	const { areas, defaultSettings } = useSelector((state) => state.bigMenu);
-	const { IPAddress, refetchInterval } = useSelector((state) => state.serverConfig);
-	const defaultRestaurantPrice = defaultSettings.default_restaurant_price;
+
+    const queryClient = useQueryClient() 
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
+	
+	const { data : orders, isLoading, error, isError } = useGetLiveOrdersQuery()
+	const { data : bigMenu } = useGetMenuQuery2()
+	const areas = bigMenu?.areas || []
+	const defaultRestaurantPrice = bigMenu?.defaultSettings?.default_restaurant_price || 0
 
-	const matchOrderAndTables = (orders, areas) => {
-		const ListedTableNo = []; // to list all the tables available in databse
+	// const defaultRestaurantPrice = defaultSettings?.default_restaurant_price || 0 ;
 
-		const areasWithOrders = areas?.map((area) => {
-			const updatedTableWithOrder = area.tables.map((table) => {
-				ListedTableNo.push(table.table_no);
-				const orderOnTable = orders.filter((order) => order.order_type === "dine_in" && order.dine_in_table_no === table.table_no);
-				return { ...table, orders: orderOnTable };
-			});
-			return { ...area, tables: updatedTableWithOrder };
-		});
-
-		const otherOrders = orders.filter((order) => order.order_type === "dine_in" && !ListedTableNo.includes(order.dine_in_table_no));
-		const otherTables = otherOrders.map((order) => {
-			return { id: +order.id, table_no: order.dine_in_table_no.toString(), area_id: areas.length + 1, orders: [order] };
-		});
-
-		const otherArea = {
-			id: areas.length + 1,
-			restaurant_id: 1,
-			restaurant_price_id: 4,
-			area: "Other Tables",
-			tables: otherTables,
-		};
-
-		return [...areasWithOrders, otherArea];
-	};
-
-	const getLiveOrders = async () => {
-		let { data } = await axios.get(`http://${IPAddress}:3001/liveorders`);
-		return data;
-	};
-
-	const { status, isLoading, error, isError } = useQuery("liveOrders", getLiveOrders, {
-		refetchInterval: refetchInterval,
-		refetchIntervalInBackground: refetchInterval,
-		onSuccess: (data) => {
-			setOrders(() => [...data]);
-		},
-		enabled: !!IPAddress,
+	
+	useSocket("orders", orders => {
+		queryClient.setQueryData("liveOrders", orders)	
 	});
 
-	const getCategories = async () => {
-		let { data } = await axios.get(`http://${IPAddress}:3001/menuData`);
-		return data;
-	};
-
-	//   react query api call for data chashing, loading and error state management
-	const { data } = useQuery("bigMenu", getCategories, {
-		staleTime: 1200000,
-		onSuccess: (data) => {
-			dispatch(setBigMenu({ data }));
-		},
-		enabled: !!IPAddress,
-	});
-
-	useSocket("orders", (data) => {
-		setOrders(() => [...data]);
-	});
-
-	const handleClick = (orderType) => {
+	const handleClick = orderType => {
 		dispatch(resetFinalOrder());
 		dispatch(modifyCartData({ orderType }));
 		dispatch(setActive({ key: "restaurantPriceId", name: +defaultRestaurantPrice || null }));
@@ -102,15 +54,9 @@ function TableView() {
 				{isLoading && <div>Loading....</div>}
 				{isError && <div>{error}</div>}
 
-				{allAreas?.map((area) => {
+				{allAreas?.map(area => {
 					if (area.tables.length) {
-						return (
-							<DineInArea
-								area={area}
-								key={area.id}
-								restaurantPriceId={area.restaurant_price_id}
-							/>
-						);
+						return <DineInArea area={area} key={area.id} restaurantPriceId={area.restaurant_price_id} />;
 					} else {
 						return null;
 					}

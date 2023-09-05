@@ -13,6 +13,7 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 	const [modalShow, setModalShow] = useState(false);
 	const [err, setErr] = useState("");
 	const currentItem = useSelector(state => state.currentItem);
+
 	const { restaurantPriceId } = useSelector(state => state.UIActive);
 	const restaurantPriceVariations = variations.filter(variation => variation.restaurantPriceId === restaurantPriceId);
 	const totalTax = item_tax.reduce((acc, tax) => (acc += tax.tax), 0);
@@ -36,9 +37,7 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 
 	const addItem = (id, name) => {
 		let orderItemId = v4();
-		// const totalTaxPercent = item_tax.reduce((acc, tax) => {
-		// 	return (acc += tax.tax);
-		// }, 0) || 0;
+	
 
 		if (has_variation === 1) {
 			setModalShow(true);

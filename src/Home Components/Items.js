@@ -5,9 +5,8 @@ import { useSelector } from 'react-redux'
 
 function Items() {
 
-  let items = useSelector(state=> state.menuItems)
+  let items = useSelector(state=> state.menuItems.items)
 
- 
   return (
     <div className={styles.items}>
       {items.map((item) => <Item key={item.id} {...item}/>)}

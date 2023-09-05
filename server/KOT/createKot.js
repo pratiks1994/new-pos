@@ -27,7 +27,6 @@ const createKot = (order, userId, orderId) => {
 	} = order;
 
 	// create token comparing date of last date and current kot date , reset token no if the date is changed
-
 	db2.transaction(() => {
 		const latestEntry = db2.prepare("SELECT created_at, token_no FROM kot ORDER BY ID DESC LIMIT 1").get([]);
 

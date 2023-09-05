@@ -38,6 +38,7 @@ const setMenuData = async (token, syncCode, db2) => {
 			orders,
 			brand,
 			attributes,
+			areas
 		} = menu.data;
 
 		const categorystmt = db2.prepare(
@@ -96,6 +97,8 @@ const setMenuData = async (token, syncCode, db2) => {
             INSERT INTO brands ( id, uid, user_id, name, logo, primary_color, secondary_color, extra_light_color, h_desc, h_img, insta_url, fb_url, youtube_url, android_app_link, ios_app_link, app_ss, h_bg_img, is_our_story, our_story_img, our_story_desc, location, support_email, support_phone, is_fe, fe_phone, fe_email, fe_banner_img, domain, terms_and_conditions, refund_policy, faqs, terms_and_conditions_link,refund_policy_link, help_and_support_link, faqs_link, franchise_enquiry_link, pg_default_email, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
 		const attributesstmt = db2.prepare(`INSERT INTO attributes (id, name, status, pp_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`);
+
+		const areastmt = db2.prepare("INSERT INTO areas (id,restaurant_id,restaurant_price_id,area,status) VALUES (?,?,?,?,?)")
 
 		db2.transaction(() => {
 			// restaurantstmt.run(
@@ -221,6 +224,11 @@ const setMenuData = async (token, syncCode, db2) => {
 					restaurant_price.created_at,
 					restaurant_price.updated_at
 				);
+			}
+
+			for (const area of areas) {
+				areastmt.run(area.id,area.restaurant_id,area.restaurant_price_id,area.area,area.status)
+				
 			}
 
 			for (const tax of taxes) {

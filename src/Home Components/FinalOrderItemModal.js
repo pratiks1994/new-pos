@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import styles from "./FinalOrderItemModal.module.css";
 import Modal from "react-bootstrap/Modal";
 import { Row, Col } from "react-bootstrap";
@@ -14,10 +14,6 @@ function FinalOrderItemModal({ hideModal, show, itemName, itemTax, toppings, cur
 		dispatch(addItemNotes({ currentOrderItemId, notes }));
 		hideModal();
 	};
-
-	useEffect(() => {
-		itemNoteRef.current.value = itemNotes;
-	}, [itemNotes]);
 
 	return (
 		<Modal show={show} onHide={hideModal} size="lg" aria-labelledby="contained-modal-title-vcenttyer" centered animation={false}>
@@ -35,7 +31,7 @@ function FinalOrderItemModal({ hideModal, show, itemName, itemTax, toppings, cur
 						{toppings.length
 							? toppings
 									.map(topping => {
-										return `${topping.type} (${topping.qty})`;
+										return `${topping.name} (${topping.quantity})`;
 									})
 									.join(", ")
 							: "No Toppings"}
@@ -46,7 +42,7 @@ function FinalOrderItemModal({ hideModal, show, itemName, itemTax, toppings, cur
 				</Row>
 				<Row>
 					<Col>
-						<textarea ref={itemNoteRef} className={styles.itemNote} />
+						<textarea ref={itemNoteRef} className={styles.itemNote} defaultValue={itemNotes || ""} />
 					</Col>
 				</Row>
 				<Row className={styles.addonTital}>

@@ -4,6 +4,8 @@ import ActiveTableCard from "./ActiveTableCard";
 import InactiveTableCard from "./InactiveTableCard";
 
 function DineInArea({ area ,restaurantPriceId}) {
+
+	
 	return (
 		<div className={styles.areaSection}>
 			<div className={styles.areaTitle}>{area.area}</div>

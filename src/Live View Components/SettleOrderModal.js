@@ -21,6 +21,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 			{ name: "cod", displayName: "Cash", amount: Math.round(order.total).toString() },
 		],
 	});
+	
 	const otherOptions = ["upi_gpay", "upi_paytm", "upi_phonepe", "upi"];
 
 	const handleChange = useCallback(e => {
@@ -66,16 +67,8 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 	};
 
 	return (
-		<Modal
-			show={show}
-			onHide={hide}
-			size="md"
-			aria-labelledby="contained-modal-title-vcenter"
-			centered
-			animation={false}>
-			<Modal.Header
-				closeButton
-				className={styles.settleModalHeader}>
+		<Modal show={show} onHide={hide} size="md" aria-labelledby="contained-modal-title-vcenter" centered animation={false}>
+			<Modal.Header closeButton className={styles.settleModalHeader}>
 				Save & Settle for - {order.dine_in_table_no} [ ₹ {order.total}]
 			</Modal.Header>
 			<Modal.Body className={styles.settleModalBody}>
@@ -85,80 +78,35 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 				<Row>
 					<Col className={styles.paymentOptions}>
 						<div className={styles.option}>
-							<input
-								type="radio"
-								name="paymentType"
-								id="cash"
-								value="cod"
-								onChange={handleChange}
-								checked={paymentDetail.paymentType === "cod"}
-							/>
+							<input type="radio" name="paymentType" id="cash" value="cod" onChange={handleChange} checked={paymentDetail.paymentType === "cod"} />
 							<label htmlFor="cash">Cash</label>
 						</div>
 						<div className={styles.option}>
-							<input
-								type="radio"
-								name="paymentType"
-								id="card"
-								value="card"
-								onChange={handleChange}
-								checked={paymentDetail.paymentType === "card"}
-							/>
+							<input type="radio" name="paymentType" id="card" value="card" onChange={handleChange} checked={paymentDetail.paymentType === "card"} />
 							<label htmlFor="card">Card</label>
 						</div>
 						<div className={styles.option}>
-							<input
-								type="radio"
-								name="paymentType"
-								id="due"
-								value="due"
-								onChange={handleChange}
-								checked={paymentDetail.paymentType === "due"}
-							/>
+							<input type="radio" name="paymentType" id="due" value="due" onChange={handleChange} checked={paymentDetail.paymentType === "due"} />
 							<label htmlFor="due">Due</label>
 						</div>
 						<div className={styles.option}>
-							<input
-								type="radio"
-								name="paymentType"
-								id="other"
-								value="upi_paytm"
-								onChange={handleChange}
-								checked={otherOptions.includes(paymentDetail.paymentType)}
-							/>
+							<input type="radio" name="paymentType" id="other" value="upi_paytm" onChange={handleChange} checked={otherOptions.includes(paymentDetail.paymentType)} />
 							<label htmlFor="other">Other</label>
 						</div>
 						<div className={styles.option}>
-							<input
-								type="radio"
-								name="paymentType"
-								id="multipay"
-								value="multipay"
-								onChange={handleChange}
-								checked={paymentDetail.paymentType === "multipay"}
-							/>
+							<input type="radio" name="paymentType" id="multipay" value="multipay" onChange={handleChange} checked={paymentDetail.paymentType === "multipay"} />
 							<label htmlFor="multipay">Multi-pay</label>
 						</div>
 					</Col>
 				</Row>
 
-				{otherOptions.includes(paymentDetail.paymentType) && (
-					<OtherPaymentOptions
-						handleChange={handleChange}
-						paymentType={paymentDetail.paymentType}
-					/>
-				)}
+				{otherOptions.includes(paymentDetail.paymentType) && <OtherPaymentOptions handleChange={handleChange} paymentType={paymentDetail.paymentType} />}
 
 				{(paymentDetail.paymentType === "cod" || paymentDetail.paymentType === "card") && (
 					<Row className={styles.field}>
 						<Col xs={5}>Customer paid</Col>
 						<Col xs={7}>
-							<input
-								type="number"
-								name="customerPaid"
-								onChange={handleChange}
-								value={paymentDetail.customerPaid}
-							/>
+							<input type="number" name="customerPaid" onChange={handleChange} value={paymentDetail.customerPaid} />
 						</Col>
 					</Row>
 				)}
@@ -167,13 +115,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 					<Row className={styles.field}>
 						<Col xs={5}>Return to customer</Col>
 						<Col xs={7}>
-							<input
-								type="text"
-								disabled
-								name="customerReturn"
-								value={paymentDetail.customerReturn}
-								className={styles.returnAmount}
-							/>
+							<input type="text" disabled name="customerReturn" value={paymentDetail.customerReturn} className={styles.returnAmount} />
 						</Col>
 					</Row>
 				)}
@@ -181,12 +123,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 					<Row className={styles.field}>
 						<Col xs={5}>Tip </Col>
 						<Col xs={7}>
-							<input
-								type="number"
-								name="tip"
-								onChange={handleChange}
-								value={paymentDetail.tip}
-							/>
+							<input type="number" name="tip" onChange={handleChange} value={paymentDetail.tip} />
 						</Col>
 					</Row>
 				)}
@@ -195,22 +132,11 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 					<Row className={styles.field}>
 						<Col xs={5}>Settle Amount</Col>
 						<Col xs={7}>
-							<input
-								type="number"
-								name="settleAmount"
-								onChange={handleChange}
-								value={paymentDetail.settleAmount}
-							/>
+							<input type="number" name="settleAmount" onChange={handleChange} value={paymentDetail.settleAmount} />
 						</Col>
 					</Row>
 				)}
-				{paymentDetail.paymentType === "multipay" && (
-					<MultipayOptions
-						paymentDetail={paymentDetail}
-						setPaymentDetail={setPaymentDetail}
-						orderTotal={order.total}
-					/>
-				)}
+				{paymentDetail.paymentType === "multipay" && <MultipayOptions paymentDetail={paymentDetail} setPaymentDetail={setPaymentDetail} orderTotal={order.total} />}
 			</Modal.Body>
 			<Modal.Footer className={styles.footer}>
 				<button
@@ -220,9 +146,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 					{" "}
 					Save & Settle
 				</button>
-				<button
-					className={styles.cancelBtn}
-					onClick={hide}>
+				<button className={styles.cancelBtn} onClick={hide}>
 					Close
 				</button>
 			</Modal.Footer>

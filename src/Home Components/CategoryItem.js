@@ -1,33 +1,27 @@
 import React from "react";
 import styles from "./CategoryItem.module.css";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setMenuItems } from "../Redux/menuItemsSlice";
 
-function CategoryItem({ display_name, id, setActive, active }) {
+function CategoryItem({cat }) {
 	const dispatch = useDispatch();
-	const { categories } = useSelector((state) => state.bigMenu);
 	const isCartActionDisable = useSelector((state) => state.UIActive.isCartActionDisable);
+	const id = useSelector(state => state.menuItems.id)
 
 	// get items list from bigMenu redux state according to active category id and set menuItem redux state with aquired items
 
-	const handleClick = (id) => {
-		setActive(id);
-
-		let { items } = categories.find((category) => category.id === id);
-
-		dispatch(setMenuItems({ items }));
+	const handleClick = (id,items) => {
+		dispatch(setMenuItems({ items,id }));
 	};
-
-	let selected = active === id ? styles.selected : "";
+	let selected = id === cat.id ? styles.selected : "";
 
 	return (
 		<div
 			className={`${styles.catagoryItem} ${selected}`}
 			onClick={() => {
-				handleClick(id);
+				handleClick(cat.id,cat.items);
 			}}>
-			{display_name}
+			{cat.display_name}
 		</div>
 	);
 }

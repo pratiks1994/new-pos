@@ -42,8 +42,6 @@ const io = new Server(httpServer, {
 	},
 });
 
-
-
 io.on("connection", (socket) => {
     console.log("A client has connected:", socket.id);
 
@@ -60,8 +58,6 @@ io.on("connection", (socket) => {
 app.use(cors("*"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
-
 
 app.get("/menuData", (req, res) => {
 	const menuData = getMenuData();

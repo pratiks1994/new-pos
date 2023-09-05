@@ -35,7 +35,7 @@ const mergeKOTandOrder = (order, KOTitems) => {
 			itemIdentifier: "",
 			toppings: item.item_addons,
 			itemTax: taxes,
-                  parent_tax : item.tax_id
+			parent_tax: item.tax_id,
 		};
 	});
 

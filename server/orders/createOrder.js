@@ -77,9 +77,9 @@ const createOrder = (order) => {
 				
 			const prepareItem = db2.prepare("INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id,description,tax_id,tax,item_addon_items) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
 
-			const prepareTax = db2.prepare("INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)");
+			// const prepareTax = db2.prepare("INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)");
 
-			const prepareToppings = db2.prepare("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)");
+			// const prepareToppings = db2.prepare("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)");
 
 			orderCart.forEach((item) => {
 				const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax, variant_display_name, itemNotes, parent_tax } = item;

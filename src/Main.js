@@ -25,8 +25,8 @@ import { modifyCartData } from "./Redux/finalOrderSlice.js";
 import Loading from "./Feature Components/Loading.js";
 import POSConfig from "./pages/POSConfig.js";
 import { setActive } from "./Redux/UIActiveSlice.js";
-import { io } from "socket.io-client";
-import echo from "./Utils/echoConfig..js";
+// import { io } from "socket.io-client";
+// import echo from "./Utils/echoConfig..js";
 
 function Main() {
 	const dispatch = useDispatch();
@@ -38,26 +38,26 @@ function Main() {
 		return data;
 	};
 
-	useEffect(() => {
-		// const newSocketOne = io("http://192.168.1.92:6001	");
-		// const socketTwo = io("http://192.168.1.73:6001");
+	// useEffect(() => {
+	// 	// const newSocketOne = io("http://192.168.1.92:6001	");
+	// 	// const socketTwo = io("http://192.168.1.73:6001");
 
-		echo.channel("user-channel").listen("UserEvent", e => {
-			console.log(e);
-		});
+	// 	echo.channel("user-channel").listen("UserEvent", e => {
+	// 		console.log(e);
+	// 	});
 
-		echo.connector.socket.on("connecting", () => {
-			console.log("Echo is connecting...");
-		  });
+	// 	echo.connector.socket.on("connecting", () => {
+	// 		console.log("Echo is connecting...");
+	// 	  });
 
-		 echo.connector.socket.on("connected", () => {
-			console.log("Echo is connected to the server");
-		  });
+	// 	 echo.connector.socket.on("connected", () => {
+	// 		console.log("Echo is connected to the server");
+	// 	  });
 
-		return () => {
-			echo.leaveChannel("user-channel")
-		};
-	}, []);
+	// 	return () => {
+	// 		echo.leaveChannel("user-channel")
+	// 	};
+	// }, []);
 
 	const getServerStatus = async () => {
 		const { data } = await axios.get(`http://${IPAddress}:3001/defaultScreenData`, { timeout: 4000 });

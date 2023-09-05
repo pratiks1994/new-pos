@@ -43,7 +43,7 @@ function ServerConfig() {
 			dispatch(modifyCartData({ orderType: data.default_order_type || "delivery"}));
 			dispatch(modifyCartData({ paymentMethod: data.default_payment_type || "cash" }));
 			data.default_view === "table_view" ? navigate("/Home/tableView") : navigate("/Home");
-		},
+		},	
 		onError: () => {
 			setClientLoading(false);
 			setErrorMsg("server is not responding");

@@ -1,23 +1,12 @@
 export const convertOrder = order => {
-
-	console.log(order)
-
+	
 
 	const totalTaxes = [];
+	let totalQty = 0
 
 	const orderCart = order.items.map(item => {
-		// let addonTotal = 0;
-
-		// let toppings = item.itemAddons.map((topping) => {
-		// 	addonTotal += +topping.price * +topping.quantity;
-
-		// 	return { id: topping?.id, name: topping?.name, price: topping?.price, qty: topping?.quantity };
-		// });
-
 		const addonTotal = item.itemAddons.reduce((total, addon) => (total += +addon.price * +addon.quantity), 0);
-
-		// console.log(item.itemTax)
-
+		totalQty += item.quantity 
 
 		item.itemTax.forEach(tax => {
 			let existingTax = totalTaxes.find(totaltax => totaltax.id === tax.tax_id);
@@ -25,7 +14,7 @@ export const convertOrder = order => {
 			if (existingTax) {
 				existingTax.tax_amount += tax.tax_amount * item.quantity;
 			} else {
-				totalTaxes.push({ id: tax.tax_id, name: tax.tax_name , tax_amount: tax.tax_amount * item.quantity });
+				totalTaxes.push({ id: tax.tax_id, name: tax.tax_name, tax_amount: tax.tax_amount * item.quantity });
 			}
 		});
 
@@ -43,7 +32,6 @@ export const convertOrder = order => {
 			itemTax: item.itemTax,
 		};
 	});
-	
 
 	const kotTokenNo = order.KOTDetail.map(kot => kot.token_no).join(",");
 
@@ -68,5 +56,6 @@ export const convertOrder = order => {
 		order_status: order.order_status,
 		orderCart,
 		totalTaxes,
+		totalQty
 	};
 };

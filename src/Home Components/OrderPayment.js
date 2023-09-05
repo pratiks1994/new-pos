@@ -17,23 +17,29 @@ import KOTExistAlertModal from "./KOTExistAlertModal";
 import notify from "../Feature Components/notify";
 import { executeBillPrint, executeKotPrint } from "../Utils/executePrint";
 import { convertOrder } from "../Utils/convertOrder";
+import { useSearchParams } from "react-router-dom";
+import { useGetPrintersQuery } from "../Utils/customQueryHooks";
+import sortPrinters from "../Utils/shortPrinters";
 
 function OrderPayment() {
 	// get finalOrder state from redux store
 	const queryClient = useQueryClient();
-	const finalOrder = useSelector((state) => state.finalOrder);
-	const printers = useSelector((state) => state.printerSettings);
+	const finalOrder = useSelector(state => state.finalOrder);
+	// const printers = useSelector(state => state.printerSettings);
+	const {data: printerArr} = useGetPrintersQuery()
+	const printers = printerArr?.length ?  sortPrinters(printerArr) : []
+	let [searchParams, setSearchParams] = useSearchParams();
 
-	const isCartActionDisable = useSelector((state) => state.UIActive.isCartActionDisable);
+	const isCartActionDisable = useSelector(state => state.UIActive.isCartActionDisable);
 	const [shouldPrintOrder, setShouldPrintOrder] = useState(false);
 	const [showOrderExistModal, setShowOrderExistModal] = useState(false);
 	const [showKOTExistMOdal, setShowKOTExistModal] = useState(false);
 
-	const { IPAddress } = useSelector((state) => state.serverConfig);
+	const { IPAddress } = useSelector(state => state.serverConfig);
 	const dispatch = useDispatch();
 
 	// add payment method to finalOrder redux state
-	const handleChange = (e) => {
+	const handleChange = e => {
 		let { name, value } = e.target;
 		dispatch(modifyCartData({ [name]: value }));
 	};
@@ -43,22 +49,27 @@ function OrderPayment() {
 	const saveOrder = async (finalOrder, printers) => {
 		if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
 			notify("err", "please Enter Table No.");
+			setSearchParams(prev => ({ openTable: "true" }));
 			return;
 		}
 
 		if (finalOrder.orderCart.length !== 0) {
-			const { data } = await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
-			if (data.isOldKOTsExist) {
-				setShowKOTExistModal(true);
-				return;
+			try {
+				const { data } = await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
+				if (data.isOldKOTsExist) {
+					setShowKOTExistModal(true);
+					return;
+				}
+
+				notify("success", "order Placed");
+				// set finalorder redux state to initial state after api call completion
+				// let responce = await window.apiKey.request("print", finalOrder);
+				dispatch(resetFinalOrder());
+				queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
+			} catch (error) {
+				console.log(error);
+				notify("err", "something went wrong");
 			}
-
-			notify("success", "order Placed");
-			// set finalorder redux state to initial state after api call completion
-			// let responce = await window.apiKey.request("print", finalOrder);
-
-			dispatch(resetFinalOrder());
-			queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
 		} else {
 			notify("err", "Cart is Empty");
 		}
@@ -67,6 +78,7 @@ function OrderPayment() {
 	const saveAndPrintOrder = async (finalOrder, printers) => {
 		if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
 			notify("err", "please Enter Table No.");
+			setSearchParams(prev => ({ openTable: "true" }));
 			return;
 		}
 
@@ -112,6 +124,7 @@ function OrderPayment() {
 	const createKOT = async (finalOrder, printers) => {
 		if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
 			notify("err", "please Enter Table No.");
+            setSearchParams(prev => ({ openTable: "true" }));
 			return;
 		}
 
@@ -144,7 +157,7 @@ function OrderPayment() {
 		const DineInStatus = ["accepted", "printed", "settled"];
 		let updatedStatus;
 
-		const current = DineInStatus.findIndex((element) => element === orderStatus);
+		const current = DineInStatus.findIndex(element => element === orderStatus);
 		updatedStatus = DineInStatus[current + 1];
 
 		try {
@@ -176,7 +189,7 @@ function OrderPayment() {
 		// },
 	});
 
-	const getBtnTheme = (status) => {
+	const getBtnTheme = status => {
 		if (status === "accepted") {
 			return { name: "Save & Print", style: null };
 		}
@@ -187,22 +200,15 @@ function OrderPayment() {
 	};
 	//  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store
 
-	
 	const [showPaymentBreakdown, setShowPaymentBreakdown] = useState(false);
 
 	const chevronPosition = showPaymentBreakdown ? <FontAwesomeIcon icon={faCaretDown} /> : <FontAwesomeIcon icon={faCaretUp} />;
 
 	return (
 		<div className={styles.orderPayment}>
-			<PaymentBreakdown
-				showPaymentBreakdown={showPaymentBreakdown}
-				setShowPaymentBreakdown={setShowPaymentBreakdown}
-			/>
+			<PaymentBreakdown showPaymentBreakdown={showPaymentBreakdown} setShowPaymentBreakdown={setShowPaymentBreakdown} />
 
-			<button
-				className={styles.paymentBreakdownToggle}
-				name="toggleBreakdown"
-				onClick={() => setShowPaymentBreakdown(!showPaymentBreakdown)}>
+			<button className={styles.paymentBreakdownToggle} name="toggleBreakdown" onClick={() => setShowPaymentBreakdown(!showPaymentBreakdown)}>
 				{chevronPosition}
 			</button>
 
@@ -213,48 +219,20 @@ function OrderPayment() {
 
 			<div className={`${styles.paymentModes} d-flex justify-content-around`}>
 				<label>
-					<input
-						className="mx-2 my-2"
-						type="radio"
-						name="paymentMethod"
-						onChange={handleChange}
-						value="cash"
-						checked={finalOrder.paymentMethod === "cash"}
-					/>
+					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="cash" checked={finalOrder.paymentMethod === "cash"} />
 					Cash
 				</label>
 
 				<label>
-					<input
-						className="mx-2 my-2"
-						type="radio"
-						name="paymentMethod"
-						onChange={handleChange}
-						value="card"
-						checked={finalOrder.paymentMethod === "card"}
-					/>
+					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="card" checked={finalOrder.paymentMethod === "card"} />
 					Card
 				</label>
 				<label>
-					<input
-						className="mx-2 my-2"
-						type="radio"
-						name="paymentMethod"
-						onChange={handleChange}
-						value="due"
-						checked={finalOrder.paymentMethod === "due"}
-					/>
+					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="due" checked={finalOrder.paymentMethod === "due"} />
 					Due
 				</label>
 				<label>
-					<input
-						className="mx-2 my-2"
-						type="radio"
-						name="paymentMethod"
-						onChange={handleChange}
-						value="other"
-						checked={finalOrder.paymentMethod === "other"}
-					/>
+					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="other" checked={finalOrder.paymentMethod === "other"} />
 					Other
 				</label>
 			</div>
@@ -267,37 +245,21 @@ function OrderPayment() {
 			<div className={`${styles.ProcessOrderBtns} d-flex justify-content-center bg-light pt-3 pb-3 flex-wrap`}>
 				{!isCartActionDisable ? (
 					<div>
-						<Button
-							variant="danger"
-							size="sm"
-							className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1"
-							onClick={() => saveOrder(finalOrder, printers)}>
+						<Button variant="danger" size="sm" className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1" onClick={() => saveOrder(finalOrder, printers)}>
 							{" "}
 							Save{" "}
 						</Button>
-						<Button
-							variant="danger"
-							size="sm"
-							className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1"
-							onClick={() => saveAndPrintOrder(finalOrder, printers)}>
+						<Button variant="danger" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => saveAndPrintOrder(finalOrder, printers)}>
 							{" "}
 							Save & Print
 						</Button>
 						{/* <Button variant="danger" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> Save & eBill </Button> */}
 						{/* <Button variant="secondary" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> KOT </Button> */}
-						<Button
-							variant="secondary"
-							size="sm"
-							className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1"
-							onClick={() => createKOT(finalOrder, printers)}>
+						<Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => createKOT(finalOrder, printers)}>
 							{" "}
 							KOT & Print{" "}
 						</Button>
-						<Button
-							variant="white"
-							size="sm"
-							className="mx-1 py-1 px-2 fw-bold border-1 border border-dark text-nowrap rounded-1"
-							onClick={holdOrder}>
+						<Button variant="white" size="sm" className="mx-1 py-1 px-2 fw-bold border-1 border border-dark text-nowrap rounded-1" onClick={holdOrder}>
 							{" "}
 							HOLD{" "}
 						</Button>
@@ -316,14 +278,7 @@ function OrderPayment() {
 				)}
 			</div>
 			{showOrderExistModal && (
-				<OrderExistAlertModal
-					show={showOrderExistModal}
-					hide={() => setShowOrderExistModal(false)}
-					IPAddress={IPAddress}
-					finalOrder={finalOrder}
-					printers={printers}
-					notify={notify}
-				/>
+				<OrderExistAlertModal show={showOrderExistModal} hide={() => setShowOrderExistModal(false)} IPAddress={IPAddress} finalOrder={finalOrder} printers={printers} notify={notify} />
 			)}
 			{showKOTExistMOdal && (
 				<KOTExistAlertModal

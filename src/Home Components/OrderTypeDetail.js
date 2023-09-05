@@ -16,7 +16,6 @@ const orderDetailsMap = [
 	{ name: "orderComment", icon: faPenToSquare, displayInOrderType: ["dine_in", "pick_up", "delivery"] },
 ];
 
-
 function OrderTypeDetail({ type }) {
 	const [showDetailType, setShowDetailType] = useState(null);
 	let [searchParams, setSearchParams] = useSearchParams();
@@ -33,14 +32,21 @@ function OrderTypeDetail({ type }) {
 		if (searchParams.get("openTable") === "true") {
 			setShowDetailType("tableNumber");
 		}
-	}, []);
+	}, [searchParams]);
 
-	const filteredDetails = orderDetailsMap.filter((detail) => detail.displayInOrderType.includes(type));
+	const handleDetailChange = (detailName) =>{
+		setShowDetailType((prev)=> prev === detailName ? null : detailName)
+		setSearchParams({})
+		
+
+	}
+
+	const filteredDetails = orderDetailsMap.filter(detail => detail.displayInOrderType.includes(type));
 
 	return (
 		<div>
 			<div className={`${styles.orderTypeDetail} d-flex`}>
-				{filteredDetails.map((detail,idx) => (
+				{filteredDetails.map((detail, idx) => (
 					<motion.div
 						layout
 						initial={{ opacity: 0, scale: 0.9 }}
@@ -48,7 +54,7 @@ function OrderTypeDetail({ type }) {
 						transition={{ duration: 0.2 }}
 						key={detail.name}
 						className={`${styles.orderIcon} ${showDetailType === detail.name ? "text-danger" : ""}`}
-						onClick={() => setShowDetailType(showDetailType === detail.name ? null : detail.name)}>
+						onClick={() => handleDetailChange(detail.name)}>
 						<FontAwesomeIcon icon={detail.icon} />{" "}
 					</motion.div>
 				))}

@@ -16,33 +16,28 @@ import SettleOrderModal from "./SettleOrderModal";
 import getDisplayName from "../Utils/getDisplayName";
 import { executeBillPrint } from "../Utils/executePrint";
 import { convertOrder } from "../Utils/convertOrder";
+import { useGetPrintersQuery } from "../Utils/customQueryHooks";
+import sortPrinters from "../Utils/shortPrinters";
 
 function OrderCard({ order, idx }) {
 	const { IPAddress } = useSelector(state => state.serverConfig);
-	const printers = useSelector(state => state.printerSettings);
+	const {data: printerArr} = useGetPrintersQuery()
+	const printers = printerArr?.length ?  sortPrinters(printerArr) : []
+
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	const [showSettleModal, setShowSettleModal] = useState(false);
 
-	const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId, print_count, tip, paymentType, customerPaid, settleAmount, multipay }) => {
-		let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, {
-			orderStatus,
-			orderId,
-			orderType,
-			KOTId,
-			print_count,
-			tip,
-			paymentType,
-			customerPaid,
-			settleAmount,
-			multipay,
-		});
+	const updateLiveOrders = async updateData => {
+		let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, updateData);
 		return data;
 	};
 
 	const { mutate: orderMutation, isLoading } = useMutation({
 		mutationFn: updateLiveOrders,
 	});
+
+	
 
 	const getBtnTheme = (orderStatus, orderType, print_count) => {
 		const themes = [
@@ -52,6 +47,7 @@ function OrderCard({ order, idx }) {
 					{ status: "accepted", btnName: "Food is ready", style: { backgroundColor: "rgb(179, 107, 0)", color: "white" } },
 					{ status: "food_is_ready", btnName: "Dispatch", style: { backgroundColor: "rgb(0, 102, 61)", color: "white" } },
 					{ status: "dispatched", btnName: "Delivered", style: { backgroundColor: "rgb(102, 0, 41)", color: "white" } },
+					{ status: "delivered", btnName: "Save & Settle", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } },
 				],
 			},
 			{
@@ -66,6 +62,7 @@ function OrderCard({ order, idx }) {
 				statuses: [
 					{ status: "accepted", btnName: "Food is ready", style: { backgroundColor: "rgb(179, 107, 0)", color: "white" } },
 					{ status: "food_is_ready", btnName: "Picked Up", style: { backgroundColor: "rgb(0, 102, 61)", color: "white" } },
+					{ status: "picked_up", btnName: "Save & Settle", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } },
 				],
 			},
 		];
@@ -104,8 +101,7 @@ function OrderCard({ order, idx }) {
 				const orderToPrint = convertOrder(order);
 				await executeBillPrint(orderToPrint, printers);
 			}
-
-			await orderMutation({
+			const updateData = {
 				orderStatus: order.order_status,
 				orderId: order.id,
 				orderType: order.order_type,
@@ -116,30 +112,20 @@ function OrderCard({ order, idx }) {
 				tip: null,
 				settleAmount: null,
 				multipay: null,
-			});
+			};
+			orderMutation(updateData);
 		}
 	};
 
 	// console.log(showSettleModal);
 
 	return (
-		<motion.div
-			layout
-			className={styles.orderCard}
-			initial={{ opacity: 0, scale: 0.9 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ duration: 0.1, delay: idx * 0.05 }}>
-			<header
-				className={styles.cardHeader}
-				style={getHeaderTheme(order.order_type).style}
-				onClick={() => moveOrderToHome(order)}>
+		<motion.div layout className={styles.orderCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1, delay: idx * 0.05 }}>
+			<header className={styles.cardHeader} style={getHeaderTheme(order.order_type).style} onClick={() => moveOrderToHome(order)}>
 				<div>
 					<div> Martinoz...</div>
 					<Timer startTime={order.created_at} />
-					<img
-						src={getHeaderTheme(order.order_type).image}
-						alt="BigCo Inc. logo"
-					/>
+					<img src={getHeaderTheme(order.order_type).image} alt="BigCo Inc. logo" />
 
 					<div>{`TABLE : ${order.dine_in_table_no || 12}`}</div>
 				</div>
@@ -159,18 +145,14 @@ function OrderCard({ order, idx }) {
 			<div className={styles.orderItems}>
 				{order.items.map(item => {
 					return (
-						<div
-							className={styles.orderItem}
-							key={v4()}>
+						<div className={styles.orderItem} key={v4()}>
 							<div className={styles.orederItemQty}>{item.quantity} x</div>
 							<div className={styles.orederItemDetail}>
 								{item.item_name} {item.variation_name ? `- ${item.variation_name} ` : null}{" "}
 								{item.itemAddons.length
 									? item.itemAddons.map(addon => {
 											return (
-												<div
-													key={v4()}
-													className={styles.addon}>
+												<div key={v4()} className={styles.addon}>
 													{addon.name} x {addon.quantity},
 												</div>
 											);
@@ -183,22 +165,12 @@ function OrderCard({ order, idx }) {
 			</div>
 			<div className={styles.statusBtn}>
 				<div className={styles.orderTotal}>₹ {order.total.toFixed(2)}</div>
-				<button
-					style={getBtnTheme(order.order_status, order.order_type, order.print_count).style}
-					onClick={handleClick}
-					disabled={isLoading}>
+				<button style={getBtnTheme(order.order_status, order.order_type, order.print_count).style} onClick={handleClick} disabled={isLoading}>
 					{" "}
 					{isLoading ? "Loading..." : getBtnTheme(order.order_status, order.order_type, order.print_count).btnName}
 				</button>
 			</div>
-			{showSettleModal && (
-				<SettleOrderModal
-					show={showSettleModal}
-					hide={() => setShowSettleModal(false)}
-					order={order}
-					orderMutation={orderMutation}
-				/>
-			)}
+			{showSettleModal && <SettleOrderModal show={showSettleModal} hide={() => setShowSettleModal(false)} order={order} orderMutation={orderMutation} />}
 		</motion.div>
 	);
 }

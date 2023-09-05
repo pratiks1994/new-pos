@@ -1,7 +1,7 @@
 import React, {useState } from "react";
 import styles from "./EditPrinter.module.css";
 import { useParams, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import {  useSelector } from "react-redux";
 import BackButton from "../Feature Components/BackButton";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -9,18 +9,20 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import SelectPrinter from "../Edit Printer Components/SelectPrinter";
 import AssignPrinterToBill from "../Edit Printer Components/AssignPrinterToBill";
 import AssignPrinterToKot from "../Edit Printer Components/AssignPrinterToKot";
-
 import notify from "../Feature Components/notify";
 import SelectCategoriesToPrint from "../Edit Printer Components/SelectCategoriesToPrint";
-import { setBigMenu } from "../Redux/bigMenuSlice";
 import SelectItemsToPrint from "../Edit Printer Components/SelectItemsToPrint";
+import { useGetConnectedPrintersQuery, useGetMenuQuery2 } from "../Utils/customQueryHooks";
 
 function EditPrinter() {
 	const { IPAddress } = useSelector((state) => state.serverConfig);
-	const { categories } = useSelector((state) => state.bigMenu);
+	const {data:bigMenu} = useGetMenuQuery2()
+	const categories = bigMenu?.categories || []
+
+	console.log("rerendered")
+
 	const { printerId } = useParams();
 	const navigate = useNavigate();
-	const dispatch = useDispatch();
 	const queryClient = useQueryClient();
 
 	const [printer, setPrinter] = useState({
@@ -47,23 +49,9 @@ function EditPrinter() {
 	const [selectedCategory, setSelectedCategory] = useState({ allSelected: true, selectedCategoryIds: [] });
 	const [selectedItems, setSelectedItems] = useState({ allSelected: true, selectedItemIds: [] });
 
-	const getCategories = async () => {
-		let { data } = await axios.get(`http://${IPAddress}:3001/menuData`);
-		return data;
-	};
-
-	const { data, status } = useQuery("bigMenu", getCategories, {
-		staleTime: 1200000,
-		onSuccess: (data) => dispatch(setBigMenu({ data })),
-	});
 
 	const getPrinters = async () => {
 		const { data } = await axios.get(`http://${IPAddress}:3001/getPrinters`);
-		return data;
-	};
-
-	const getConnectedPrinters = async () => {
-		const data = await window.apiKey.request("getConnectedPrinters");
 		return data;
 	};
 
@@ -84,8 +72,6 @@ function EditPrinter() {
 		queryFn: getPrinters,
 		onSuccess: (data) => {
 			const printerDetail = data?.find((printer) => parseInt(printerId) === printer.id);
-
-		 let start = performance.now()
 
 			setPrinter((state) => ({
 				...state,
@@ -122,7 +108,6 @@ function EditPrinter() {
 				}
 			});
 
-			console.log(printerDetail.kot_print_categories)
 			setSelectedItems((prev) => {
 				if (printerDetail.kot_print_items.toString() === "-1") {
 					return { allSelected: true, selectedItemIds: [] };
@@ -131,19 +116,12 @@ function EditPrinter() {
 				}
 			});
 
-			// console.log(performance.now() - start)
 		},
-
 		refetchOnWindowFocus: false,
 	});
 
-	console.log(selectedItems,selectedCategory)
 
-	const { data: connectedPrinters } = useQuery({
-		queryFn: getConnectedPrinters,
-		queryKey: "connectedPrinters",
-		refetchOnWindowFocus: false,
-	});
+	const { data: connectedPrinters } = useGetConnectedPrintersQuery()
 
 	const printerMutation = useMutation({
 		mutationFn: updatePrinter,
@@ -189,7 +167,7 @@ function EditPrinter() {
 					<SelectPrinter
 						printer={printer}
 						setPrinter={setPrinter}
-						connectedPrinters={connectedPrinters}
+						connectedPrinters={connectedPrinters || []}
 					/>
 
 					<AssignPrinterToBill

@@ -3,12 +3,15 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const menuItemsSlice = createSlice({
    name:"menuItems",
-   initialState:[],
+   initialState:{id:"",items:[]},
    reducers:{
       setMenuItems :(state,action)=>{
            
-           const {items} = action.payload
-           return [...items]
+           const {items,id} = action.payload
+           state.id = id
+           state.items = items
+
+         //   return [...items]
           
       }
 

@@ -1,7 +1,7 @@
 const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
-const createHoldOrder = async (order) => {
+const createHoldOrder = async order => {
 	let restaurantId = 1;
 	const {
 		customerName,
@@ -21,28 +21,11 @@ const createHoldOrder = async (order) => {
 		orderCart,
 	} = order;
 
-	const {lastInsertRowid:holdOrderId} = db2
+	const { lastInsertRowid: holdOrderId } = db2
 		.prepare(
 			"INSERT INTO hold_orders (restaurant_id,customer_name,complete_address,phone_number,order_type,dine_in_table_no,item_total,description,total_discount,total_tax,delivery_charges,total,payment_type,landmark,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
 		)
-		.run([
-			restaurantId,
-			customerName,
-			customerAdd,
-			customerContact,
-			orderType,
-			tableNumber,
-			subTotal,
-			orderComment,
-			discount,
-			tax,
-			deliveryCharge,
-			cartTotal,
-			paymentMethod,
-			customerLocality,
-		]);
-
-        
+		.run([restaurantId, customerName, customerAdd, customerContact, orderType, tableNumber, subTotal, orderComment, discount, tax, deliveryCharge, cartTotal, paymentMethod, customerLocality]);
 
 	// const holdOrderId = await dbRun(
 	//       db,
@@ -65,7 +48,7 @@ const createHoldOrder = async (order) => {
 	//       ]
 	// );
 
-	orderCart.forEach( (item) => {
+	orderCart.forEach(item => {
 		const {
 			itemQty,
 			itemId,
@@ -83,8 +66,7 @@ const createHoldOrder = async (order) => {
 			categoryId,
 		} = item;
 
-
-		const { lastInsertRowid: holdOrderItemId} = db2
+		const { lastInsertRowid: holdOrderItemId } = db2
 			.prepare(
 				"INSERT INTO hold_order_items (Hold_order_id,item_id,item_name,quantity,variation_name,variation_id,description,currentOrderItemId,basePrice,itemTotal,multiItemTotal,itemIdentifier,itemTax,category_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 			)
@@ -127,7 +109,7 @@ const createHoldOrder = async (order) => {
 		// );
 
 		if (toppings) {
-			toppings.forEach((topping) => {
+			toppings.forEach(topping => {
 				const { id, type, price, qty } = topping;
 
 				KOT_addonGroup = db2
