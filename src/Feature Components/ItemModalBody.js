@@ -17,7 +17,7 @@ function ItemModalBody({ id, restaurantPriceVariations, totalTax }) {
 	return (
 		<div className={styles.modalBody}>
 			<div className={styles.variation}>
-				<div className="ms-2"> Variation</div>
+				<div className="ms-2 "> Variation</div>
 				<div className="d-flex flex-wrap">
 					{restaurantPriceVariations.map(variant => (
 						<Variant key={variant.variation_id} totalTax={totalTax} {...variant} defaultPriceType={defaultPriceType} />

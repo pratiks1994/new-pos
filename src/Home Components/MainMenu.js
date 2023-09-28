@@ -5,18 +5,17 @@ import Items from "./Items";
 import { useSelector, useDispatch } from "react-redux";
 import { setMenuItems } from "../Redux/menuItemsSlice";
 import { useGetMenuQuery, useGetMenuQuery2, useGetPrintersQuery } from "../Utils/customQueryHooks";
+import Loading from "../Feature Components/Loading";
 
 function MainMenu() {
-
 	const dispatch = useDispatch();
 	// useGetPrintersQuery();
 	const { isLoading, data: bigMenu } = useGetMenuQuery2();
 	const categories = bigMenu?.categories || [];
-	const activeCategoryId = useSelector(state => state.menuItems.id)
+	const activeCategoryId = useSelector(state => state.menuItems.id);
 	const isCartActionDisable = useSelector(state => state.UIActive.isCartActionDisable);
 	const searchItemRef = useRef("");
 
-	
 	const handleChange = () => {
 		let searchTerm = searchItemRef.current.value;
 		let searchItem = [];
@@ -33,14 +32,16 @@ function MainMenu() {
 		// if seach term length is 0 or search box is empty reset menuItems to selected active id that was aquired from activeCategoryId
 
 		if (searchTerm.length === 0 && activeCategoryId) {
-
 			let { items } = categories.find(category => category.id === activeCategoryId);
-			dispatch(setMenuItems({ items,id:activeCategoryId }));
+			dispatch(setMenuItems({ items, id: activeCategoryId }));
 			return;
-
 		}
-		dispatch(setMenuItems({ items: searchItem,id:activeCategoryId }));
+		dispatch(setMenuItems({ items: searchItem, id: activeCategoryId }));
 	};
+
+	if (isLoading) {
+		return <Loading />;
+	}
 
 	return (
 		<div className={styles.mainMenu} style={isCartActionDisable ? { pointerEvents: "none", color: "gray" } : null}>
@@ -51,7 +52,7 @@ function MainMenu() {
 			</div>
 
 			<div className={styles.displayMenu}>
-				{isLoading ? <div>loading...</div> : <Categories categories={categories} />}
+				<Categories categories={categories} />
 				<Items />
 			</div>
 		</div>

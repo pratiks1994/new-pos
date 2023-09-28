@@ -100,6 +100,7 @@ const printInvoice = async payload => {
                   <div style="flex : 3 ; text-align:center"> ${item.multiItemTotal.toFixed(2)}</div>`,
 			style: { textAlign: "left", fontSize: "13px", display: "flex", justifyContent: "space-between", margin: "5px 8px 5px 8px", fontFamily: "Roboto" },
 		};
+		
 		printOrderDetail.push(orderitem);
 
 		if (item.toppings) {

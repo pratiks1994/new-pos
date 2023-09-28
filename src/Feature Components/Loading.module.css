@@ -6,6 +6,13 @@
     width: 80px;    
     height: 80px;
   }
+  .container{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .ellipsis div {
     position: absolute;
     top: 33px;

@@ -1,14 +1,17 @@
 .holdOrderCard {
 	padding: 5px;
 	border-radius: 5px;
-	border: 1px solid rgb(175, 175, 175);
+	/* border: 1px solid rgb(175, 175, 175); */
 	margin-top: 10px;
 	font-size: 12px;
 	font-weight: 500;
-	color: rgb(83, 83, 83);
-	background-color: rgb(238, 238, 238);
+	color: rgb(241, 241, 241);
+	background-color: rgba(58, 58, 58, 0.712);
 	box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-	transition: all 75ms ease-in;
+}
+
+.holdOrderCard:hover {
+	background-color: rgb(65, 65, 65);
 }
 
 .cardHeader {
@@ -24,7 +27,7 @@
 	padding: 3px 2px;
 	font-weight: bolder;
 	font-size: 13px;
-	color: rgb(53, 53, 53);
+	color: rgb(255, 255, 255);
 }
 
 .customerDetail {
@@ -42,18 +45,15 @@
 .actions button {
 	font-weight: bolder;
 	color: inherit;
-	border: 2px solid rgb(175, 175, 175);
+	border: none;
 	border-radius: 5px;
 	padding-inline: 20px;
 	padding-block: 5px;
-	background-color: white;
+	background-color: rgba(202, 16, 16, 0.911);
+	color: white;
 }
 
-.actions button:hover {
-	border-color: rgba(102, 0, 0, 0.808);
-}
+/* .holdOrderCard:hover {
+	background-color: rgba(119, 119, 119, 0.897);
 
-.holdOrderCard:hover {
-	border-color: rgba(73, 0, 0, 0.582);
-	transform: scale(1.01);
-}
+} */

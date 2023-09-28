@@ -99,6 +99,8 @@
 
 .itemName{
 cursor: pointer;
+color: rgb(49, 49, 49);
+font-weight: 500;
 }
 
 
@@ -106,7 +108,10 @@ cursor: pointer;
 	padding-right: 10px;
 	text-align: right;
 	font-size: 14px;
-	min-width: 80px
+	min-width: 80px;
+    color: rgb(0, 0, 0);
+    font-weight: 500;
+    
 }
 
 

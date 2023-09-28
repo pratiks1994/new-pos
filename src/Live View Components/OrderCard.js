@@ -3,14 +3,14 @@ import styles from "./OrderCard.module.css";
 import { v4 } from "uuid";
 import Timer from "./Timer";
 import { useSelector, useDispatch } from "react-redux";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation} from "react-query";
 import axios from "axios";
 import deliveryImg from "../icons/liveview-delivery.png";
 import pickUpImg from "../icons/liveview-pickup.png";
 import dineInIng from "../icons/liveview-dinein.png";
 import { liveOrderToCart } from "../Redux/finalOrderSlice";
 import { useNavigate } from "react-router-dom";
-import { setActive } from "../Redux/UIActiveSlice";
+import { modifyUIActive, setActive } from "../Redux/UIActiveSlice";
 import { motion } from "framer-motion";
 import SettleOrderModal from "./SettleOrderModal";
 import getDisplayName from "../Utils/getDisplayName";
@@ -21,8 +21,9 @@ import sortPrinters from "../Utils/shortPrinters";
 
 function OrderCard({ order, idx }) {
 	const { IPAddress } = useSelector(state => state.serverConfig);
-	const {data: printerArr} = useGetPrintersQuery()
-	const printers = printerArr?.length ?  sortPrinters(printerArr) : []
+	const { data: printerArr } = useGetPrintersQuery();
+
+	const printers = printerArr?.length ? sortPrinters(printerArr) : [];
 
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
@@ -36,8 +37,6 @@ function OrderCard({ order, idx }) {
 	const { mutate: orderMutation, isLoading } = useMutation({
 		mutationFn: updateLiveOrders,
 	});
-
-	
 
 	const getBtnTheme = (orderStatus, orderType, print_count) => {
 		const themes = [
@@ -88,8 +87,14 @@ function OrderCard({ order, idx }) {
 	};
 
 	const moveOrderToHome = order => {
+		let isCartActionDisable = true;
+		let cartAction = "default";
+		if (order.print_count === 0) {
+			isCartActionDisable = false;
+			cartAction = "modifyOrder";
+		}
 		dispatch(liveOrderToCart({ order }));
-		dispatch(setActive({ key: "isCartActionDisable", name: true }));
+		dispatch(modifyUIActive({ restaurantPriceId: order.restaurantPriceId, isCartActionDisable,cartAction }));
 		navigate("/Home");
 	};
 
@@ -116,8 +121,6 @@ function OrderCard({ order, idx }) {
 			orderMutation(updateData);
 		}
 	};
-
-	// console.log(showSettleModal);
 
 	return (
 		<motion.div layout className={styles.orderCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1, delay: idx * 0.05 }}>

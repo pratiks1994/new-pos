@@ -1,7 +1,7 @@
-import React, {useState } from "react";
+import React, { useState } from "react";
 import styles from "./EditPrinter.module.css";
 import { useParams, useNavigate } from "react-router-dom";
-import {  useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import BackButton from "../Feature Components/BackButton";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -13,15 +13,16 @@ import notify from "../Feature Components/notify";
 import SelectCategoriesToPrint from "../Edit Printer Components/SelectCategoriesToPrint";
 import SelectItemsToPrint from "../Edit Printer Components/SelectItemsToPrint";
 import { useGetConnectedPrintersQuery, useGetMenuQuery2 } from "../Utils/customQueryHooks";
+import Loading from "../Feature Components/Loading";
 
 function EditPrinter() {
-	const { IPAddress } = useSelector((state) => state.serverConfig);
-	const {data:bigMenu} = useGetMenuQuery2()
-	const categories = bigMenu?.categories || []
-
-	console.log("rerendered")
-
+	const { IPAddress } = useSelector(state => state.serverConfig);
+	const { data: bigMenu } = useGetMenuQuery2();
+	const categories = bigMenu?.categories || [];
 	const { printerId } = useParams();
+
+
+
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
@@ -49,13 +50,12 @@ function EditPrinter() {
 	const [selectedCategory, setSelectedCategory] = useState({ allSelected: true, selectedCategoryIds: [] });
 	const [selectedItems, setSelectedItems] = useState({ allSelected: true, selectedItemIds: [] });
 
-
 	const getPrinters = async () => {
 		const { data } = await axios.get(`http://${IPAddress}:3001/getPrinters`);
 		return data;
 	};
 
-	const updatePrinter = async (printer) => {
+	const updatePrinter = async printer => {
 		// console.log("ran");
 		const { data } = await axios.put(`http://${IPAddress}:3001/updatePrinter`, printer);
 		return data;
@@ -64,16 +64,16 @@ function EditPrinter() {
 	const {
 		data: printers,
 		isLoading,
+		isFetching,
 		isError,
 		error,
 	} = useQuery({
-		initialData:[],
 		queryKey: "printers",
 		queryFn: getPrinters,
-		onSuccess: (data) => {
-			const printerDetail = data?.find((printer) => parseInt(printerId) === printer.id);
+		onSuccess: data => {
+			const printerDetail = data?.find(printer => parseInt(printerId) === printer.id);
 
-			setPrinter((state) => ({
+			setPrinter(state => ({
 				...state,
 				printer_display_name: printerDetail.printer_display_name,
 				selectedPrinter: printerDetail.printer_name,
@@ -82,8 +82,8 @@ function EditPrinter() {
 				printerType: printerDetail.printer_type,
 			}));
 
-			setPrinterBillOrderType((prev) => {
-				return prev.map((orderType) => {
+			setPrinterBillOrderType(prev => {
+				return prev.map(orderType => {
 					const id = orderType.id;
 					const isChecked = printerDetail.bill_print_ordertypes.includes(id.toString()) || false;
 					const copyCount = printerDetail.bill_print_copy_count.split(",")[id - 1] || 1;
@@ -91,8 +91,8 @@ function EditPrinter() {
 				});
 			});
 
-			setPrinterKotOrderType((prev) => {
-				return prev.map((orderType) => {
+			setPrinterKotOrderType(prev => {
+				return prev.map(orderType => {
 					const id = orderType.id;
 					const isChecked = printerDetail.kot_print_ordertypes.includes(id.toString());
 					const copyCount = printerDetail.kot_print_copy_count.split(",")[id - 1];
@@ -100,28 +100,26 @@ function EditPrinter() {
 				});
 			});
 
-			setSelectedCategory((prev) => {
+			setSelectedCategory(prev => {
 				if (printerDetail.kot_print_categories.toString() === "-1") {
 					return { allSelected: true, selectedCategoryIds: [] };
 				} else {
-					return { allSelected: false, selectedCategoryIds: printerDetail.kot_print_categories.split(",").map(id=>+id)  };
+					return { allSelected: false, selectedCategoryIds: printerDetail.kot_print_categories.split(",").map(id => +id) };
 				}
 			});
 
-			setSelectedItems((prev) => {
+			setSelectedItems(prev => {
 				if (printerDetail.kot_print_items.toString() === "-1") {
 					return { allSelected: true, selectedItemIds: [] };
 				} else {
 					return { allSelected: false, selectedItemIds: printerDetail.kot_print_items.split(",").map(id => +id) };
 				}
 			});
-
 		},
 		refetchOnWindowFocus: false,
 	});
 
-
-	const { data: connectedPrinters } = useGetConnectedPrintersQuery()
+	const { data: connectedPrinters } = useGetConnectedPrintersQuery();
 
 	const printerMutation = useMutation({
 		mutationFn: updatePrinter,
@@ -136,27 +134,32 @@ function EditPrinter() {
 		},
 	});
 
+	
+
 	const handleSave = async (printer, printerKotOrderType, printerBillOrderType) => {
-		
 		const billPrintOrderTypes = printerBillOrderType.reduce((acc, orderType) => (orderType.isChecked ? [...acc, orderType.id] : acc), []).join(",");
-		const billPrintCopyCount = printerBillOrderType.map((ordertype) => ordertype.copyCount || 0).join(",");
+		const billPrintCopyCount = printerBillOrderType.map(ordertype => ordertype.copyCount || 0).join(",");
 
 		const kotPrintOrderTypes = printerKotOrderType.reduce((acc, orderType) => (orderType.isChecked ? [...acc, orderType.id] : acc), []).join(",");
-		const kotPrintCopyCount = printerKotOrderType.map((ordertype) => ordertype.copyCount || 0).join(",");
+		const kotPrintCopyCount = printerKotOrderType.map(ordertype => ordertype.copyCount || 0).join(",");
 
 		const printCategories = selectedCategory.allSelected || !selectedCategory.selectedCategoryIds.length ? "-1" : selectedCategory.selectedCategoryIds.join(",");
 		const printItems = selectedItems.allSelected || !selectedItems.selectedItemIds.length ? "-1" : selectedItems.selectedItemIds.join(",");
 
-
 		printerMutation.mutate({ ...printer, kotPrintCopyCount, kotPrintOrderTypes, billPrintCopyCount, billPrintOrderTypes, printCategories, printItems });
 	};
 
+	if (isLoading || isFetching ) {
+		return  <Loading />;
+	}
+
+	if (isError) {
+		return <div>something went wrong...</div>;
+	}
+
+
 	return (
-		<motion.div
-			className={styles.editPrinterBody}
-			initial={{ opacity: 0, scale: 0.98 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ duration: 0.1 }}>
+		<motion.div className={styles.editPrinterBody} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1 }}>
 			<header className={styles.editPrinterHeading}>
 				<div>Edit Printer - {printer.printer_display_name} </div>
 				<BackButton onClick={() => navigate("..")} />
@@ -164,48 +167,20 @@ function EditPrinter() {
 			{isLoading && <div className={styles.editPrinterOptions}> Loading...</div>}
 			{!isLoading && (
 				<div className={styles.editPrinterOptions}>
-					<SelectPrinter
-						printer={printer}
-						setPrinter={setPrinter}
-						connectedPrinters={connectedPrinters || []}
-					/>
+					<SelectPrinter printer={printer} setPrinter={setPrinter} connectedPrinters={connectedPrinters || []} />
 
-					<AssignPrinterToBill
-						printer={printer}
-						setPrinter={setPrinter}
-						printerBillOrderType={printerBillOrderType}
-						setPrinterBillOrderType={setPrinterBillOrderType}
-					/>
+					<AssignPrinterToBill printer={printer} setPrinter={setPrinter} printerBillOrderType={printerBillOrderType} setPrinterBillOrderType={setPrinterBillOrderType} />
 
-					<AssignPrinterToKot
-						printer={printer}
-						setPrinter={setPrinter}
-						printerKotOrderType={printerKotOrderType}
-						setPrinterKotOrderType={setPrinterKotOrderType}
-					/>
-					<SelectCategoriesToPrint
-						selectedCategory={selectedCategory}
-						setSelectedCategory={setSelectedCategory}
-						categories={categories}
-						setSelectedItems={setSelectedItems}
-					/>
-					<SelectItemsToPrint
-						selectedItems={selectedItems}
-						setSelectedItems={setSelectedItems}
-						categories={categories}
-						selectedCategory={selectedCategory}
-					/>
+					<AssignPrinterToKot printer={printer} setPrinter={setPrinter} printerKotOrderType={printerKotOrderType} setPrinterKotOrderType={setPrinterKotOrderType} />
+					<SelectCategoriesToPrint selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} categories={categories} setSelectedItems={setSelectedItems} />
+					<SelectItemsToPrint selectedItems={selectedItems} setSelectedItems={setSelectedItems} categories={categories} selectedCategory={selectedCategory} />
 				</div>
 			)}
 			<div className={styles.editPrinterControl}>
-				<button
-					className={styles.saveBtn}
-					onClick={() => handleSave(printer, printerKotOrderType, printerBillOrderType)}>
+				<button className={styles.saveBtn} onClick={() => handleSave(printer, printerKotOrderType, printerBillOrderType)}>
 					Save
 				</button>
-				<button
-					className={styles.cancelBtn}
-					onClick={() => navigate("..")}>
+				<button className={styles.cancelBtn} onClick={() => navigate("..")}>
 					Cancel
 				</button>
 			</div>

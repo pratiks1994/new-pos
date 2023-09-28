@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { getIdentifier } from "../Utils/getIdentifier";
 
-const reCalculateOrderData = (state) => {
+const reCalculateOrderData = state => {
 	let subTotal = 0;
 	let totalTax = 0;
 	for (const item of state.orderCart) {
@@ -48,8 +49,9 @@ const finalOrderSlice = createSlice({
 	reducers: {
 		addOrderItem: (state, action) => {
 			let orderItem = action.payload;
-			let existingItem = state.orderCart.find((item) => item.itemIdentifier === orderItem.itemIdentifier);
+			let existingItem = state.orderCart.find(item => item.itemIdentifier === orderItem.itemIdentifier);
 			if (existingItem) {
+				                                                                                       
 				existingItem.itemQty += 1;
 				existingItem.multiItemTotal = existingItem.itemQty * existingItem.itemTotal;
 			} else {
@@ -65,7 +67,7 @@ const finalOrderSlice = createSlice({
 
 		incrementQty: (state, action) => {
 			let { id } = action.payload;
-			let existingItem = state.orderCart.find((item) => item.currentOrderItemId === id);
+			let existingItem = state.orderCart.find(item => item.currentOrderItemId === id);
 			existingItem.itemQty += 1;
 			existingItem.multiItemTotal = existingItem.itemQty * existingItem.itemTotal;
 
@@ -74,13 +76,13 @@ const finalOrderSlice = createSlice({
 
 		addItemNotes: (state, action) => {
 			const { currentOrderItemId, notes } = action.payload;
-			let existingItem = state.orderCart.find((item) => item.currentOrderItemId === currentOrderItemId);
+			let existingItem = state.orderCart.find(item => item.currentOrderItemId === currentOrderItemId);
 			existingItem.itemNotes = notes;
 		},
 
 		decrementQty: (state, action) => {
 			let { id } = action.payload;
-			let existingItem = state.orderCart.find((item) => item.currentOrderItemId === id);
+			let existingItem = state.orderCart.find(item => item.currentOrderItemId === id);
 			if (existingItem.itemQty > 1) {
 				existingItem.itemQty -= 1;
 				existingItem.multiItemTotal = existingItem.itemQty * existingItem.itemTotal;
@@ -91,7 +93,7 @@ const finalOrderSlice = createSlice({
 
 		removeItem: (state, action) => {
 			const { itemId } = action.payload;
-			state.orderCart = state.orderCart.filter((item) => item.currentOrderItemId !== itemId);
+			state.orderCart = state.orderCart.filter(item => item.currentOrderItemId !== itemId);
 			reCalculateOrderData(state);
 		},
 
@@ -116,7 +118,7 @@ const finalOrderSlice = createSlice({
 			state.customerContact = number;
 		},
 
-		resetFinalOrder: (state) => {
+		resetFinalOrder: state => {
 			return initialFinalOrder;
 		},
 
@@ -138,8 +140,8 @@ const finalOrderSlice = createSlice({
 			state.orderComment = order.description;
 			state.printCount = 0;
 
-			state.orderCart = order.orderCart.map((item) => {
-				let toppings = item.toppings.map((topping) => {
+			state.orderCart = order.orderCart.map(item => {
+				let toppings = item.toppings.map(topping => {
 					return { id: topping.addongroupitem_id, type: topping.name, price: topping.price, qty: topping.quantity };
 				});
 
@@ -183,14 +185,20 @@ const finalOrderSlice = createSlice({
 			state.orderComment = order.description;
 			state.id = order.id;
 			state.order_status = order.order_status;
+			state.printCount = order.print_count;
 
-			state.orderCart = order.items.map((item) => {
-				let toppings = item.itemAddons.map((topping) => {
-					return { id: topping?.addongroupitem_id, type: topping?.name, price: topping?.price, qty: topping?.quantity };
+			state.orderCart = order.items.map(item => {
+                   
+				const itemIdentifier = getIdentifier(item.item_id,item.variation_id,item.itemAddons)
+				let toppingsTotal = 0;
+
+				let toppings = item.itemAddons.map(topping => {
+					toppingsTotal += topping.quantity * topping.price;
+					return { id: topping?.id, name: topping?.name, price: topping?.price, quantity: topping?.quantity };
 				});
 
-				let itemTax = item.itemTax.map((tax) => {
-					return { id: tax.tax_id, name: `${tax.tax_id === 3 ? "CGST" : "SGST"}`, tax: tax.tax_amount };
+				let itemTax = item.itemTax.map(tax => {
+					return { id: tax.tax_id, name: tax.tax_name, tax: tax.tax_amount };
 				});
 
 				return {
@@ -199,12 +207,15 @@ const finalOrderSlice = createSlice({
 					itemId: item.item_id,
 					itemName: item.item_name,
 					variation_id: item.variation_id,
-					variationName: item.variation_name,
-					basePrice: item.price,
-					toppings: toppings,
-					itemTotal: item.itemTotal,
-					multiItemTotal: item.final_price,
+					variantName: item.variation_name,
+					basePrice: item.price - toppingsTotal,
+					toppings: item.itemAddons,
+					itemTotal: item.price,
+					multiItemTotal: item.price * item.quantity,
 					itemTax: itemTax,
+					itemNotes: item.description,
+					parent_tax: item.tax_id,
+					itemIdentifier
 				};
 			});
 		},
@@ -212,4 +223,17 @@ const finalOrderSlice = createSlice({
 });
 
 export default finalOrderSlice.reducer;
-export const { addOrderItem, incrementQty, decrementQty, removeItem, modifyCartData, calculateCartTotal, resetFinalOrder, setCustomerDetail, holdToFinalOrder, liveOrderToCart, addItemNotes, changePriceOnAreaChange } = finalOrderSlice.actions;
+export const {
+	addOrderItem,
+	incrementQty,
+	decrementQty,
+	removeItem,
+	modifyCartData,
+	calculateCartTotal,
+	resetFinalOrder,
+	setCustomerDetail,
+	holdToFinalOrder,
+	liveOrderToCart,
+	addItemNotes,
+	changePriceOnAreaChange,
+} = finalOrderSlice.actions;

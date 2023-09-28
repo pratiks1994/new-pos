@@ -1,4 +1,5 @@
 import {  toast } from "react-toastify";
+
 function notify(status, msg) {
 	if (status === "success") {
 		toast.success(msg, {

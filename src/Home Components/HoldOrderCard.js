@@ -5,8 +5,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { holdToFinalOrder } from "../Redux/finalOrderSlice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 
-function HoldOrderCard({ order, setShowHoldOrders }) {
+function HoldOrderCard({ order, setShowHoldOrders, idx }) {
 	const dispatch = useDispatch();
 	const { IPAddress } = useSelector(state => state.serverConfig);
 	const navigate = useNavigate();
@@ -27,7 +28,19 @@ function HoldOrderCard({ order, setShowHoldOrders }) {
 	};
 
 	return (
-		<div className={styles.holdOrderCard}>
+		<AnimatePresence initial={true}>
+		<motion.div
+			layout
+			key="totalTiles"
+			initial="collapsed"
+			animate="open"
+			exit="collapsed"
+			variants={{
+				open: { opacity: 1, scale: 1 },
+				collapsed: { opacity: 0, scale: 0.4 },
+			}}
+			transition={{ type: "spring", stiffness: 500, damping: 20,delay:idx*0.1 }}
+			className={styles.holdOrderCard}>
 			<div onClick={() => setAsFinalOrder(order)}>
 				<div className={styles.cardHeader}>
 					<div>
@@ -47,7 +60,8 @@ function HoldOrderCard({ order, setShowHoldOrders }) {
 				</div>
 				<button onClick={() => holdOrderMutation.mutate(order.id)}>Discard</button>
 			</div>
-		</div>
+		</motion.div>
+		</AnimatePresence>
 	);
 }
 

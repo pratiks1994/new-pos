@@ -4,6 +4,8 @@ import OrderTypeDetail from "./OrderTypeDetail";
 import { useSelector, useDispatch } from "react-redux";
 import { modifyCartData } from "../Redux/finalOrderSlice";
 import { setActive } from "../Redux/UIActiveSlice";
+import { useQueryClient } from "react-query";
+
 
 const orderTypesMap = [
 	{ name: "dine_in", displayName: "Dine In" },
@@ -12,15 +14,17 @@ const orderTypesMap = [
 ];
 
 function OrderType() {
+	const queryClient = useQueryClient()
 	const dispatch = useDispatch();
 	const orderType = useSelector((state) => state.finalOrder.orderType);
-	const defaultRestaurantPrice = useSelector((state) => state.bigMenu.defaultSettings.default_restaurant_price);
+	const defaultRestaurantPrice = queryClient.getQueryData("defaultScreen")?.default_restaurant_price
+	
 
 	const handleOrderType = (orderType) => {
 		if (orderType === "delivery" || orderType === "pick_up") {
 			dispatch(modifyCartData({ tableNumber: "" }));
 		}
-		dispatch(setActive({ key: "restaurantPriceId", name: +defaultRestaurantPrice || null }));
+		dispatch(setActive({ key: "restaurantPriceId", name: +defaultRestaurantPrice }));
 		dispatch(modifyCartData({ orderType }));
 	};
 

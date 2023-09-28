@@ -1,9 +1,7 @@
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { useQuery } from "react-query"
+import { useQuery } from "react-query";
 import { setBigMenu } from "../Redux/bigMenuSlice";
-
-
 
 // ====================================== to get Full Menu ====================================================
 
@@ -20,7 +18,7 @@ export const useGetMenuQuery = () => {
 		queryKey: ["bigMenu"],
 		queryFn: getBigMenu,
 		onSuccess: data => dispatch(setBigMenu({ data })),
-		staleTime:120000,
+		staleTime: 120000,
 		enabled: !!IPAddress,
 	});
 };
@@ -56,7 +54,7 @@ export const useGetPrintersQuery = () => {
 		queryFn: getPrinters,
 		refetchIntervalInBackground: false,
 		refetchOnWindowFocus: false,
-		staleTime : 1200000,
+		staleTime: 1200000,
 		enabled: !!IPAddress,
 	});
 };
@@ -66,57 +64,86 @@ export const useGetPrintersQuery = () => {
 export const useGetLiveKotsQuery = () => {
 	const { IPAddress } = useSelector(state => state.serverConfig);
 
-    const getKOT = async () => {
-        console.log("get KOT")
+	const getKOT = async () => {
+		console.log("get KOT");
 		let { data } = await axios.get(`http://${IPAddress}:3001/liveKot`);
 		return data;
 	};
 
 	return useQuery({
-        initialData:[],
+		initialData: [],
 		queryKey: ["KOTs"],
 		queryFn: getKOT,
 		refetchIntervalInBackground: 500000,
-		enabled: !!IPAddress ,               	 	
-	});
-}
+		refetchOnWindowFocus: false,
 
+		enabled: !!IPAddress,
+	});
+};
 
 // ====================================== to get live orders ====================================================
 
 export const useGetLiveOrdersQuery = () => {
 	const { IPAddress } = useSelector(state => state.serverConfig);
-    const getLiveOrders = async () => {
+	const getLiveOrders = async () => {
 		let { data } = await axios.get(`http://${IPAddress}:3001/liveorders`);
 		return data;
 	};
 
 	return useQuery({
-        initialData:[],
 		queryKey: ["liveOrders"],
 		queryFn: getLiveOrders,
 		refetchIntervalInBackground: 500000,
-		refetchOnWindowFocus:false,
-        refetchIntervalInBackground:false,
-		enabled: !!IPAddress ,               	 	
+		refetchOnWindowFocus: false,
+		enabled: !!IPAddress,
 	});
-}
+};
 
 export const useGetConnectedPrintersQuery = () => {
 	const getConnectedPrinters = async () => {
 		const data = await window.apiKey.request("getConnectedPrinters");
 		return data;
-	}
+	};
 
 	return useQuery({
 		queryFn: getConnectedPrinters,
 		queryKey: "connectedPrinters",
 		refetchOnWindowFocus: false,
-		staleTime:1200000,
+		staleTime: 1200000,
+	});
+};
+
+export const useGetHoldOrdersQuery = () => {
+	const { IPAddress } = useSelector(state => state.serverConfig);
+
+	const getHoldOrders = async () => {
+		let { data } = await axios.get(`http://${IPAddress}:3001/holdOrder`);
+		return data;
+	};
+
+	return useQuery("holdOrders", getHoldOrders, {
+		refetchInterval: 500000,
+		refetchIntervalInBackground: 500000,
+		refetchOnWindowFocus: false,
+		enabled: !!IPAddress,
 	});
 }
 
+export const useGetOrderSummaryQuery = (filters) => {
+	const { IPAddress } = useSelector(state => state.serverConfig);
 
+	const getOrderSummary = async filters => {
+		try {
+			let { data } = await axios.get(`http://${IPAddress}:3001/ordersSummary`, { params: filters });
+			return data;
+		} catch (error) {
+			console.log(error);
+		}
+	};
 
-
+	return useQuery({
+		queryKey: ["ordersSummary"],
+		queryFn: () => getOrderSummary(filters)
+	});
+}
 

@@ -4,53 +4,50 @@
    padding-inline: 10px;
    transition: all 0.2s ease-in-out;
    font-size: 13px;
-   white-space: nowrap;
+   
 }
 
 .customerDetail.show {
    transform: scaleY(1);
    height: 173px;
-   padding-top: 12px;
-   padding-bottom: 12px;
 }
 
-.customerDetail div {
+.custemerFieldWrapper{
+   margin: 7px 10px;
    display: flex;
    align-items: center;
-   flex-wrap: nowrap;
-}
-
-.customerDetail span {
-   margin-left: 10px;
-}
-
-.customerDetail input {
-   margin-left: 20px;
-   height: 32px;
-   padding-left: 10px;
-}
-
-.customerContact{
    position: relative;
 }
 
-.customerDetail input:focus {
-   outline: none;
+.custemerFieldWrapper span{
+   min-width: 70px;
+   font-size: 14px;
+   font-weight: 500;
+   color: rgb(77, 77, 77);
 }
 
-.customerDetail .customerContact {
-   width: 200px;
-   
+
+.custemerFieldWrapper input{
+   height: 35px;
+   border: 1px solid rgb(214, 214, 214);
+   border-radius: 5px;
+   padding: 3px 10px;
+   font-size: 13px;
+   color: rgb(68, 68, 68);
+   font-weight: 500;
 }
 
-.customerDetail .customerName {
-   width: 300px;
-   margin-left: 33px;
+.customerContact{
+   flex-grow: 1;
+   max-width: 150px;
 }
-.customerDetail .customerAddress {
-   width: 400px;
-   margin-left: 46px;
+
+.customerName{
+   flex-grow: 1;
+   max-width: 200px;
 }
-.customerDetail .customerLocality {
-   width: 400px;
+
+.customerAddress, .customerLocality{
+   flex-grow: 1;
+   max-width: 450px;
 }

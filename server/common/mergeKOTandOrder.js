@@ -1,14 +1,9 @@
-const mergeKOTandOrder = (order, KOTitems) => {
+const mergeKOTandOrder = (order, KOTs) => {
 	let totalKOTTax = 0;
 	let totalKOTCartTotal = 0;
 	let totalsubTotal = 0;
 
-	const formatedKOTItmes = KOTitems.map(item => {
-		console.log(item.item_tax);
-		// let taxTotal = item.item_tax.reduce((acc, tax) => {
-		//       acc += (+tax.tax_amount)
-		//       return acc
-		// }, 0);
+	const formatedKOTItmes = KOTs.orderCart.map(item => {
 
 		let taxTotal = 0;
 
@@ -31,7 +26,7 @@ const mergeKOTandOrder = (order, KOTitems) => {
 			basePrice: item.price,
 			itemTotal: item.price,
 			multiItemTotal: item.final_price,
-			itemNotes: "",
+			itemNotes: item.description,
 			itemIdentifier: "",
 			toppings: item.item_addons,
 			itemTax: taxes,
@@ -39,8 +34,15 @@ const mergeKOTandOrder = (order, KOTitems) => {
 		};
 	});
 
+
+
 	return {
 		...order,
+        customerName : order.customerName ? order.customerName : KOTs.customerName,
+		customerContact : order.customerContact ? order.customerContact : KOTs.customerContact,
+		customerAdd : order.customerAdd ? order.customerAdd : KOTs.customerAdd,
+		customerLocality : order.customerLocality ? order.customerLocality : KOTs.customerLocality,
+		orderComment : order.orderComment ? KOTs.orderComment + ", " + order.orderComment : KOTs.orderComment, 
 		cartTotal: order.cartTotal + totalKOTCartTotal + totalKOTTax,
 		tax: order.tax + totalKOTTax,
 		orderCart: [...formatedKOTItmes, ...order.orderCart],

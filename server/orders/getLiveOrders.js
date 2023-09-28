@@ -13,15 +13,37 @@ const getLiveOrders = () => {
 			)
 			.all([]);
 
-		const prepareItem = db2.prepare("SELECT id,item_id,item_name,price,final_price,quantity,variation_name,variation_id,tax_id,item_addon_items FROM order_items WHERE order_id = ?");
-		const prepareToppings = db2.prepare("SELECT addongroupitem_id,name,price,quantity FROM order_item_addongroupitems WHERE order_item_id = ?");
-		const prepareTax = db2.prepare("SELECT tax_id,tax_amount FROM order_item_taxes WHERE order_item_id = ?");
+		const prepareItem = db2.prepare(
+			"SELECT id,item_id,item_name,price,final_price,quantity,variation_name,variation_id,tax_id,item_addon_items,description FROM order_items WHERE order_id = ?"
+		);
+		// const prepareToppings = db2.prepare("SELECT addongroupitem_id,name,price,quantity FROM order_item_addongroupitems WHERE order_item_id = ?");
+		// const prepareTax = db2.prepare("SELECT tax_id,tax_amount FROM order_item_taxes WHERE order_item_id = ?");
 		const prapareKOT = db2.prepare("SELECT id,token_no FROM kot WHERE order_id=?");
 		const parentTaxStmt = db2.prepare("SELECT child_ids FROM taxes where id=?");
 		const taxesStmt = db2.prepare("SELECT * FROM taxes where id = ? ");
+		const tableStmt = db2.prepare("SELECT area_id FROM dine_in_tables WHERE table_no=?");
+		const areaStmt = db2.prepare("SELECT id,area,restaurant_price_id FROM areas WHERE id=?");
+		const defaultResaurantPriceStmt = db2.prepare("SELECT configuration FROM restaurants WHERE id=?");
+		const configDetail = defaultResaurantPriceStmt.get([1]);
+		const defaultRestaurantPrice = JSON.parse(configDetail.configuration).default_restaurant_price;
 
 		const liveOrdersWithItems = liveOrders.map(order => {
 			const orderItems = prepareItem.all([order.id]);
+
+			let restaurantPriceId = + defaultRestaurantPrice;
+			let areaName = "";
+			let areaId = "";
+
+			if (order.order_type === "dine_in") {
+				const table = tableStmt.get(order.dine_in_table_no);
+
+				if (table && table.area_id) {
+				  const area = areaStmt.get(table.area_id);
+				  restaurantPriceId = +area.restaurant_price_id;
+				  areaName = area.area;
+				  areaId = area.id;
+				}
+			  }
 
 			const KOTDetail = prapareKOT.all([order.id]);
 
@@ -41,10 +63,10 @@ const getLiveOrders = () => {
 
 				// const itemTax = prepareTax.all([item.id]);
 
-				return { ...item, itemAddons:JSON.parse(item.item_addon_items) , itemTax: taxesArray };
+				return { ...item, itemAddons: JSON.parse(item.item_addon_items), itemTax: taxesArray };
 			});
 
-			return { ...order, items: itemsWithAddons, KOTDetail };
+			return { ...order, items: itemsWithAddons, KOTDetail,restaurantPriceId,areaName,areaId };
 		});
 
 		return liveOrdersWithItems;

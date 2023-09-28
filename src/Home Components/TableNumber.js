@@ -2,12 +2,13 @@ import React, { useEffect } from "react";
 import styles from "./TableNumber.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { changePriceOnAreaChange, modifyCartData } from "../Redux/finalOrderSlice";
-import { setActive } from "../Redux/UIActiveSlice";
+import { modifyUIActive, setActive } from "../Redux/UIActiveSlice";
 import { useGetMenuQuery2 } from "../Utils/customQueryHooks";
 
 function TableNumber({ showDetailType }) {
 	const orderCart = useSelector(state => state.finalOrder.orderCart);
 	const tableNumber = useSelector(state => state.finalOrder.tableNumber);
+
 	const { data: bigMenu } = useGetMenuQuery2();
 
 	// const { areas, categories, defaultSettings } = useSelector(state => state.bigMenu);
@@ -18,22 +19,23 @@ function TableNumber({ showDetailType }) {
 	const dispatch = useDispatch();
 
 	const hanndleChange = e => {
+		
 		let tableNo = e.target.value;
 		let area = bigMenu.areas.find(area => area.tables.some(table => table.table_no === tableNo));
 		let areaName = area?.area || "Other";
 		let updatedRestaurantPriceId = area?.restaurant_price_id || +bigMenu.defaultSettings.default_restaurant_price || null;
-
-		dispatch(setActive({ key: "restaurantPriceId", name: updatedRestaurantPriceId }));
-		dispatch(modifyCartData({ tableNumber: tableNo }));
-		dispatch(modifyCartData({ tableArea: areaName }));
+		dispatch(modifyUIActive({restaurantPriceId:updatedRestaurantPriceId}))
+		dispatch(modifyCartData({ tableNumber: tableNo, tableArea: areaName}));
+		
 	};
 
 	useEffect(() => {
 		// const start = performance.now();
 		let timeOut = setTimeout(() => {
+			console.log("table changed")
 			if (orderCart.length > 0) {
 				const newCartItems = orderCart.map(cartItem => {
-					for (const category of bigMenu.categories) {
+					for (const category of bigMenu?.categories) {
 						for (const item of category.items) {
 							if (item.id === cartItem.itemId) {
 								let newPrice = null;
@@ -74,7 +76,7 @@ function TableNumber({ showDetailType }) {
 
 				dispatch(changePriceOnAreaChange({ newCartItems }));
 			}
-		}, 500);
+		}, 300);
 
 		// console.log("time", performance.now() - start);
 		return () => clearTimeout(timeOut);

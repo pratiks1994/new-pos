@@ -32,13 +32,14 @@ function OrderTypeDetail({ type }) {
 		if (searchParams.get("openTable") === "true") {
 			setShowDetailType("tableNumber");
 		}
+		if(searchParams.get("openCustomerDetail") === "true"){
+			setShowDetailType("customerDetail");
+		}
 	}, [searchParams]);
 
 	const handleDetailChange = (detailName) =>{
 		setShowDetailType((prev)=> prev === detailName ? null : detailName)
 		setSearchParams({})
-		
-
 	}
 
 	const filteredDetails = orderDetailsMap.filter(detail => detail.displayInOrderType.includes(type));

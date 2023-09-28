@@ -3,7 +3,7 @@ import styles from "./ActiveTableCard.module.css";
 import MinTimer from "./MinTimer";
 import saveAndPrint from "../icons/save-print.png";
 import saveAndSettle from "../icons/save-settle.png";
-import { setActive } from "../Redux/UIActiveSlice";
+import { modifyUIActive, setActive } from "../Redux/UIActiveSlice";
 import { liveOrderToCart } from "../Redux/finalOrderSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -14,14 +14,9 @@ import { motion } from "framer-motion";
 import SettleOrderModal from "../Live View Components/SettleOrderModal";
 import { convertOrder } from "../Utils/convertOrder";
 import { executeBillPrint } from "../Utils/executePrint";
-import { useGetPrintersQuery } from "../Utils/customQueryHooks";
-import sortPrinters from "../Utils/shortPrinters";
 
-function ActiveTableCard({ order }) {
-
+function ActiveTableCard({ order, printers }) {
 	const { IPAddress } = useSelector(state => state.serverConfig);
-	const {data: printerArr} = useGetPrintersQuery()
-	const printers = printerArr?.length ?  sortPrinters(printerArr) : []
 
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
@@ -58,7 +53,7 @@ function ActiveTableCard({ order }) {
 
 	const moveOrderToHome = order => {
 		dispatch(liveOrderToCart({ order }));
-		dispatch(setActive({ key: "isCartActionDisable", name: true }));
+		dispatch(modifyUIActive({ isCartActionDisable: true, restaurantPriceId: order.restaurantPriceId }));
 		navigate("/Home");
 	};
 
@@ -91,7 +86,7 @@ function ActiveTableCard({ order }) {
 					<MinTimer startTime={order.created_at} />
 				</div>
 				<div className={styles.tableNo}>{order.dine_in_table_no}</div>
-				<div className={styles.total}>₹ {order.total.toFixed(2)}</div>
+				<div className={styles.total}>₹ {order.total?.toFixed(2)}</div>
 			</div>
 			<img className={styles.actionIcon} src={getTableTheme(order.print_count).icon} onClick={handleClick} />
 			{showSettleModal && <SettleOrderModal show={showSettleModal} hide={() => setShowSettleModal(false)} order={order} orderMutation={orderMutation} isLoading={isLoading} />}

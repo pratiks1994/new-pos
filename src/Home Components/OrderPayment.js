@@ -18,16 +18,31 @@ import notify from "../Feature Components/notify";
 import { executeBillPrint, executeKotPrint } from "../Utils/executePrint";
 import { convertOrder } from "../Utils/convertOrder";
 import { useSearchParams } from "react-router-dom";
-import { useGetPrintersQuery } from "../Utils/customQueryHooks";
+import { useGetMenuQuery2, useGetPrintersQuery } from "../Utils/customQueryHooks";
 import sortPrinters from "../Utils/shortPrinters";
+import { validateOrder } from "../Utils/validateOrder";
 
 function OrderPayment() {
 	// get finalOrder state from redux store
 	const queryClient = useQueryClient();
+
 	const finalOrder = useSelector(state => state.finalOrder);
 	// const printers = useSelector(state => state.printerSettings);
-	const {data: printerArr} = useGetPrintersQuery()
-	const printers = printerArr?.length ?  sortPrinters(printerArr) : []
+	const { data: printerArr } = useGetPrintersQuery();
+	const { data: bigMenu } = useGetMenuQuery2();
+	const customerPhoneMandatory =
+		bigMenu?.defaultSettings?.customer_phone_mandatory.split(",").map(orderType => {
+			if (orderType === "1") {
+				return "dine_in";
+			}
+			if (orderType === "2") {
+				return "delivery";
+			} else {
+				return "pick_up";
+			}
+		}) || [];
+
+	const printers = printerArr?.length ? sortPrinters(printerArr) : [];
 	let [searchParams, setSearchParams] = useSearchParams();
 
 	const isCartActionDisable = useSelector(state => state.UIActive.isCartActionDisable);
@@ -46,43 +61,36 @@ function OrderPayment() {
 
 	// on save post api call to backend
 
-	const saveOrder = async (finalOrder, printers) => {
-		if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
-			notify("err", "please Enter Table No.");
-			setSearchParams(prev => ({ openTable: "true" }));
+	const saveOrder = async finalOrder => {
+		const isValid = validateOrder(finalOrder, setSearchParams, customerPhoneMandatory);
+		if (!isValid) {
 			return;
 		}
 
-		if (finalOrder.orderCart.length !== 0) {
-			try {
-				const { data } = await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
-				if (data.isOldKOTsExist) {
-					setShowKOTExistModal(true);
-					return;
-				}
-
-				notify("success", "order Placed");
-				// set finalorder redux state to initial state after api call completion
-				// let responce = await window.apiKey.request("print", finalOrder);
-				dispatch(resetFinalOrder());
-				queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
-			} catch (error) {
-				console.log(error);
-				notify("err", "something went wrong");
+		try {
+			const { data } = await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
+			if (data.isOldKOTsExist) {
+				setShowKOTExistModal(true);
+				return;
 			}
-		} else {
-			notify("err", "Cart is Empty");
+
+			notify("success", "order Placed");
+			// set finalorder redux state to initial state after api call completion
+			// let responce = await window.apiKey.request("print", finalOrder);
+			dispatch(resetFinalOrder());
+			queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
+		} catch (error) {
+			console.log(error);
+			notify("err", "something went wrong");
 		}
 	};
 
 	const saveAndPrintOrder = async (finalOrder, printers) => {
-		if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
-			notify("err", "please Enter Table No.");
-			setSearchParams(prev => ({ openTable: "true" }));
+		const isValid = validateOrder(finalOrder, setSearchParams, customerPhoneMandatory);
+		if (!isValid) {
 			return;
 		}
-
-		if (finalOrder.orderCart.length !== 0) {
+		try {
 			const { data } = await axios.post(`http://${IPAddress}:3001/order`, { ...finalOrder, printCount: 1 });
 
 			if (data.isOldKOTsExist) {
@@ -98,13 +106,12 @@ function OrderPayment() {
 			if (!data.isOldOrderExist) {
 				await executeKotPrint({ ...finalOrder, kotTokenNo: data.kotTokenNo, orderNo: data.orderNo }, printers);
 			}
-
 			notify("success", "order Placed");
-
 			dispatch(resetFinalOrder());
 			queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
-		} else {
-			notify("err", "Cart is Empty");
+		} catch (error) {
+			console.log(error);
+			notify("err", "something went wrong");
 		}
 	};
 
@@ -122,15 +129,13 @@ function OrderPayment() {
 	};
 
 	const createKOT = async (finalOrder, printers) => {
-		if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
-			notify("err", "please Enter Table No.");
-            setSearchParams(prev => ({ openTable: "true" }));
+		const isValid = validateOrder(finalOrder, setSearchParams, customerPhoneMandatory);
+		if (!isValid) {
 			return;
 		}
 
-		if (finalOrder.orderCart.length !== 0) {
+		try {
 			let res = await axios.post(`http://${IPAddress}:3001/KOT`, finalOrder);
-			console.log(res.data);
 
 			if (res.statusText === "OK" && !res.data.orderExist) {
 				finalOrder = { ...finalOrder, kotTokenNo: res.data.kotTokenNo };
@@ -148,56 +153,56 @@ function OrderPayment() {
 			} else {
 				notify("err", "something went wrong");
 			}
-		} else {
-			notify("err", "Cart is Empty");
+		} catch (error) {
+			notify("err", "something went wrong");
 		}
 	};
 
-	const updateLiveOrders = async ({ orderStatus, orderId }) => {
-		const DineInStatus = ["accepted", "printed", "settled"];
-		let updatedStatus;
+	// const updateLiveOrders = async ({ orderStatus, orderId }) => {
+	// 	const DineInStatus = ["accepted", "printed", "settled"];
+	// 	let updatedStatus;
 
-		const current = DineInStatus.findIndex(element => element === orderStatus);
-		updatedStatus = DineInStatus[current + 1];
+	// 	const current = DineInStatus.findIndex(element => element === orderStatus);
+	// 	updatedStatus = DineInStatus[current + 1];
 
-		try {
-			let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, { updatedStatus, orderId });
-			console.log(data);
+	// 	try {
+	// 		let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, { updatedStatus, orderId });
+	// 		console.log(data);
 
-			if (data === "updated") {
-				if (updatedStatus === "settled") {
-					dispatch(resetFinalOrder());
-					dispatch(setActive({ key: "isCartActionDisable", name: false }));
-				} else {
-					dispatch(modifyCartData({ order_status: updatedStatus }));
-				}
-				notify("success", "status updated");
-			} else {
-				notify("err", "something Went wrong");
-			}
+	// 		if (data === "updated") {
+	// 			if (updatedStatus === "settled") {
+	// 				dispatch(resetFinalOrder());
+	// 				dispatch(setActive({ key: "isCartActionDisable", name: false }));
+	// 			} else {
+	// 				dispatch(modifyCartData({ order_status: updatedStatus }));
+	// 			}
+	// 			notify("success", "status updated");
+	// 		} else {
+	// 			notify("err", "something Went wrong");
+	// 		}
 
-			return data;
-		} catch (err) {
-			notify("err", "Something Went Wrong");
-		}
-	};
+	// 		return data;
+	// 	} catch (err) {
+	// 		notify("err", "Something Went Wrong");
+	// 	}
+	// };
 
-	const { mutate: orderMutation, isLoading } = useMutation({
-		mutationFn: updateLiveOrders,
-		// onSettled: () => {
-		//       queryClient.invalidateQueries("liveOrders");
-		// },
-	});
+	// const { mutate: orderMutation, isLoading } = useMutation({
+	// 	mutationFn: updateLiveOrders,
+	// 	// onSettled: () => {
+	// 	//       queryClient.invalidateQueries("liveOrders");
+	// 	// },
+	// });
 
-	const getBtnTheme = status => {
-		if (status === "accepted") {
-			return { name: "Save & Print", style: null };
-		}
+	// const getBtnTheme = status => {
+	// 	if (status === "accepted") {
+	// 		return { name: "Save & Print", style: null };
+	// 	}
 
-		if (status === "printed") {
-			return { name: "Save & Settle", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } };
-		}
-	};
+	// 	if (status === "printed") {
+	// 		return { name: "Save & Settle", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } };
+	// 	}
+	// };
 	//  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store
 
 	const [showPaymentBreakdown, setShowPaymentBreakdown] = useState(false);
@@ -245,7 +250,7 @@ function OrderPayment() {
 			<div className={`${styles.ProcessOrderBtns} d-flex justify-content-center bg-light pt-3 pb-3 flex-wrap`}>
 				{!isCartActionDisable ? (
 					<div>
-						<Button variant="danger" size="sm" className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1" onClick={() => saveOrder(finalOrder, printers)}>
+						<Button variant="danger" size="sm" className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1" onClick={() => saveOrder(finalOrder)}>
 							{" "}
 							Save{" "}
 						</Button>
@@ -266,14 +271,14 @@ function OrderPayment() {
 					</div>
 				) : (
 					<div>
-						<Button
+						{/* <Button
 							variant="danger"
 							size="sm"
 							className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1"
 							// onClick={() => orderMutation({ orderStatus: finalOrder.order_status, orderId: finalOrder.id })}
 							style={{ pointerEvents: "all" }}>
 							{getBtnTheme(finalOrder.order_status).name}
-						</Button>
+						</Button> */}
 					</div>
 				)}
 			</div>

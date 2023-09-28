@@ -10,6 +10,22 @@ body {
   user-select: none; /* Standard syntax */
 }
 
+.modal-backdrop {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.445) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+.offcanvas-backdrop.show{
+  opacity: 1 !important;
+}
+
+
+.offcanvas-backdrop {
+  background-color: rgba(0, 0, 0, 0.445) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

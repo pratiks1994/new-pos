@@ -29,9 +29,9 @@ const { updateDefaultScreenData } = require("./settings/updateDefaultScreenData"
 const { getDefaultScreenData } = require("./settings/getDefaultScreenData");
 const { getOrder } = require("./orders/getOrder");
 const { addOrderIdToOldKots } = require("./KOT/addOrderIdToOldKots");
+const { getOrderSummary } = require("./reports/getOrderReports");
 // const appPath = process.argv
 // console.log(appPath)
-
 
 const app = express();
 const httpServer = createServer(app);
@@ -42,16 +42,16 @@ const io = new Server(httpServer, {
 	},
 });
 
-io.on("connection", (socket) => {
-    console.log("A client has connected:", socket.id);
+io.on("connection", socket => {
+	console.log("A client has connected:", socket.id);
 
-    // You can perform any necessary actions here when a client connects.
+	// You can perform any necessary actions here when a client connects.
 
-    socket.on("disconnect", () => {
-        console.log("A client has disconnected:", socket.id);
-        
-        // You can perform cleanup or other actions when a client disconnects.
-    });
+	socket.on("disconnect", () => {
+		console.log("A client has disconnected:", socket.id);
+
+		// You can perform cleanup or other actions when a client disconnects.
+	});
 });
 
 
@@ -59,11 +59,11 @@ app.use(cors("*"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+
 app.get("/menuData", (req, res) => {
 	const menuData = getMenuData();
 	res.status(200).json(menuData);
 });
-
 
 app.get("/ping", async (req, res) => {
 	res.status(200).json({ status: "success" });
@@ -73,7 +73,6 @@ app.get("/liveOrders", (req, res) => {
 	const start = Date.now();
 	const orders = getLiveOrders();
 	res.status(200).json(orders);
-
 });
 
 app.get("/liveKOT", (req, res) => {
@@ -82,14 +81,13 @@ app.get("/liveKOT", (req, res) => {
 });
 
 app.put("/liveKot", (req, res) => {
-	const { order_id, order_type } = req.body
-	updateKOT( req.body);
+	const { order_id, order_type } = req.body;
+	updateKOT(req.body);
 	res.sendStatus(200);
 	const liveKOTs = getLiveKOT();
 	io.emit("KOTs", liveKOTs);
 
 	if (order_id !== null && order_type !== "dine_in") {
-
 		const data = { orderStatus: "accepted", orderId: order_id, orderType: order_type };
 
 		updateLiveOrders(data);
@@ -105,7 +103,6 @@ app.post("/order", (req, res, next) => {
 	const orderId = checkAndUpdateOrder(req.body);
 
 	if (orderId !== "") {
-		// for isUpdate = true emmit live order, terminate request as order is updated
 		const order = getOrder(orderId);
 
 		res.status(200).json({ isOldKOTsExist: false, order, isOldOrderExist: true });
@@ -131,11 +128,8 @@ app.post("/order", (req, res, next) => {
 });
 
 app.post("/order", (req, res) => {
-
 	const { userId, orderId, orderNo } = createOrder(req.body);
-
 	const kotTokenNo = createKot(req.body, userId, orderId);
-
 	const order = getOrder(orderId);
 
 	res.status(200).json({ isOldKOTsExist: false, orderNo, kotTokenNo, order, isOldOrderExist: false });
@@ -164,7 +158,6 @@ app.post("/KOT", (req, res) => {
 });
 
 app.put("/liveOrders", (req, res) => {
-
 	// update live order status
 	updateLiveOrders(req.body);
 	res.status(200).json("updated");
@@ -181,7 +174,6 @@ app.put("/liveOrders", (req, res) => {
 });
 
 app.get("/users", async (req, res) => {
-
 	const userSuggest = getUserSuggest(req.query);
 	res.status(200).json(userSuggest);
 });
@@ -189,7 +181,7 @@ app.get("/users", async (req, res) => {
 app.post("/holdOrder", async (req, res) => {
 	createHoldOrder(req.body);
 	res.sendStatus(200);
-	const holdOrders =  getHoldOrders();
+	const holdOrders = getHoldOrders();
 	io.emit("holdOrders", holdOrders);
 });
 
@@ -199,10 +191,9 @@ app.get("/holdOrder", async (req, res) => {
 });
 
 app.delete("/holdOrder", async (req, res) => {
-	
-    deletHoldOrder(req.query.id);
+	deletHoldOrder(req.query.id);
 	res.sendStatus(200);
-	const holdOrders =  getHoldOrders();
+	const holdOrders = getHoldOrders();
 	io.emit("holdOrders", holdOrders);
 });
 
@@ -221,6 +212,8 @@ app.put("/assignPrinterToBill", (req, res) => {
 	res.sendStatus(200);
 });
 
+// ===================== for adding kot to already existing order on same table =======================================
+
 app.post("/updateOrderAndCreateKOT", (req, res) => {
 	// const db = openDb();
 	const orderId = checkAndUpdateOrder(req.body);
@@ -233,17 +226,25 @@ app.post("/updateOrderAndCreateKOT", (req, res) => {
 	io.emit("KOTs", liveKOTs);
 });
 
+// ====================== for converting old KOTs on same table into order when save btn clicked ========================
+
 app.post("/includeKOTsAndCreateOrder", (req, res) => {
+
 	const oldKOTs = getOldKOTs(req.body.tableNumber);
 	// console.log(oldKOTs)
-	const kotTokenNo = createKot(req.body);
+	let kotTokenNo;
+
+	if (req.body.orderCart.length) {
+		kotTokenNo = createKot(req.body);
+	}
+
 	let newFinalOrder = mergeKOTandOrder(req.body, oldKOTs);
 	const { userId, orderId, orderNo } = createOrder(newFinalOrder);
 	addOrderIdToOldKots(orderId, req.body.tableNumber);
 
 	const order = getOrder(orderId);
 
-	res.status(200).json({ newFinalOrder, kotTokenNo, orderNo, order });
+	res.status(200).json({ kotTokenNo, orderNo, order });
 
 	updateKOTUserId(orderId, userId, req.body.tableNumber);
 
@@ -268,17 +269,26 @@ app.patch("/defaultScreenData", (req, res) => {
 	updateDefaultScreenData(req, res);
 });
 
-httpServer.listen(3001, (err) => {
+app.get("/ordersSummary", (req, res) => {
+	const filters = req.query;
+	const orders = getOrderSummary(filters);
+
+	res.status(200).json({ success: true, error: null, orderData: orders.filterdOrders, orderSummary: orders.salesSummaryData, duration:orders.duration });
+});
+
+
+httpServer.listen(3001, err => {
 	if (err) {
 		console.log(err);
 	} else {
 		console.log("server started");
+		process.send({ status: "started" });
 	}
 });
 
-process.on('message', (message) => {
-    if (message.command === 'shutdown') {
-		console.log("shutting down")
-        process.exit(0);
-    }
+process.on("message", message => {
+	if (message.command === "shutdown") {
+		console.log("shutting down");
+		process.exit(0);
+	}
 });

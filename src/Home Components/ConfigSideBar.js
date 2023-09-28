@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, memo } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import styles from "./ConfigSidebar.module.css";
 import billingIcon from "../icons/order.png";
@@ -6,9 +6,15 @@ import settingsIcon from "../icons/settings.png";
 import liveIcon from "../icons/live_1.png";
 import updateIcon from "../icons/update.png";
 import logoutIcon from "../icons/left_nav_logout.svg";
+import reportIcon from "../icons/left_nav_reports.svg";
+import arrowDown from "../icons/arrow-down.png";
+
 import { Link } from "react-router-dom";
+import SideBarReportsList from "./SideBarReportsList";
 
 function ConfigSideBar({ showConfigSideBar, setShowConfigSideBar }) {
+	const [toggleReport, setToggleReport] = useState(false);
+
 	const handleClose = () => {
 		setShowConfigSideBar(false);
 	};
@@ -27,6 +33,12 @@ function ConfigSideBar({ showConfigSideBar, setShowConfigSideBar }) {
 					<img src={settingsIcon} className={styles.itemIcon} />
 					<div className={styles.itemName}>Configurations</div>
 				</Link>
+				<div className={styles.items} onClick={() => setToggleReport(prev => !prev)}>
+					<img src={reportIcon} className={styles.itemIcon} />
+					<div className={styles.itemName}>Reports</div>
+					<img src={arrowDown} className={`${styles.arrow} ${toggleReport ? styles.arrowLeft : null }`} />
+				</div>
+				<SideBarReportsList toggleReport={toggleReport} handleClose={handleClose} />
 				<Link to="liveView/OrderView" className={styles.items} onClick={handleClose}>
 					<img src={liveIcon} className={styles.itemIcon} />
 					<div className={styles.itemName}>Live View</div>
@@ -44,4 +56,4 @@ function ConfigSideBar({ showConfigSideBar, setShowConfigSideBar }) {
 	);
 }
 
-export default ConfigSideBar;
+export default memo(ConfigSideBar);

@@ -1,10 +1,10 @@
 .topping{
    background-color: rgb(215, 214, 214);
-   color: black;
+   color: rgb(37, 37, 37);
+   font-weight: 500;
    font-size: 14px;
    width: 150px;
    padding-block: 13px;
-   /* padding-left: 10px; */
    border-left: 3px solid green;
    display: flex;
    flex-direction: column;
@@ -49,6 +49,8 @@
    justify-content: center;
    align-items: center;
    border-radius: 5px;
+   padding-bottom: 4px;
+   font-weight: 700;
    background-color: rgb(116, 116, 116);
    color: white;
 

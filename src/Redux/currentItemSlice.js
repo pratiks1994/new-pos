@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialCurrentItems = {
+	itemStatus:"default",
 	currentOrderItemId: "",
 	itemQty: 0,
 	itemId: "",

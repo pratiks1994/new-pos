@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+
 import styles from "./MultipayOptions.module.css";
 import { Row, Col } from "react-bootstrap";
 
@@ -15,14 +15,14 @@ function MultipayOptions({ paymentDetail, setPaymentDetail, orderTotal }) {
                   });
 
                   const total = newMultipay.reduce((acc, option) => {
-                        if (option.name !== "cod") {
+                        if (option.name !== "cash") {
                               return acc + +option.amount;
                         }
                         return acc;
                   }, 0);
 
                   const finalMultipay = newMultipay.map((option) => {
-                        if (option.name === "cod") {
+                        if (option.name === "cash") {
                               const newCodAmount = Math.round(orderTotal) - total;
                               const amount = newCodAmount < 0 ? "invalid amount" : newCodAmount.toString();
                               return { ...option, amount };
@@ -43,7 +43,7 @@ function MultipayOptions({ paymentDetail, setPaymentDetail, orderTotal }) {
                               <Row className={styles.field} key={option.name}>
                                     <Col xs={3}>{option.displayName}</Col>
                                     <Col xs={5}>
-                                          <input type="text" name={option.name} onChange={handleChange} disabled={option.name === "cod"} value={option.amount} />
+                                          <input type="text" name={option.name} onChange={handleChange} disabled={option.name === "cash"} value={option.amount} />
                                     </Col>
                                     {/* <Col xs={2}>
                                           <button onClick={}>save</button>

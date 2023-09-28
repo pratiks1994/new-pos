@@ -5,7 +5,7 @@ const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
 const getLiveKOT = () => {
-	const liveKOTs = db2.prepare("SELECT * FROM kot WHERE kot_status = 'accepted'").all([]);
+	const liveKOTs = db2.prepare("SELECT * FROM kot WHERE (kot_status = 'accepted') OR (order_type = 'dine_in' AND order_id IS NULL)").all([]);
 	// const liveKOTs = await dbAll(db, "SELECT * FROM KOT WHERE KOT_status = 'accepted'", []);
 
 	const prepareKOTItem = db2.prepare("SELECT * FROM kot_items WHERE kot_id = ?");

@@ -16,6 +16,8 @@ import ConfigSideBar from "./ConfigSideBar";
 import HoldOrders from "./HoldOrders";
 import { setActive } from "../Redux/UIActiveSlice";
 import { ToastContainer } from "react-toastify";
+import { useHotkeys } from "react-hotkeys-hook";
+import useDeployHotkeys from "../Utils/useDeployHotkeys";
 
 function MainNav() {
 	const [showHoldOrders, setShowHoldOrders] = useState(false);
@@ -24,6 +26,7 @@ function MainNav() {
 	const defaultSettings = useSelector(state => state.bigMenu.defaultSettings);
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
+	useDeployHotkeys();
 
 	// const handleClose = () => {
 	//       localStorage.removeItem("IP");
@@ -38,13 +41,20 @@ function MainNav() {
 		defaultSettings.default_view === "table_view" ? navigate("/Home/tableView") : navigate("/Home");
 	};
 
+	// useHotkeys("ctrl+o", () => navigate("LiveView/OrderView"));
+	// useHotkeys("ctrl+h", () => navigate("/Home"));
+	// useHotkeys("ctrl+k", () => navigate("LiveView/KOTView"));
+	// useHotkeys("ctrl+p", () => navigate("configuration/printerConfig/PrintersList"));
+	// useHotkeys("ctrl+t", () => navigate("tableView"));
+	useHotkeys("ctrl+n", () => getNewOrderPage());
+
 	return (
 		<>
 			<Navbar bg="light" expand="lg" className={`${styles.mainNav} py-1`}>
 				<Container fluid className="d-flex flex-nowrap">
 					<div className="d-flex justify-content-start flex-nowrap align-items-center">
 						<FontAwesomeIcon className={styles.bars} icon={faBars} onClick={() => setShowConfigSideBar(true)} />
-						<Navbar.Brand className="fw-bolder text-danger fs-4 ps-1">Martino'z 0.3.26</Navbar.Brand>
+						<Navbar.Brand className="fw-bolder text-danger fs-4 ps-1">Martino'z 0.3.27</Navbar.Brand>
 
 						<Button variant="danger" size="sm" className="mx-2 py-1 px-2 fw-bold text-nowrap" onClick={getNewOrderPage}>
 							New Order
@@ -66,32 +76,32 @@ function MainNav() {
 							</div>
 						</Link>
 
-						<Link to="/serverConfig">
+						<Link className={styles.Link} to="/serverConfig">
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faStore} />
 						</Link>
-						<Link to="/POSConfig">
+						<Link className={styles.Link} to="/POSConfig">
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faBowlFood} />
 						</Link>
-						<Link to="LiveView/OrderView">
+						<Link className={styles.Link} to="LiveView/OrderView">
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faUsersViewfinder} />
 						</Link>
-						<Link>
+						<Link className={styles.Link}>
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faTruck} />
 						</Link>
-						<Link className={styles.holdOrderLink}>
-							<FontAwesomeIcon className={styles.LinkIcon} icon={faCirclePause} onClick={() => setShowHoldOrders(true)} />
+						<Link className={`${styles.holdOrderLink} ${styles.Link}`} onClick={() => setShowHoldOrders(true)}>
+							<FontAwesomeIcon className={styles.LinkIcon} icon={faCirclePause} />
 							{holdOrderCount !== 0 ? <div className={styles.holdOrderCountBadge}>{holdOrderCount}</div> : null}
 						</Link>
-						<Link to="tableView">
+						<Link className={styles.Link} to="tableView">
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faBellConcierge} />
 						</Link>
-						<Link>
+						<Link className={styles.Link}>
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faBell} />
 						</Link>
-						<Link>
+						<Link className={styles.Link}>
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faUser} />
 						</Link>
-						<Link to="../">
+						<Link className={styles.Link} to="../">
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faPowerOff} />
 						</Link>
 					</div>

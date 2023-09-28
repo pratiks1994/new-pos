@@ -25,6 +25,8 @@ import { modifyCartData } from "./Redux/finalOrderSlice.js";
 import Loading from "./Feature Components/Loading.js";
 import POSConfig from "./pages/POSConfig.js";
 import { setActive } from "./Redux/UIActiveSlice.js";
+import OrdersSummary from "./pages/OrdersSummary.js";
+import SalesSummary from "./pages/SalesSummary.js";
 // import { io } from "socket.io-client";
 // import echo from "./Utils/echoConfig..js";
 
@@ -38,26 +40,6 @@ function Main() {
 		return data;
 	};
 
-	// useEffect(() => {
-	// 	// const newSocketOne = io("http://192.168.1.92:6001	");
-	// 	// const socketTwo = io("http://192.168.1.73:6001");
-
-	// 	echo.channel("user-channel").listen("UserEvent", e => {
-	// 		console.log(e);
-	// 	});
-
-	// 	echo.connector.socket.on("connecting", () => {
-	// 		console.log("Echo is connecting...");
-	// 	  });
-
-	// 	 echo.connector.socket.on("connected", () => {
-	// 		console.log("Echo is connected to the server");
-	// 	  });
-
-	// 	return () => {
-	// 		echo.leaveChannel("user-channel")
-	// 	};
-	// }, []);
 
 	const getServerStatus = async () => {
 		const { data } = await axios.get(`http://${IPAddress}:3001/defaultScreenData`, { timeout: 4000 });
@@ -99,8 +81,7 @@ function Main() {
 		queryFn: getServerStatus,
 		onSuccess: async data => {
 			// socket = io(`http://${IPAddress}:3001`);
-			dispatch(modifyCartData({ orderType: data.default_order_type || "delivery" }));
-			dispatch(modifyCartData({ paymentMethod: data.default_payment_type || "cash" }));
+			dispatch(modifyCartData({ orderType: data.default_order_type || "delivery", paymentMethod: data.default_payment_type || "cash" }));
 			dispatch(setActive({ key: "restaurantPriceId", name: +data.default_restaurant_price || null }));
 			data.default_view === "table_view" ? navigate("./Home/tableView") : navigate("./Home");
 		},
@@ -149,6 +130,10 @@ function Main() {
 								</Route>
 							</Route>
 						</Route>
+					</Route>
+					<Route path='reports'>
+						<Route path="ordersSummary" element={<OrdersSummary/>} />
+						<Route path="salesSummary" element={<SalesSummary/>} />
 					</Route>
 				</Route>
 				{/* <Route path="*" element={<Navigate to="/" />} /> */}

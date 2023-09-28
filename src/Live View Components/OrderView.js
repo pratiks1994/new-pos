@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 
 import useSocket from "../Utils/useSocket";
 import { useGetLiveOrdersQuery } from "../Utils/customQueryHooks";
+import Loading from "../Feature Components/Loading";
 
 function OrderView() {
 	const queryClient = useQueryClient();
@@ -45,11 +46,19 @@ function OrderView() {
 		dispatch(setActive({ name, key }));
 	};
 
-	const { data: orders, isLoading } = useGetLiveOrdersQuery();
+	const { data: orders, isLoading,isError } = useGetLiveOrdersQuery();
 
 	useSocket("orders", orders => {
 		queryClient.setQueryData("liveOrders", orders);
 	});
+
+	if(isLoading ){
+		return <Loading/>
+	}
+
+	if(isError){
+		return <div>something went wrong...</div>
+	}
 
 	return (
 		<motion.div
@@ -57,7 +66,7 @@ function OrderView() {
 			initial={{ opacity: 0, scale: 0.98 }}
 			animate={{ opacity: 1, scale: 1 }}
 			transition={{ duration: 0.15 }}
-			exit={{ opacity: 0, scale: 1, x: "-100%" }}>
+			exit={{ opacity: 0, scale: 1 }}>
 			<div className={styles.orderViewControl}>
 				<button className={styles.searchBtn}>
 					<FontAwesomeIcon icon={faMagnifyingGlass} />
@@ -79,12 +88,12 @@ function OrderView() {
 				<button className={styles.mfrBtn}>MFR</button>
 			</div>
 			<div className={styles.OrderViewMain}>
-				{orders.length !== 0
+				{orders?.length !== 0
 					? orders
 							?.filter(order => (liveViewOrderType === "all" ? true : order.order_type === liveViewOrderType))
 							.sort((a, b) => (sortType === "asc" ? a.id - b.id : b.id - a.id))
 							.map((order, idx) => <OrderCard order={order} key={order.id} idx={idx} />)
-					: isLoading && <div>loading...</div>}
+					: null}
 			</div>
 		</motion.div>
 	);

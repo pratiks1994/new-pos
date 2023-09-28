@@ -18,7 +18,7 @@ function OrderComment({showDetailType}) {
 
    return (
      <div className={showOrderComment}>
-       <div className='mx-2'>Order Comment :</div>
+       <label className='mx-2'>Order Comment :</label>
        <textarea value={orderComment} onChange={e=>handleChange(e)}/>
      </div>
    )

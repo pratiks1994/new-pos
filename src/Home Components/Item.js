@@ -7,6 +7,7 @@ import { addCurrentItem, clearCurrentItem } from "../Redux/currentItemSlice";
 import { addOrderItem } from "../Redux/finalOrderSlice";
 import { v4 } from "uuid";
 import { motion } from "framer-motion";
+import { getIdentifier } from "../Utils/getIdentifier";
 
 function Item({ name, id, variations, has_variation, price, display_name, item_tax, restaurantPrices, category_id, parent_tax }) {
 	const dispatch = useDispatch();
@@ -14,31 +15,14 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 	const [err, setErr] = useState("");
 	const currentItem = useSelector(state => state.currentItem);
 
-	const { restaurantPriceId } = useSelector(state => state.UIActive);
+	const { restaurantPriceId,cartAction } = useSelector(state => state.UIActive);
 	const restaurantPriceVariations = variations.filter(variation => variation.restaurantPriceId === restaurantPriceId);
 	const totalTax = item_tax.reduce((acc, tax) => (acc += tax.tax), 0);
 
-	const getIdentifier = item => {
-		let { itemId, variation_id, toppings } = item;
-		let identifier = [itemId, variation_id];
-
-		toppings
-			.slice()
-			.sort((a, b) => {
-				return a.id - b.id;
-			})
-			.forEach(topping => {
-				identifier.push(topping.id);
-				identifier.push(topping.quantity);
-			});
-
-		return identifier.join("_");
-	};
+	
 
 	const addItem = (id, name) => {
 		let orderItemId = v4();
-	
-
 		if (has_variation === 1) {
 			setModalShow(true);
 			let defaultVariantName = restaurantPriceVariations[0].name;
@@ -48,8 +32,13 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 
 			dispatch(addCurrentItem({ id, name, orderItemId, defaultVariantName, defaultVariantId, defaultVariantPrice, defaultVariantDisplayName, category_id, parent_tax }));
 		} else {
-			const restaurantItemPrice = restaurantPriceId ? restaurantPrices.find(price => price.restaurant_price_id === restaurantPriceId).price : price;
+            let itemStatus = "default"
+			if(cartAction === "modifyOrder"){
+				itemStatus = "new"
+			}
 
+
+			const restaurantItemPrice = restaurantPriceId ? restaurantPrices.find(price => price.restaurant_price_id === restaurantPriceId).price : price;
 			let currentItem = {
 				currentOrderItemId: orderItemId,
 				itemQty: 1,
@@ -66,13 +55,14 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 				itemIdentifier: id,
 				itemNotes: "",
 				parent_tax: parent_tax,
+
 			};
 
 			const itemTax = item_tax.map(tax => {
 				return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 };
 			});
 
-			dispatch(addOrderItem({ ...currentItem, itemTax }));
+			dispatch(addOrderItem({ ...currentItem, itemTax, itemStatus }));
 		}
 	};
 
@@ -82,13 +72,20 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 	};
 
 	const handleSave = () => {
-		let itemIdentifier = getIdentifier(currentItem);
+		let itemIdentifier = getIdentifier(currentItem.itemId,currentItem.variation_id,currentItem.toppings);
+		let itemStatus = "default"
+
+		if(cartAction === "modifyOrder"){
+			itemStatus = "new"
+		}
 
 		const itemTax = item_tax.map(tax => {
 			return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 };
 		});
+         
+		
 
-		dispatch(addOrderItem({ ...currentItem, itemIdentifier, itemTax }));
+		dispatch(addOrderItem({ ...currentItem, itemIdentifier, itemTax, itemStatus}));
 		dispatch(clearCurrentItem());
 		setModalShow(false);
 	};

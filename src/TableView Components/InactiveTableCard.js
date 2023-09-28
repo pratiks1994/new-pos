@@ -5,31 +5,22 @@ import { motion } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { modifyCartData } from "../Redux/finalOrderSlice";
 import { useNavigate } from "react-router-dom";
-import { setActive } from "../Redux/UIActiveSlice";
+import { modifyUIActive } from "../Redux/UIActiveSlice";
 
-function InactiveTableCard({ table ,restaurantPriceId}) {
+function InactiveTableCard({ table, restaurantPriceId, area }) {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
 
-	const handleTableClick = (tableNo) => {
-        dispatch(resetFinalOrder())
-		dispatch(setActive({key:"restaurantPriceId",name:restaurantPriceId}))
-		dispatch(setActive({key:"isCartActionDisable",name:false}))
-		dispatch(modifyCartData({ tableNumber: tableNo }));
-		dispatch(modifyCartData({ orderType: "dine_in" }));
-		navigate("..?openTable=true" );
+	const handleTableClick = (tableNo, area, restaurantPriceId) => {
+		dispatch(resetFinalOrder());
+		dispatch(modifyUIActive({ restaurantPriceId, isCartActionDisable: false }));
+		dispatch(modifyCartData({ tableNumber: tableNo, orderType: "dine_in", tableArea: area }));
+		navigate("..?openTable=true");
 	};
 
 	return (
-		<motion.div
-			layout
-			className={styles.container}
-			initial={{ opacity: 0, scale: 0.5 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ duration: 0.15 }}>
-			<div
-				className={styles.tableCard}
-				onClick={() => handleTableClick(table.table_no)}>
+		<motion.div layout className={styles.container} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.15 }}>
+			<div className={styles.tableCard} onClick={() => handleTableClick(table.table_no, area, restaurantPriceId)}>
 				<div className={styles.tableNo}>{table.table_no} </div>
 				<div className={styles.message}> Click to Add</div>
 			</div>

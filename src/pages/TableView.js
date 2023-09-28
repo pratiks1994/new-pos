@@ -1,34 +1,40 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import styles from "./TableView.module.css";
-import { useQuery, useQueryClient } from "react-query";
-import axios from "axios";
-import { setBigMenu } from "../Redux/bigMenuSlice";
-import { useSelector, useDispatch } from "react-redux";
+import { useQueryClient } from "react-query";
+import { useDispatch } from "react-redux";
 import { modifyCartData } from "../Redux/finalOrderSlice";
 import { useNavigate } from "react-router-dom";
 import useSocket from "../Utils/useSocket";
 import { resetFinalOrder } from "../Redux/finalOrderSlice";
 import DineInArea from "../TableView Components/DineInArea";
 import { setActive } from "../Redux/UIActiveSlice";
-import { useGetLiveOrdersQuery, useGetMenuQuery, useGetMenuQuery2 } from "../Utils/customQueryHooks";
-import { matchOrderAndTables } from "../Utils/matchOrderAndTables";
+import { useGetLiveKotsQuery, useGetLiveOrdersQuery, useGetMenuQuery2, useGetPrintersQuery } from "../Utils/customQueryHooks";
+import { matchOrderAndKotsWithTables } from "../Utils/matchOrderAndTables";
+import Loading from "../Feature Components/Loading";
+import sortPrinters from "../Utils/shortPrinters";
 
 function TableView() {
-
-    const queryClient = useQueryClient() 
+	const queryClient = useQueryClient();
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
-	
-	const { data : orders, isLoading, error, isError } = useGetLiveOrdersQuery()
-	const { data : bigMenu } = useGetMenuQuery2()
-	const areas = bigMenu?.areas || []
-	const defaultRestaurantPrice = bigMenu?.defaultSettings?.default_restaurant_price || 0
+
+	const { data: orders, isLoading: isOrdersLoading, error, isError } = useGetLiveOrdersQuery();
+	const { data: bigMenu, isLoading: isBigMenuLoading } = useGetMenuQuery2();
+	const { data: kots, isLoading: isKotLoading } = useGetLiveKotsQuery();
+	const { data: printerArr, isLoading: isPrintersLoading } = useGetPrintersQuery();
+	const printers = useMemo(() => (printerArr?.length ? sortPrinters(printerArr) : []), [printerArr]);
+
+	const areas = bigMenu?.areas || [];
+	const defaultRestaurantPrice = bigMenu?.defaultSettings?.default_restaurant_price || 0;
 
 	// const defaultRestaurantPrice = defaultSettings?.default_restaurant_price || 0 ;
 
-	
 	useSocket("orders", orders => {
-		queryClient.setQueryData("liveOrders", orders)	
+		queryClient.setQueryData("liveOrders", orders);
+	});
+
+	useSocket("KOTs", data => {
+		queryClient.setQueryData("KOTs", data);
 	});
 
 	const handleClick = orderType => {
@@ -37,8 +43,11 @@ function TableView() {
 		dispatch(setActive({ key: "restaurantPriceId", name: +defaultRestaurantPrice || null }));
 		navigate(`..${orderType === "dine_in" ? "?openTable=true" : ""}`);
 	};
+	const allAreas = useMemo(() => matchOrderAndKotsWithTables(orders, areas, kots), [areas, orders, kots]);
 
-	const allAreas = useMemo(() => matchOrderAndTables(orders, areas), [areas, orders]);
+	if (isOrdersLoading || isBigMenuLoading || isKotLoading || isPrintersLoading) {
+		return <Loading />;
+	}
 
 	return (
 		<div className={styles.tableView}>
@@ -51,12 +60,12 @@ function TableView() {
 				</div>
 			</header>
 			<main className={styles.tableList}>
-				{isLoading && <div>Loading....</div>}
+				{isOrdersLoading && <div>Loading....</div>}
 				{isError && <div>{error}</div>}
 
 				{allAreas?.map(area => {
 					if (area.tables.length) {
-						return <DineInArea area={area} key={area.id} restaurantPriceId={area.restaurant_price_id} />;
+						return <DineInArea area={area} key={area.id} restaurantPriceId={area.restaurant_price_id} printers={printers} />;
 					} else {
 						return null;
 					}

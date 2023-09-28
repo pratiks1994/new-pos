@@ -18,6 +18,7 @@ function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
      // close the breakdown when clicked outside the div
 
      const outsideRef = useRef();
+     
      useEffect(() => {
           const handleOusideClick = (e) => {
                // set setShowPaymentBreakdown to false if click event occure outside the div with ref outsideRef (PaymentBreakdown)

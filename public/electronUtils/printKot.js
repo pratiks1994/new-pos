@@ -1,8 +1,7 @@
 const { PosPrinter } = require("electron-pos-printer");
 
-const printKot = async (payload) =>{
-
-    const { data, printerName } = payload;
+const printKot = async (payload) => {
+	const { data, printerName } = payload;
 	// const win = new BrowserWindow({width:305,height:1000});
 
 	// const options = {
@@ -105,7 +104,7 @@ const printKot = async (payload) =>{
 			<section class="itemContainer">
 
 			${data.orderCart
-				.map((item) => {
+				.map(item => {
 					const itemCard = `<article class="itemCard">
 										<div class="itemQty">${item.itemQty}</div>
 										<div class="itemName bold">${item.itemName} ${item.variantName ? " - " + item.variantName : ""}</div>
@@ -113,7 +112,7 @@ const printKot = async (payload) =>{
 
 					const addonCard = item.toppings.length
 						? item.toppings
-								?.map((topping) => {
+								?.map(topping => {
 									return `<article class="addonCard">
 												<div class="addonName">${topping.name} - </div>
 					  							<div class="addonQty">${topping.quantity}</div>
@@ -166,11 +165,9 @@ const printKot = async (payload) =>{
 		dpi: 300,
 	};
 
-	PosPrinter.print(kotPrint, options).catch((error) => {
+	PosPrinter.print(kotPrint, options).catch(error => {
 		console.error(error);
 	});
+};
 
-
-}
-
-module.exports = {printKot}
+module.exports = { printKot };

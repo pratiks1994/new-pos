@@ -44,27 +44,26 @@ function CustomerDetail({ showDetailType }) {
 
 	return (
 		<div className={showCustomerDetail}>
-			<div className={styles.customerContact}>
-				<div className="mb-2">
-					<span className="">Contact :</span>
-					<input type="text" name="customerContact" value={customerContact} className={`${styles.customerContact}`} onChange={e => handleChange(e)} />
-				</div>
+			<div className={styles.custemerFieldWrapper}>
+				<span>Contact :</span>
+				<input type="text" name="customerContact" value={customerContact} className={`${styles.customerContact}`} autoComplete="off" onChange={e => handleChange(e)} />
 				{suggestionsContact.length !== 0 && <CustomerSuggest suggestions={suggestionsContact} setSuggestions={setSuggestionsContact} />}
 			</div>
-			<div className={styles.customerContact}>
-				<div className="mb-2">
-					<span className="">Name :</span>
-					<input type="text" name="customerName" value={customerName} className={`${styles.customerName}`} onChange={e => handleChange(e)} />
-				</div>
+
+			<div className={styles.custemerFieldWrapper}>
+				<span>Name :</span>
+				<input type="text" name="customerName" value={customerName} autoComplete="off" className={`${styles.customerName}`} onChange={e => handleChange(e)} />
 				{suggestionsName.length !== 0 && <CustomerSuggest suggestions={suggestionsName} setSuggestions={setSuggestionsName} />}
 			</div>
-			<div className="mb-2">
-				<span className="">Add :</span>
+
+			<div className={styles.custemerFieldWrapper}>
+				<span>Add :</span>
 				<input type="text" name="customerAdd" value={customerAdd} className={`${styles.customerAddress}`} onChange={e => handleChange(e)} />
 			</div>
-			<div className="mb-2">
-				<span className="">Locality :</span>
-				<input type="text" name="customerLocality" value={customerLocality} className={`${styles.customerContact}`} onChange={e => handleChange(e)} />
+
+			<div className={styles.custemerFieldWrapper}>
+				<span>Locality :</span>
+				<input type="text" name="customerLocality" value={customerLocality} className={`${styles.customerLocality}`} onChange={e => handleChange(e)} />
 			</div>
 		</div>
 	);

@@ -6,7 +6,7 @@ import MultipayOptions from "./MultipayOptions";
 
 function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 	const [paymentDetail, setPaymentDetail] = useState({
-		paymentType: "cod",
+		paymentType: "cash",
 		customerPaid: "",
 		customerReturn: "",
 		tip: "",
@@ -18,7 +18,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 			{ name: "upi", displayName: "UPI", amount: "" },
 			{ name: "card", displayName: "Card", amount: "" },
 			{ name: "due", displayName: "Due", amount: "" },
-			{ name: "cod", displayName: "Cash", amount: Math.round(order.total).toString() },
+			{ name: "cash", displayName: "Cash", amount: Math.round(order.total).toString() },
 		],
 	});
 	
@@ -78,7 +78,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 				<Row>
 					<Col className={styles.paymentOptions}>
 						<div className={styles.option}>
-							<input type="radio" name="paymentType" id="cash" value="cod" onChange={handleChange} checked={paymentDetail.paymentType === "cod"} />
+							<input type="radio" name="paymentType" id="cash" value="cash" onChange={handleChange} checked={paymentDetail.paymentType === "cash"} />
 							<label htmlFor="cash">Cash</label>
 						</div>
 						<div className={styles.option}>
@@ -102,7 +102,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 
 				{otherOptions.includes(paymentDetail.paymentType) && <OtherPaymentOptions handleChange={handleChange} paymentType={paymentDetail.paymentType} />}
 
-				{(paymentDetail.paymentType === "cod" || paymentDetail.paymentType === "card") && (
+				{(paymentDetail.paymentType === "cash" || paymentDetail.paymentType === "card") && (
 					<Row className={styles.field}>
 						<Col xs={5}>Customer paid</Col>
 						<Col xs={7}>
@@ -111,7 +111,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 					</Row>
 				)}
 
-				{paymentDetail.paymentType === "cod" && (
+				{paymentDetail.paymentType === "cash" && (
 					<Row className={styles.field}>
 						<Col xs={5}>Return to customer</Col>
 						<Col xs={7}>

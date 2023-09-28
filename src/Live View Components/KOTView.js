@@ -26,7 +26,7 @@ function KOTView() {
 	}
 	return (
 		<motion.main layout className={styles.mainKOT} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.15 }}>
-			{KOTs?.slice()
+			{KOTs?.filter(kot => kot.kot_status === "accepted").slice()
 				.sort((a, b) => (sortType === "asc" ? a?.id - b?.id : b?.id - a?.id))
 				.map((KOT, idx) => {
 					return <KOTCards KOT={KOT} key={KOT.id} idx={idx} />;

@@ -14,14 +14,23 @@
       transition: all 0.15s ease-in-out;
 }
 
-.bars:hover{
-      color: rgba(204, 0, 0, 0.897);
-}
-
 .LinkIcon {
       font-size: 25px;
       margin-inline: 10px;
       color: black;
+      transition: all 150ms ease-out
+}
+
+.Link:hover .LinkIcon , .bars:hover { 
+      transform: scale(1.2);
+      color: rgba(199, 13, 13, 0.945);
+     
+}
+
+.Link:active .LinkIcon, .bars:active { 
+      transform: scale(1.0);
+      color: rgba(158, 1, 1, 0.945);
+     
 }
 
 .contact {

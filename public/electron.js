@@ -16,7 +16,6 @@ const destinationFolder = app.isPackaged ? path.join(app.getAppPath(), "..", "..
 const sourceFile = app.isPackaged ? path.join(app.getAppPath(), "..", "..", "posDatabse.sqlite") : path.join(app.getAppPath(), "posDatabse.sqlite");
 const destinationFile = app.isPackaged ? path.join(destinationFolder, "posDatabse.sqlite") : path.join(destinationFolder, "posDatabse.sqlite");
 
-
 let db2 = getLocalDb(destinationFile);
 let mainWindow;
 let serverProcess;
@@ -100,6 +99,8 @@ autoUpdater.on("update-downloaded", info => {
 	console.log("Update downloaded");
 });
 
+
+
 function setupLocalFilesNormalizerProxy() {
 	protocol.registerHttpProtocol("file", request => {
 		console.log(request);
@@ -111,6 +112,9 @@ function setupLocalFilesNormalizerProxy() {
 app.whenReady().then(() => {
 	createWindow();
 	setupLocalFilesNormalizerProxy();
+	serverProcess?.on("message",(message)=>{
+		console.log(message)
+	})
 
 	app.on("activate", function () {
 		// On macOS it's common to re-create a window in the app when the
@@ -155,6 +159,8 @@ ipcMain.handle("setup", async (event, payload) => {
 		return { status: "started" };
 	}
 });
+
+
 
 ipcMain.handle("getConnectedPrinters", async (event, payload) => {
 	const connectedPrinters = await mainWindow.webContents.getPrintersAsync();

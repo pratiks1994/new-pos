@@ -23,21 +23,6 @@ function KOTCards({ KOT, idx }) {
 		isError,
 	} = useMutation({
 		mutationFn: updateKOT,
-		// onMutate: async (id) => {
-		//       await queryClient.cancelQueries({ queryKey: ["KOTs"] });
-		//       const previousKOTs = queryClient.getQueryData(["KOTs"]);
-		//       queryClient.setQueryData(["KOTs"], (oldKOTs) => {
-		//             return oldKOTs.filter((KOT) => KOT.id !== id);
-		//       });
-		//       return { previousKOTs };
-		// },
-		// onError: (err, id, context) => {
-		//       queryClient.setQueryData(["KOTs"], context.previousKOTs);
-		// },
-
-		// onSettled: (data) => {
-		//       queryClient.invalidateQueries("KOTs");
-		// },
 	});
 
 	const getColor = type => (type !== "dine_in" ? { backgroundColor: "rgba(116, 116, 0, 0.87)" } : null);
