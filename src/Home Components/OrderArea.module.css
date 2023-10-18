@@ -4,6 +4,7 @@
    flex-shrink: 1;
    overflow-y: scroll;
    font-size: 13px;
+   position: relative;
 }
 
 .orderArea::-webkit-scrollbar {
@@ -16,11 +17,15 @@
  }
 
 .orderInfo{
-   background-color: rgba(67, 67, 67, 0.119);
-   padding: 5px 5px;
-   color: rgb(67, 67, 67);
-   font-size: 14px;
-   font-weight: 400;
+   background-color: rgba(191, 191, 191, 0.527);
+    padding: 5px 5px;
+    color: rgb(67, 67, 67);
+    font-size: 14px;
+    font-weight: 400;
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(9px);
+
 }
 
 .finalOrder{

@@ -1,13 +1,14 @@
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import styles from "./CenteredModal.module.css";
-import { useSelector } from "react-redux";
+import { useGetMenuQuery2 } from "../Utils/customQueryHooks";
 
 function CenteredModal({ show, onHide, name, body, handleSave, handleCancel, err, total , totalTax }) {
 
-      const defaultPriceType = useSelector(state => state.bigMenu.defaultSettings.default_price_type)
+      // const defaultPriceType = useSelector(state => state.bigMenu.defaultSettings.default_price_type)
+      const { data: bigMenu } = useGetMenuQuery2();
+      const defaultPriceType  = bigMenu?.defaultSettings?.default_price_type || "without_tax"
       const totalWithTax = total*(1+totalTax/100)
-
 
       return (
             <Modal

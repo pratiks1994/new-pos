@@ -1,10 +1,13 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./PaymentBreakdown.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { modifyCartData } from "../Redux/finalOrderSlice";
+import DiscountModal from "./DiscountModal";
 
 function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
      //   add/remove css showBreakdown class based on showPaymentBreakdown state coming from parent component
+
+     const [showDiscountModal,setShowDiscountModal] = useState(false)
 
      let showBreakdown = showPaymentBreakdown
           ? `${styles.showBreakdown} ${styles.paymentBreakdown}`
@@ -24,7 +27,6 @@ function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
                // set setShowPaymentBreakdown to false if click event occure outside the div with ref outsideRef (PaymentBreakdown)
                if (outsideRef.current && !outsideRef.current.contains(e.target) && e.target.name !== "toggleBreakdown") {
                setShowPaymentBreakdown(false)    
-               
                }
           };
 
@@ -54,6 +56,7 @@ function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
                </div>
                <div className={`${styles.breakDownItem} d-flex justify-content-between`}>
                     <div className="ms-4">Discount</div>
+                    <div  className={styles.discountBtn} onClick={()=>setShowDiscountModal(true)}>Add Discount</div>
                     <div className="me-4">0.00</div>
                </div>
                <div className={`${styles.breakDownItem} d-flex justify-content-between py-1 align-items-center`}>
@@ -84,6 +87,7 @@ function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
                     <div className="ms-4">Tip</div>
                     <input className="me-4" defaultValue="0" />
                </div>
+               <DiscountModal show={showDiscountModal} hide={() => setShowDiscountModal(false)}/>
           </div>
      );
 }

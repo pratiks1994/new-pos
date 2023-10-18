@@ -21,10 +21,10 @@
     font-weight: 700;
 }
 
-.actionIcon{
+.printIcon{
     position: absolute;
     bottom: -11%;
-    left: 50%;
+    left: 65%;
     transform: translate(-50%,-50%);
     width: 27px;
     height: 27px;   
@@ -32,11 +32,28 @@
     background-color: white;
     border: 0.5px solid rgb(0, 0, 0);
     padding: 4px;
-    
     border-radius: 2px;
-    
 
 }
+
+.eyeIcon{
+    position: absolute;
+    bottom: -11%;
+    left: 36%;
+    transform: translate(-50%,-50%);
+    width: 27px;
+    height: 27px;
+    cursor: pointer;
+    background-color: white;
+    border: 0.5px solid rgb(0, 0, 0);
+    padding: 4px;
+    border-radius: 2px;
+    box-sizing: border-box !important; 
+    color: rgb(77, 77, 77);
+
+}
+
+
 
 .container {
     position: relative  ;

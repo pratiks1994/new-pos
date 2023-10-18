@@ -5,10 +5,10 @@ const { getDb } = require("../common/getDb")
 const db2 = getDb()
 
 
-const updateKOT = ({ id, order_id, order_type }) => {
+const updateKOT = ({ id, order_id, order_type,kot_status}) => {
       // console.log(order_id)
       try {
-            db2.prepare("UPDATE kot SET kot_status = 'food_is_ready' WHERE id=? ").run([id]);
+            db2.prepare("UPDATE kot SET kot_status = ? WHERE id=? ").run([kot_status,id]);
             // dbRun(db, "UPDATE KOT SET KOT_status = 'food is ready' WHERE id=? ", [id]);
 
             

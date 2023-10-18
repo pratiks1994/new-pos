@@ -80,6 +80,8 @@ export const executeBillPrint = async (order, printers) => {
 	}
 };
 
+
+
 export const executeKotPrint = async (order, printers) => {
 	for (const printer of printers) {
 		if (printer.kotPrintStatus === 1) {

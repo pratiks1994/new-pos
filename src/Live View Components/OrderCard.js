@@ -3,14 +3,14 @@ import styles from "./OrderCard.module.css";
 import { v4 } from "uuid";
 import Timer from "./Timer";
 import { useSelector, useDispatch } from "react-redux";
-import { useMutation} from "react-query";
+import { useMutation } from "react-query";
 import axios from "axios";
 import deliveryImg from "../icons/liveview-delivery.png";
 import pickUpImg from "../icons/liveview-pickup.png";
 import dineInIng from "../icons/liveview-dinein.png";
 import { liveOrderToCart } from "../Redux/finalOrderSlice";
 import { useNavigate } from "react-router-dom";
-import { modifyUIActive, setActive } from "../Redux/UIActiveSlice";
+import { modifyUIActive } from "../Redux/UIActiveSlice";
 import { motion } from "framer-motion";
 import SettleOrderModal from "./SettleOrderModal";
 import getDisplayName from "../Utils/getDisplayName";
@@ -18,25 +18,30 @@ import { executeBillPrint } from "../Utils/executePrint";
 import { convertOrder } from "../Utils/convertOrder";
 import { useGetPrintersQuery } from "../Utils/customQueryHooks";
 import sortPrinters from "../Utils/shortPrinters";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPrint } from "@fortawesome/free-solid-svg-icons";
+import { useUpdateOrderPrintCountMutation } from "../Utils/customMutationHooks";
+import KotEditDeniedModal from "./KotEditDeniedModal";
 
 function OrderCard({ order, idx }) {
-	const { IPAddress } = useSelector(state => state.serverConfig);
-	const { data: printerArr } = useGetPrintersQuery();
-
-	const printers = printerArr?.length ? sortPrinters(printerArr) : [];
-
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
+	const { IPAddress } = useSelector(state => state.serverConfig);
+	const { data: printerArr } = useGetPrintersQuery();
+	const printers = printerArr?.length ? sortPrinters(printerArr) : [];
+
 	const [showSettleModal, setShowSettleModal] = useState(false);
+	const [showOnlineOrderExistModal, setShowOnlineOrderExistModal] = useState(false);
 
 	const updateLiveOrders = async updateData => {
 		let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, updateData);
 		return data;
 	};
 
-	const { mutate: orderMutation, isLoading } = useMutation({
+	const { mutate: orderMutation, isLoading: updateLiveOrderLoading } = useMutation({
 		mutationFn: updateLiveOrders,
 	});
+	const { mutate: updateOrderPrintCountMutate, isLoading: isPrintCountUpdateLoading } = useUpdateOrderPrintCountMutation();
 
 	const getBtnTheme = (orderStatus, orderType, print_count) => {
 		const themes = [
@@ -77,24 +82,32 @@ function OrderCard({ order, idx }) {
 
 	const getHeaderTheme = type => {
 		if (type === "delivery") {
-			return { style: { backgroundColor: "rgba(161, 118, 108, 0.41)" }, image: deliveryImg };
+			return { style: { backgroundColor: "rgba(161, 118, 108, 0.41) " }, image: deliveryImg };
 		}
 		if (type === "pick_up") {
-			return { style: { backgroundColor: "rgba(201, 182, 34, 0.41)" }, image: pickUpImg };
+			return { style: { backgroundColor: "rgb(83 53 161 / 41%)" }, image: pickUpImg };
 		} else {
 			return { style: { backgroundColor: "rgba(81, 161, 77, 0.41)" }, image: dineInIng };
 		}
 	};
 
 	const moveOrderToHome = order => {
+
+         if(order.online_order_id){
+			setShowOnlineOrderExistModal(true)
+			return
+		 }
+
+
 		let isCartActionDisable = true;
-		let cartAction = "default";
+		let activeOrderBtns = ["cancel"];
 		if (order.print_count === 0) {
+			activeOrderBtns = ["save", "cancel"];
 			isCartActionDisable = false;
-			cartAction = "modifyOrder";
 		}
+
 		dispatch(liveOrderToCart({ order }));
-		dispatch(modifyUIActive({ restaurantPriceId: order.restaurantPriceId, isCartActionDisable,cartAction }));
+		dispatch(modifyUIActive({ restaurantPriceId: order.restaurantPriceId, isCartActionDisable, activeOrderBtns }));
 		navigate("/Home");
 	};
 
@@ -104,9 +117,20 @@ function OrderCard({ order, idx }) {
 		} else {
 			if (order.print_count === 0 && order.order_type === "dine_in") {
 				const orderToPrint = convertOrder(order);
-				await executeBillPrint(orderToPrint, printers);
+				executeBillPrint(orderToPrint, printers);
 			}
+
+			const statusMap = {
+				delivery: ["accepted", "food_is_ready", "dispatched", "delivered"],
+				pick_up: ["accepted", "food_is_ready", "picked_up"],
+			};
+
+			const statuses = statusMap[order.order_type] || [];
+			const current = statuses.findIndex(element => element === order.order_status);
+			const updatedStatus = order.order_type === "dine_in" ? "accepted" : statuses[current + 1];
+
 			const updateData = {
+				updatedStatus,
 				orderStatus: order.order_status,
 				orderId: order.id,
 				orderType: order.order_type,
@@ -117,9 +141,18 @@ function OrderCard({ order, idx }) {
 				tip: null,
 				settleAmount: null,
 				multipay: null,
+				online_order_id:order.online_order_id
 			};
 			orderMutation(updateData);
 		}
+	};
+
+	const handlePrint = (order, printers) => {
+		const orderToPrint = convertOrder(order);
+		executeBillPrint(orderToPrint, printers);
+
+		const updatedPrintCount = order.print_count + 1;
+		updateOrderPrintCountMutate(order.id, updatedPrintCount);
 	};
 
 	return (
@@ -168,12 +201,17 @@ function OrderCard({ order, idx }) {
 			</div>
 			<div className={styles.statusBtn}>
 				<div className={styles.orderTotal}>₹ {order.total.toFixed(2)}</div>
-				<button style={getBtnTheme(order.order_status, order.order_type, order.print_count).style} onClick={handleClick} disabled={isLoading}>
+				{order.print_count === 0 && order.order_type !== "dine_in" ? (
+					<FontAwesomeIcon className={styles.printIcon} icon={faPrint} onClick={() => handlePrint(order, printers)} disabled={isPrintCountUpdateLoading} />
+				) : null}
+
+				<button style={getBtnTheme(order.order_status, order.order_type, order.print_count).style} onClick={handleClick} disabled={updateLiveOrderLoading}>
 					{" "}
-					{isLoading ? "Loading..." : getBtnTheme(order.order_status, order.order_type, order.print_count).btnName}
+					{updateLiveOrderLoading ? "Loading..." : getBtnTheme(order.order_status, order.order_type, order.print_count).btnName}
 				</button>
 			</div>
 			{showSettleModal && <SettleOrderModal show={showSettleModal} hide={() => setShowSettleModal(false)} order={order} orderMutation={orderMutation} />}
+			{showOnlineOrderExistModal && <KotEditDeniedModal show={showOnlineOrderExistModal} hide ={()=>setShowOnlineOrderExistModal(false)} message={"sorry this order is placed online. it can not be edited"} />}
 		</motion.div>
 	);
 }

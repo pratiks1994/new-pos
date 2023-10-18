@@ -34,28 +34,28 @@ function LiveViewNav() {
 				KOT View
 			</NavLink>
 			<div className={styles.OrderStatusFilter}>
-                        <AnimatePresence >
-				{!isKOT &&
-					fitlers.map((filter,idx) => {
-						return (
-							<motion.div
-								layout
-								initial="collapsed"
-								animate="open"
-								exit="collapsed"
-								variants={{
-									open: {x:0, opacity: 1 },
-									collapsed: {x:80, opacity: 0 },
-								}}
-								transition={{ duration: 0.15, delay: idx * 0.07 }}
-								key={filter.name}
-								className={liveViewOrderStatus === filter.name ? `${styles.filter} ${styles.active}` : `${styles.filter}`}
-								onClick={() => handleClick(filter.name)}>
-								<span>{filter.name}</span> <div className={styles.badge}>{filter.number}</div>
-							</motion.div>
-						);
-					})}
-                              </AnimatePresence>
+				<AnimatePresence>
+					{!isKOT &&
+						fitlers.map((filter, idx) => {
+							return (
+								<motion.div
+									layout
+									initial="collapsed"
+									animate="open"
+									exit="collapsed"
+									variants={{
+										open: { x: 0, opacity: 1 },
+										collapsed: { x: 80, opacity: 0 },
+									}}
+									transition={{ duration: 0.15, delay: idx * 0.07 }}
+									key={filter.name}
+									className={liveViewOrderStatus === filter.name ? `${styles.filter} ${styles.active}` : `${styles.filter}`}
+									onClick={() => handleClick(filter.name)}>
+									<span>{filter.name}</span> <div className={styles.badge}>{filter.number}</div>
+								</motion.div>
+							);
+						})}
+				</AnimatePresence>
 
 				<Link to="../" className={styles.backBtn}>
 					{" "}

@@ -42,7 +42,7 @@ function Main() {
 
 
 	const getServerStatus = async () => {
-		const { data } = await axios.get(`http://${IPAddress}:3001/defaultScreenData`, { timeout: 4000 });
+		const { data } = await axios.get(`http://${IPAddress}:3001/defaultScreenData`, { timeout: 10000 });
 		return data;
 	};
 

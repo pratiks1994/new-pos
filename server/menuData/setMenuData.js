@@ -10,6 +10,7 @@ const martinozUrl = "https://martinozpizza.emergingcoders.com/api/pos/v1"
 const jillUrl = "https://restoapi.emergingcoders.com/api/pos/v1"
 
 const setMenuData = async (token,syncCode) => {
+	
 	let start = Date.now();
 	var options = {
 		method: "POST",

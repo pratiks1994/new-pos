@@ -1,6 +1,6 @@
 const { PosPrinter } = require("electron-pos-printer");
 
-const printKot = async (payload) => {
+const printKot = async payload => {
 	const { data, printerName } = payload;
 	// const win = new BrowserWindow({width:305,height:1000});
 
@@ -22,6 +22,8 @@ const printKot = async (payload) => {
 	console.log(fullDate.getMonth());
 	const date = `${fullDate.getDate()}/${fullDate.getMonth() + 1}/${fullDate.getFullYear()}`;
 	const time = `${fullDate.getHours()}:${fullDate.getMinutes()}:${fullDate.getSeconds()}`;
+	const orderTypedisplayNames = { dine_in: "Dine In", pick_up: "Pick Up", delivery: "Delivery" };
+	const itemStatusDisplayName = { removed: "CANCELLED", new: "NEW", updated: "UPDATED", cancelled: "CANCELLED" };
 
 	const htmlContent = `
 	<!DOCTYPE html>
@@ -85,15 +87,21 @@ const printKot = async (payload) => {
 				margin: 2px 0px 2px 60px;
 				font-style: italic;
 			}
+
+			.strikeThrough{
+				text-decoration: line-through
+			}
 		
 		</style>
 	</head>
 	<body>
 		<div class="printMain">
 			<header class="printHeader">
+			    ${data.isModified ? `<div>Duplicate</div> ` : ""}    
+			    ${data.isModified ? `<div>Modified</div> ` : ""}    
 				<div class="dateAndTime">${date} ${time}</div>
 				<div class="kotText bold">KOT - ${data.kotTokenNo}</div>
-				<div class="orderType bold">${data.orderType}</div>
+				<div class="orderType bold">${orderTypedisplayNames[data.orderType]}</div>
 				${data.orderType === "dine_in" ? `<div class="tableNo bold">Table No: ${data.tableNumber}</div> ` : ""}
 			</header>		
 			<section class="biller">Biller - biller</section>
@@ -105,9 +113,13 @@ const printKot = async (payload) => {
 
 			${data.orderCart
 				.map(item => {
+
+					console.log(item)
+					const itemStatus = item.itemStatus !== "default" && data.isModified ? `[${itemStatusDisplayName[item.itemStatus]}]` : "";
+
 					const itemCard = `<article class="itemCard">
 										<div class="itemQty">${item.itemQty}</div>
-										<div class="itemName bold">${item.itemName} ${item.variantName ? " - " + item.variantName : ""}</div>
+										<div class="itemName bold ${["removed","cancelled"].includes(item.itemStatus) ? "strikeThrough" : ""}"> ${itemStatus} ${item.itemName} ${item.variantName ? " - " + item.variantName : ""}</div>
 			    					</article>`;
 
 					const addonCard = item.toppings.length

@@ -16,10 +16,12 @@ const orderDetailsMap = [
 	{ name: "orderComment", icon: faPenToSquare, displayInOrderType: ["dine_in", "pick_up", "delivery"] },
 ];
 
-function OrderTypeDetail({ type }) {
+function OrderTypeDetail({ type, cartAction,orderId,kotsDetail }) {
 	const [showDetailType, setShowDetailType] = useState(null);
 	let [searchParams, setSearchParams] = useSearchParams();
 
+
+	const kots = kotsDetail.map(kot => kot.token_no).join(",")
 	useEffect(() => {
 		if (showDetailType && showDetailType !== "orderComment" && showDetailType !== "customerDetail") {
 			if (type === "delivery" || type === "pick_up") {
@@ -32,15 +34,15 @@ function OrderTypeDetail({ type }) {
 		if (searchParams.get("openTable") === "true") {
 			setShowDetailType("tableNumber");
 		}
-		if(searchParams.get("openCustomerDetail") === "true"){
+		if (searchParams.get("openCustomerDetail") === "true") {
 			setShowDetailType("customerDetail");
 		}
 	}, [searchParams]);
 
-	const handleDetailChange = (detailName) =>{
-		setShowDetailType((prev)=> prev === detailName ? null : detailName)
-		setSearchParams({})
-	}
+	const handleDetailChange = detailName => {
+		setShowDetailType(prev => (prev === detailName ? null : detailName));
+		setSearchParams({});
+	};
 
 	const filteredDetails = orderDetailsMap.filter(detail => detail.displayInOrderType.includes(type));
 
@@ -59,6 +61,30 @@ function OrderTypeDetail({ type }) {
 						<FontAwesomeIcon icon={detail.icon} />{" "}
 					</motion.div>
 				))}
+				{cartAction === "modifyOrder" && (
+					<motion.div
+						layout
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ duration: 0.2 }}
+						className={styles.order}
+						>
+						<div className={styles.orderTitle}>Order No</div>
+						<div className={styles.number}>{orderId}</div>
+					</motion.div>
+				)}
+				{cartAction === "modifyKot" && (
+					<motion.div
+						layout
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ duration: 0.2 }}
+						className={styles.order}
+						>
+						<div className={styles.orderTitle}>KOT No</div>
+						<div className={styles.number}>{kots}</div>
+					</motion.div>
+				)}
 			</div>
 			<TableNumber showDetailType={showDetailType} />
 			<CustomerDetail showDetailType={showDetailType} />

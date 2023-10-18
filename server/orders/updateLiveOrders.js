@@ -6,8 +6,8 @@ const db2 = getDb()
 
 
 const updateLiveOrders = (data) => {
-      let { orderStatus, orderId, orderType, KOTId, print_count, tip, settleAmount, customerPaid, paymentType, multipay } = data;
-
+      let { orderStatus, orderId, orderType, KOTId, print_count, tip, settleAmount, customerPaid, paymentType, multipay,updatedStatus } = data;
+  
       if (orderType === "dine_in") {
             try {
                   if (print_count === 0) {
@@ -39,20 +39,20 @@ const updateLiveOrders = (data) => {
                   console.log(err);
             }
       } else {
-            const statusMap = {
-                  // "dine_in": ["accepted", "printed", "settled"],
-                  delivery: ["accepted", "food_is_ready", "dispatched", "delivered"],
-                  pick_up: ["accepted", "food_is_ready", "picked_up"],
-            };
+            // const statusMap = {
+            //       // "dine_in": ["accepted", "printed", "settled"],
+            //       delivery: ["accepted", "food_is_ready", "dispatched", "delivered"],
+            //       pick_up: ["accepted", "food_is_ready", "picked_up"],
+            // };
 
-            const statuses = statusMap[orderType] || [];
-            const current = statuses.findIndex((element) => element === orderStatus);
-            updatedStatus = statuses[current + 1];
+            // const statuses = statusMap[orderType] || [];
+            // const current = statuses.findIndex((element) => element === orderStatus);
+            // const updatedStatus = statuses[current + 1];
 
-            // console.log(updatedStatus);
+        
 
             try {
-                  db2.prepare("UPDATE orders SET order_status=?, settle_amount=total,user_paid=total WHERE id=?").run([updatedStatus, orderId]);
+                  db2.prepare("UPDATE orders SET order_status=?, settle_amount=total,user_paid=total WHERE id=? AND order_status != 'cancelled'").run([updatedStatus, orderId]);
 
                   if (orderType !== "dine_in" && updatedStatus === "food_is_ready") {
                         db2.prepare("UPDATE kot SET kot_status=? WHERE id=?").run(["food_is_ready", KOTId]);

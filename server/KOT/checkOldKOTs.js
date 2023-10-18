@@ -6,9 +6,9 @@ const db2 = getDb()
 
 
 const checkOldKOTs = (table_number) => {
-      const oldKOTs = db2.prepare("SELECT id FROM kot WHERE order_type='dine_in' AND table_no=? AND  order_id IS NULL").all([table_number]);
+      const oldKOTs = db2.prepare("SELECT id FROM kot WHERE order_type='dine_in' AND table_no=? AND  order_id IS NULL AND kot_status !='cancelled'").all([table_number]);
 
-      // console.log("old KOTS", oldKOTs);
+      console.log("old KOTS", oldKOTs.id);
 
       return oldKOTs.length === 0 ? false : true;
 };

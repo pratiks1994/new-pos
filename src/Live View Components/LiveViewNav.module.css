@@ -43,8 +43,11 @@
 .filter {
      padding: 5px 10px;
      border: 1px solid rgb(212, 212, 212);
+     font-weight: 500;
+     font-size: 15px;
+     color: rgb(66, 66, 66);
      border-radius: 5px;
-     display: flex;
+     display: flex; 
      align-items: center;
      justify-content: center;
 }

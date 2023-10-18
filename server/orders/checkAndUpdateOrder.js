@@ -6,8 +6,8 @@ const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
 const checkAndUpdateOrder = (order) => {
-	let orderId = "";
 
+	let orderId = "";
 	const matchOrder = db2
 		.prepare("SELECT id FROM orders WHERE  order_type='dine_in' AND dine_in_table_no=? AND order_status = 'accepted' AND print_count= 0 AND settle_amount IS NULL")
 		.get([order.tableNumber]);
@@ -48,26 +48,6 @@ const checkAndUpdateOrder = (order) => {
 					)
 					.run([matchOrderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variant_display_name, variation_id, itemNotes, parent_tax, totalItemTax, toppingsJson]);
 
-				// if (toppings.length !== 0) {
-				// 	db2.transaction(() => {
-				// 		toppings.forEach(topping => {
-				// 			const { id, name, price, quantity } = topping;
-				// 			db2.prepare("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)").run([
-				// 				orderItemId,
-				// 				id,
-				// 				name,
-				// 				price,
-				// 				quantity,
-				// 			]);
-				// 		});
-				// 	})();
-				// }
-
-				// db2.transaction(() => {
-				// 	itemTax.forEach(tax => {
-				// 		db2.prepare("INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)").run([orderItemId, tax.id, 2.5, tax.tax]);
-				// 	});
-				// })();
 			});
 		})();
 

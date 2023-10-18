@@ -6,6 +6,7 @@ const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
 const createKot = (order, userId, orderId) => {
+	
 	let restaurantId = 1;
 	let tokenNo;
 	const {

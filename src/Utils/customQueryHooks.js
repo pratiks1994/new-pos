@@ -99,6 +99,9 @@ export const useGetLiveOrdersQuery = () => {
 	});
 };
 
+
+//===================================================================================================================//
+
 export const useGetConnectedPrintersQuery = () => {
 	const getConnectedPrinters = async () => {
 		const data = await window.apiKey.request("getConnectedPrinters");
@@ -112,6 +115,8 @@ export const useGetConnectedPrintersQuery = () => {
 		staleTime: 1200000,
 	});
 };
+
+//==========================================================================================================//
 
 export const useGetHoldOrdersQuery = () => {
 	const { IPAddress } = useSelector(state => state.serverConfig);
@@ -128,6 +133,8 @@ export const useGetHoldOrdersQuery = () => {
 		enabled: !!IPAddress,
 	});
 }
+
+//======================================================================================================================//
 
 export const useGetOrderSummaryQuery = (filters) => {
 	const { IPAddress } = useSelector(state => state.serverConfig);
@@ -147,3 +154,20 @@ export const useGetOrderSummaryQuery = (filters) => {
 	});
 }
 
+//=====================================================================================================================//
+
+export const useGetPendingOrdersQuery = () => {
+	const { IPAddress } = useSelector(state => state.serverConfig);
+	const getPendingOrders = async () => {
+		let { data } = await axios.get(`http://${IPAddress}:3001/pendingOrder`);
+		return data;
+	};
+
+	return useQuery({
+		queryKey: ["pendingOrders"],
+		queryFn: getPendingOrders,
+		refetchIntervalInBackground: 500000,
+		refetchOnWindowFocus: false,
+		enabled: !!IPAddress,
+	});
+};

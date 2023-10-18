@@ -3,7 +3,7 @@ import styles from "./Topping.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import { addTopping, removeTopping } from "../Redux/currentItemSlice";
 
-function Topping({ name, price, id,totalTax,defaultPriceType }) {
+function Topping({ name, price, id,totalTax, defaultPriceType}) {
     
       const dispatch = useDispatch();
 

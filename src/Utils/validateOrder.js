@@ -13,7 +13,7 @@ export const validateOrder = (finalOrder, setSearchParams, customerPhoneMandator
 		return false;
 	}
 
-    if (finalOrder.orderCart.length === 0){
+    if (finalOrder.orderCart.filter(item => item.itemStatus !== "removed").length === 0){
         notify("err", "Cart is Empty");
         return false
     }

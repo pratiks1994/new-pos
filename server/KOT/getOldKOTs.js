@@ -18,10 +18,10 @@ const getOldKOTs = (tableNo) => {
 
       let kotComments = []
       
-      const liveKOTs = db2.prepare("SELECT id,customer_name,phone_number,address,landmark,description FROM kot WHERE order_type='dine_in' AND table_no=? AND order_id IS NULL").all([tableNo]);
+      const liveKOTs = db2.prepare("SELECT id,customer_name,phone_number,address,landmark,description FROM kot WHERE order_type='dine_in' AND table_no=? AND order_id IS NULL AND kot_status != 'cancelled'").all([tableNo]);
       // const liveKOTs = await dbAll(db, "SELECT * FROM KOT WHERE KOT_status = 'accepted'", []);
 
-      const prepareKOTItem = db2.prepare("SELECT * FROM kot_items WHERE kot_id = ?");
+      const prepareKOTItem = db2.prepare("SELECT * FROM kot_items WHERE kot_id = ? AND status != ?");
       // const prepareAddon = db2.prepare("SELECT * FROM KOT_item_addongroupitems WHERE KOT_item_id = ?");
       const parentTaxStmt = db2.prepare("SELECT child_ids FROM taxes where id=?");
 
@@ -36,7 +36,7 @@ const getOldKOTs = (tableNo) => {
 
             KOT.description ? kotComments.push(KOT.description) : null
 
-            const KOTItems = prepareKOTItem.all([KOT.id]);
+            const KOTItems = prepareKOTItem.all([KOT.id,-1]);
             // const KOTItems = await dbAll(db, "SELECT * FROM KOT_items WHERE KOT_id = ?", [KOT.id]);
 
 

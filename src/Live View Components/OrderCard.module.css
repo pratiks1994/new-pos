@@ -1,7 +1,7 @@
 .orderCard {
 	width: 450px;
 	border-radius: 10px;
-	margin: 15px 15px;
+	margin: 15px 13px;
 	box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 	border: 1px solid rgba(0, 30, 121, 0.26);
 }
@@ -94,6 +94,8 @@
 	display: flex;
 	padding: 5px 15px;
 	justify-content: flex-end;
+	align-items: center;
+	gap:10px;
 	position: relative;
 }
 
@@ -102,14 +104,16 @@
 	background-color: rgba(194, 0, 0, 0.945);
 	font-size: 13px;
 	border-radius: 7px;
-	padding-inline: 15px;
+	padding:10px 15px;
 	line-height: 100%;
 	text-align: center;
 	justify-content: center;
 	align-items: center;
 	color: white;
 	font-weight: 500;
-	width: 110px;
+	min-width: 110px;
+	text-wrap: nowrap;
+	
 }
 
 .orderItems::-webkit-scrollbar {
@@ -133,4 +137,21 @@
 	border-top-right-radius: 50%;
 	border: 1px solid rgb(196, 196, 196);
 	border-bottom: none;
+}
+
+.printIcon{
+	border: none;
+	font-size: 20px;
+    background-color: rgb(233, 233, 233);
+	color: rgb(70, 70, 70);
+	cursor: pointer;
+	border-radius: 7px;
+	padding:6px 6px;
+	line-height: 100%;
+	text-align: center;
+	justify-content: center;
+	align-items: center;
+	font-weight: 500;
+	max-width: 110px;
+
 }

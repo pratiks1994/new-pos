@@ -3,12 +3,16 @@ import Variant from "./Variant";
 import styles from "./ItemModalBody.module.css";
 import Topping from "./Topping";
 import { useSelector } from "react-redux";
+import { useGetMenuQuery2 } from "../Utils/customQueryHooks";
 
 function ItemModalBody({ id, restaurantPriceVariations, totalTax }) {
 	const menuItems = useSelector(state => state.menuItems.items);
+	const { data: bigMenu } = useGetMenuQuery2();
 
 	const selectedVariantId = useSelector(state => state.currentItem.variation_id);
-	const defaultPriceType = useSelector(state => state.bigMenu.defaultSettings.default_price_type);
+	// const defaultPriceType = useSelector(state => state.bigMenu.defaultSettings.default_price_type);
+	const defaultPriceType  = bigMenu?.defaultSettings?.default_price_type || "without_tax"
+
 
 	const item = menuItems.find(item => item.id === id);
 	const variants = item.variations;

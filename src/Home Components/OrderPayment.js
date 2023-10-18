@@ -10,26 +10,24 @@ import { resetFinalOrder } from "../Redux/finalOrderSlice";
 import { modifyCartData } from "../Redux/finalOrderSlice";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
-import { useQueryClient, useMutation } from "react-query";
-import { setActive } from "../Redux/UIActiveSlice";
 import OrderExistAlertModal from "./OrderExistAlertModal";
 import KOTExistAlertModal from "./KOTExistAlertModal";
 import notify from "../Feature Components/notify";
-import { executeBillPrint, executeKotPrint } from "../Utils/executePrint";
-import { convertOrder } from "../Utils/convertOrder";
 import { useSearchParams } from "react-router-dom";
 import { useGetMenuQuery2, useGetPrintersQuery } from "../Utils/customQueryHooks";
 import sortPrinters from "../Utils/shortPrinters";
 import { validateOrder } from "../Utils/validateOrder";
+import { useKotMutation, useKotToOrderMutation, useKotToPrintOrderMutation, useModifyKotMutation, useOrderMutation, usePrintOrderMutation } from "../Utils/customMutationHooks";
+import OrderCancelAlertModal from "./OrderCancelAlertModal";
 
 function OrderPayment() {
-	// get finalOrder state from redux store
-	const queryClient = useQueryClient();
-
 	const finalOrder = useSelector(state => state.finalOrder);
-	// const printers = useSelector(state => state.printerSettings);
+
 	const { data: printerArr } = useGetPrintersQuery();
 	const { data: bigMenu } = useGetMenuQuery2();
+
+	const activeOrderBtns = useSelector(state => state.UIActive.activeOrderBtns);
+
 	const customerPhoneMandatory =
 		bigMenu?.defaultSettings?.customer_phone_mandatory.split(",").map(orderType => {
 			if (orderType === "1") {
@@ -45,10 +43,10 @@ function OrderPayment() {
 	const printers = printerArr?.length ? sortPrinters(printerArr) : [];
 	let [searchParams, setSearchParams] = useSearchParams();
 
-	const isCartActionDisable = useSelector(state => state.UIActive.isCartActionDisable);
 	const [shouldPrintOrder, setShouldPrintOrder] = useState(false);
 	const [showOrderExistModal, setShowOrderExistModal] = useState(false);
 	const [showKOTExistMOdal, setShowKOTExistModal] = useState(false);
+	const [showCancelModal, setShowCancelModal] = useState(false);
 
 	const { IPAddress } = useSelector(state => state.serverConfig);
 	const dispatch = useDispatch();
@@ -59,60 +57,106 @@ function OrderPayment() {
 		dispatch(modifyCartData({ [name]: value }));
 	};
 
-	// on save post api call to backend
+	const { mutate: orderMutate } = useOrderMutation(setShowKOTExistModal);
+
+	const { mutate: kotToOrderMutate } = useKotToOrderMutation();
+
+	const { mutate: kotMutate } = useKotMutation(printers, setShowOrderExistModal);
+
+	const { mutate: modifyKotMutate } = useModifyKotMutation(printers);
+
+	const { mutate: printOrderMutate } = usePrintOrderMutation(setShowKOTExistModal, setShouldPrintOrder, printers);
+
+	const { mutate: kotToPrintOrderMutate } = useKotToPrintOrderMutation(printers);
 
 	const saveOrder = async finalOrder => {
 		const isValid = validateOrder(finalOrder, setSearchParams, customerPhoneMandatory);
+
 		if (!isValid) {
 			return;
 		}
 
-		try {
-			const { data } = await axios.post(`http://${IPAddress}:3001/order`, finalOrder);
-			if (data.isOldKOTsExist) {
-				setShowKOTExistModal(true);
-				return;
-			}
-
-			notify("success", "order Placed");
-			// set finalorder redux state to initial state after api call completion
-			// let responce = await window.apiKey.request("print", finalOrder);
-			dispatch(resetFinalOrder());
-			queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
-		} catch (error) {
-			console.log(error);
-			notify("err", "something went wrong");
+		if (finalOrder.cartAction === "modifyKot") {
+			kotToOrderMutate(finalOrder);
+		} else {
+			orderMutate(finalOrder);
 		}
+		// if (finalOrder.cartAction === "modifyOrder") {
+		// 	try {
+		// 		const { data } = await axios.post(`http://${IPAddress}:3001/modifyOrder`, { finalOrder });
+		// 		console.log(data);
+		// 		notify("success", "order Modified");
+		// 		dispatch(resetFinalOrder());
+		// 		queryClient.invalidateQueries({ queryKey: ["liveOrders"] });
+		// 	} catch (error) {
+		// 		console.log("err");
+		// 		notify("err", "something went wrong");
+		// 	}
+		// } else {
+		// 	try {
+		// 		const { data } = await axios.post(`http://${IPAddress}:3001/order`, {finalOrder});
+		// 		if (data.isOldKOTsExist) {
+		// 			setShowKOTExistModal(true);
+		// 			return;
+		// 		}
+		// 		notify("success", "order Placed");
+		// 		dispatch(resetFinalOrder());
+		// 		queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
+		// 	} catch (error) {
+		// 		console.log(error);
+		// 		notify("err", "something went wrong");
+		// 	}
+		// }
 	};
 
-	const saveAndPrintOrder = async (finalOrder, printers) => {
+	const saveAndPrintOrder = async finalOrder => {
 		const isValid = validateOrder(finalOrder, setSearchParams, customerPhoneMandatory);
+
 		if (!isValid) {
 			return;
 		}
-		try {
-			const { data } = await axios.post(`http://${IPAddress}:3001/order`, { ...finalOrder, printCount: 1 });
 
-			if (data.isOldKOTsExist) {
-				setShouldPrintOrder(true);
-				setShowKOTExistModal(true);
-				return;
-			}
-
-			const orderToPrint = convertOrder(data.order);
-
-			await executeBillPrint(orderToPrint, printers);
-
-			if (!data.isOldOrderExist) {
-				await executeKotPrint({ ...finalOrder, kotTokenNo: data.kotTokenNo, orderNo: data.orderNo }, printers);
-			}
-			notify("success", "order Placed");
-			dispatch(resetFinalOrder());
-			queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
-		} catch (error) {
-			console.log(error);
-			notify("err", "something went wrong");
+		if (finalOrder.cartAction === "modifyKot") {
+			kotToPrintOrderMutate({ ...finalOrder, printCount: finalOrder.printCount + 1 });
+		} else {
+			printOrderMutate({ ...finalOrder, printCount: finalOrder.printCount + 1 });
 		}
+
+		// if (finalOrder.cartAction === "modifyOrder") {
+		// 	try {
+		// 		const { data } = await axios.post(`http://${IPAddress}:3001/modifyOrder`, { finalOrder: { ...finalOrder, printCount: finalOrder.printCount + 1 } });
+		// 		notify("success", "order Modified");
+		// 		dispatch(resetFinalOrder());
+
+		// 		queryClient.invalidateQueries({ queryKey: ["liveOrders"] });
+		// 		const orderToPrint = convertOrder(data.order);
+		// 		await executeBillPrint(orderToPrint, printers);
+		// 	} catch (error) {
+		// 		console.log(error);
+		// 		notify("err", "something went wrong");
+		// 	}
+		// } else {
+		// 	try {
+		// 		const { data } = await axios.post(`http://${IPAddress}:3001/order`, { finalOrder: { ...finalOrder, printCount: 1 } });
+		// 		if (data.isOldKOTsExist) {
+		// 			setShouldPrintOrder(true);
+		// 			setShowKOTExistModal(true);
+		// 			return;
+		// 		}
+		// 		const orderToPrint = convertOrder(data.order);
+		// 		await executeBillPrint(orderToPrint, printers);
+
+		// 		if (!data.isOldOrderExist) {
+		// 			await executeKotPrint({ ...finalOrder, kotTokenNo: data.kotTokenNo, orderNo: data.orderNo }, printers);
+		// 		}
+		// 		notify("success", "order Placed");
+		// 		dispatch(resetFinalOrder());
+		// 		queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
+		// 	} catch (error) {
+		// 		console.log(error);
+		// 		notify("err", "something went wrong");
+		// 	}
+		// }
 	};
 
 	const holdOrder = async () => {
@@ -134,76 +178,41 @@ function OrderPayment() {
 			return;
 		}
 
-		try {
-			let res = await axios.post(`http://${IPAddress}:3001/KOT`, finalOrder);
-
-			if (res.statusText === "OK" && !res.data.orderExist) {
-				finalOrder = { ...finalOrder, kotTokenNo: res.data.kotTokenNo };
-
-				await executeKotPrint(finalOrder, printers);
-
-				queryClient.invalidateQueries("KOTs");
-
-				notify("success", "KOT Success");
-				// set finalorder redux state to initial state after api call completion
-
-				dispatch(resetFinalOrder());
-			} else if (res.statusText === "OK" && res.data.orderExist) {
-				setShowOrderExistModal(true);
-			} else {
-				notify("err", "something went wrong");
-			}
-		} catch (error) {
-			notify("err", "something went wrong");
+		if (finalOrder.cartAction === "modifyKot") {
+			modifyKotMutate(finalOrder);
+			return;
 		}
+
+		kotMutate(finalOrder);
+
+		// try {
+		// 	let res = await axios.post(`http://${IPAddress}:3001/KOT`, finalOrder);
+
+		// 	if (res.statusText === "OK" && !res.data.orderExist) {
+		// 		finalOrder = { ...finalOrder, kotTokenNo: res.data.kotTokenNo };
+
+		// 		await executeKotPrint(finalOrder, printers);
+
+		// 		queryClient.invalidateQueries("KOTs");
+
+		// 		notify("success", "KOT Success");
+		// 		// set finalorder redux state to initial state after api call completion
+
+		// 		dispatch(resetFinalOrder());
+		// 	} else if (res.statusText === "OK" && res.data.orderExist) {
+		// 		setShowOrderExistModal(true);
+		// 	} else {
+		// 		notify("err", "something went wrong");
+		// 	}
+		// } catch (error) {
+		// 	notify("err", "something went wrong");
+		// }
 	};
 
-	// const updateLiveOrders = async ({ orderStatus, orderId }) => {
-	// 	const DineInStatus = ["accepted", "printed", "settled"];
-	// 	let updatedStatus;
-
-	// 	const current = DineInStatus.findIndex(element => element === orderStatus);
-	// 	updatedStatus = DineInStatus[current + 1];
-
-	// 	try {
-	// 		let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, { updatedStatus, orderId });
-	// 		console.log(data);
-
-	// 		if (data === "updated") {
-	// 			if (updatedStatus === "settled") {
-	// 				dispatch(resetFinalOrder());
-	// 				dispatch(setActive({ key: "isCartActionDisable", name: false }));
-	// 			} else {
-	// 				dispatch(modifyCartData({ order_status: updatedStatus }));
-	// 			}
-	// 			notify("success", "status updated");
-	// 		} else {
-	// 			notify("err", "something Went wrong");
-	// 		}
-
-	// 		return data;
-	// 	} catch (err) {
-	// 		notify("err", "Something Went Wrong");
-	// 	}
-	// };
-
-	// const { mutate: orderMutation, isLoading } = useMutation({
-	// 	mutationFn: updateLiveOrders,
-	// 	// onSettled: () => {
-	// 	//       queryClient.invalidateQueries("liveOrders");
-	// 	// },
-	// });
-
-	// const getBtnTheme = status => {
-	// 	if (status === "accepted") {
-	// 		return { name: "Save & Print", style: null };
-	// 	}
-
-	// 	if (status === "printed") {
-	// 		return { name: "Save & Settle", style: { backgroundColor: "rgb(51, 51, 51)", color: "white" } };
-	// 	}
-	// };
-	//  calculate the tax ,subTotal, cartTotal every time finalOrder.orderCart changes and send/dispatch its value to finalOrder redux store
+	const handleCancel = () => {
+		setShowCancelModal(true);
+		//  cancelOrderMutate({...finalOrder,order_status: "cancelled"})
+	};
 
 	const [showPaymentBreakdown, setShowPaymentBreakdown] = useState(false);
 
@@ -248,39 +257,52 @@ function OrderPayment() {
 			</div>
 
 			<div className={`${styles.ProcessOrderBtns} d-flex justify-content-center bg-light pt-3 pb-3 flex-wrap`}>
-				{!isCartActionDisable ? (
-					<div>
-						<Button variant="danger" size="sm" className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1" onClick={() => saveOrder(finalOrder)}>
-							{" "}
-							Save{" "}
-						</Button>
-						<Button variant="danger" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => saveAndPrintOrder(finalOrder, printers)}>
-							{" "}
-							Save & Print
-						</Button>
-						{/* <Button variant="danger" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> Save & eBill </Button> */}
-						{/* <Button variant="secondary" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> KOT </Button> */}
-						<Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => createKOT(finalOrder, printers)}>
-							{" "}
-							KOT & Print{" "}
-						</Button>
-						<Button variant="white" size="sm" className="mx-1 py-1 px-2 fw-bold border-1 border border-dark text-nowrap rounded-1" onClick={holdOrder}>
-							{" "}
-							HOLD{" "}
-						</Button>
-					</div>
-				) : (
-					<div>
-						{/* <Button
-							variant="danger"
-							size="sm"
-							className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1"
-							// onClick={() => orderMutation({ orderStatus: finalOrder.order_status, orderId: finalOrder.id })}
-							style={{ pointerEvents: "all" }}>
-							{getBtnTheme(finalOrder.order_status).name}
-						</Button> */}
-					</div>
-				)}
+				<>
+					{activeOrderBtns.includes("save") ? (
+						<>
+							<Button variant="danger" size="sm" className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1" onClick={() => saveOrder(finalOrder)}>
+								{" "}
+								Save{" "}
+							</Button>
+							<Button variant="danger" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => saveAndPrintOrder(finalOrder, printers)}>
+								{" "}
+								Save & Print
+							</Button>
+						</>
+					) : null}
+
+					{/* <Button variant="danger" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> Save & eBill </Button> */}
+					{/* <Button variant="secondary" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> KOT </Button> */}
+					{activeOrderBtns.includes("kot") ? (
+						<>
+							<Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => createKOT(finalOrder, printers)}>
+								{" "}
+								KOT & Print{" "}
+							</Button>
+							<Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => {}}>
+								{" "}
+								KOT{" "}
+							</Button>
+						</>
+					) : null}
+
+					{activeOrderBtns.includes("hold") ? (
+						<>
+							<Button variant="white" size="sm" className="mx-1 py-1 px-2 fw-bold border-1 border border-dark text-nowrap rounded-1" onClick={holdOrder}>
+								{" "}
+								HOLD{" "}
+							</Button>
+						</>
+					) : null}
+
+					{activeOrderBtns.includes("cancel") ? (
+						<>
+							<Button variant="white" size="sm" className="mx-1 pe-auto py-1 px-3 fw-bold border-1 border border-dark text-nowrap rounded-1" onClick={handleCancel}>
+								Cancel
+							</Button>
+						</>
+					) : null}
+				</>
 			</div>
 			{showOrderExistModal && (
 				<OrderExistAlertModal show={showOrderExistModal} hide={() => setShowOrderExistModal(false)} IPAddress={IPAddress} finalOrder={finalOrder} printers={printers} notify={notify} />
@@ -299,6 +321,7 @@ function OrderPayment() {
 					notify={notify}
 				/>
 			)}
+			{showCancelModal && <OrderCancelAlertModal show={showCancelModal} hide={() => setShowCancelModal(false)} finalOrder={finalOrder} />}
 		</div>
 	);
 }

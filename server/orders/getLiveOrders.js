@@ -9,7 +9,7 @@ const getLiveOrders = () => {
 	try {
 		const liveOrders = db2
 			.prepare(
-				"SELECT id, order_number, customer_name, complete_address, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, total_tax, delivery_charges, total, payment_type, order_status, created_at, print_count FROM orders WHERE (order_type IN ('delivery', 'pick_up') AND order_status NOT IN ('delivered', 'picked_up','rejected','pending','pending_payment')) OR (order_type = 'dine_in' AND order_status = 'accepted' AND settle_amount IS NULL)"
+				"SELECT id, order_number, customer_name, complete_address, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, total_tax, delivery_charges, total, payment_type, order_status, created_at, print_count,online_order_id FROM orders WHERE (order_type IN ('delivery', 'pick_up') AND order_status NOT IN ('delivered', 'picked_up','rejected','cancelled','pending','pending_payment')) OR (order_type = 'dine_in' AND order_status = 'accepted' AND settle_amount IS NULL)"
 			)
 			.all([]);
 
@@ -21,6 +21,7 @@ const getLiveOrders = () => {
 		const prapareKOT = db2.prepare("SELECT id,token_no FROM kot WHERE order_id=?");
 		const parentTaxStmt = db2.prepare("SELECT child_ids FROM taxes where id=?");
 		const taxesStmt = db2.prepare("SELECT * FROM taxes where id = ? ");
+		
 		const tableStmt = db2.prepare("SELECT area_id FROM dine_in_tables WHERE table_no=?");
 		const areaStmt = db2.prepare("SELECT id,area,restaurant_price_id FROM areas WHERE id=?");
 		const defaultResaurantPriceStmt = db2.prepare("SELECT configuration FROM restaurants WHERE id=?");
@@ -30,7 +31,7 @@ const getLiveOrders = () => {
 		const liveOrdersWithItems = liveOrders.map(order => {
 			const orderItems = prepareItem.all([order.id]);
 
-			let restaurantPriceId = + defaultRestaurantPrice;
+			let restaurantPriceId = + defaultRestaurantPrice || null;
 			let areaName = "";
 			let areaId = "";
 

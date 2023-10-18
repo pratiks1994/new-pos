@@ -17,6 +17,8 @@ const initialCurrentItems = {
 	parent_tax: 0,
 	itemTax: [],
 	itemNotes: "",
+	kotId:null,
+	item_discount:0
 }
 
 const currentItemSlice = createSlice({

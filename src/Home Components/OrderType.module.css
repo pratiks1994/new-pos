@@ -34,7 +34,6 @@
 }
 
 
-
 .orderIcon.right{
    background:rgb(232, 186, 2);
    margin-left: auto;
@@ -43,4 +42,28 @@
    justify-content: center;
    font-size: 12px;
    font-weight: 600;
+}
+
+.order{
+   background:rgb(232, 186, 2);
+   margin-left: auto;
+   align-items: center;
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   font-weight: 600;
+   text-wrap: wrap;
+   padding: 15px;
+   gap:3px;
+}
+
+.order .orderTitle {
+   font-size: 11px;
+   color: black;
+}
+
+.order .number{
+   font-size: 15px;
+   font-weight: 700;
+   color: rgb(179, 7, 7);
 }

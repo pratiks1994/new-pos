@@ -13,7 +13,7 @@ function InactiveTableCard({ table, restaurantPriceId, area }) {
 
 	const handleTableClick = (tableNo, area, restaurantPriceId) => {
 		dispatch(resetFinalOrder());
-		dispatch(modifyUIActive({ restaurantPriceId, isCartActionDisable: false }));
+		dispatch(modifyUIActive({ restaurantPriceId, isCartActionDisable: false,activeOrderBtns:["save","kot","hold"] }));
 		dispatch(modifyCartData({ tableNumber: tableNo, orderType: "dine_in", tableArea: area }));
 		navigate("..?openTable=true");
 	};

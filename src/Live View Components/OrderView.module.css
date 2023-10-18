@@ -56,6 +56,9 @@
 	height: 60%;
 	font-size: 15px;
 	margin-left: 20px;
+	border-radius: 5px;
+	border: 1px solid rgb(206, 206, 206);	
+	padding: 5px 10px;
 }
 
 .control {
@@ -77,6 +80,8 @@
 .name {
 	white-space: nowrap;
 	margin-top: 2px;
+	font-weight: 500;
+	color: rgb(58, 58, 58);
 }
 
 .control.active {
@@ -87,7 +92,7 @@
 	width: 100%;
 	height: calc(100% - 75px);
 	display: flex;
-	padding: 20px;
+	padding: 10px 5px;
 	flex-wrap: wrap;
 	flex-direction: row;
 	justify-content: flex-start;
@@ -104,3 +109,4 @@
 	background: rgba(54, 54, 54, 0.753);
 	border-radius: 10px;
 }
+

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -6,46 +6,40 @@ import Navbar from "react-bootstrap/Navbar";
 import InputGroup from "react-bootstrap/InputGroup";
 import styles from "./MainNav.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStore, faBowlFood, faUsersViewfinder, faTruck, faCirclePause, faBellConcierge, faBell, faUser, faPowerOff, faPhone } from "@fortawesome/free-solid-svg-icons";
+import { faStore, faBowlFood, faUsersViewfinder, faTruck, faCirclePause, faBellConcierge, faBell, faUser, faPowerOff, faPhone, faGlobe } from "@fortawesome/free-solid-svg-icons";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { modifyCartData, resetFinalOrder } from "../Redux/finalOrderSlice";
 import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
 import ConfigSideBar from "./ConfigSideBar";
 import HoldOrders from "./HoldOrders";
-import { setActive } from "../Redux/UIActiveSlice";
+import { modifyUIActive } from "../Redux/UIActiveSlice";
 import { ToastContainer } from "react-toastify";
 import { useHotkeys } from "react-hotkeys-hook";
 import useDeployHotkeys from "../Utils/useDeployHotkeys";
+import { useQueryClient } from "react-query";
+
+import PendingOrderLink from "./PendingOrderLink";
 
 function MainNav() {
 	const [showHoldOrders, setShowHoldOrders] = useState(false);
 	const [showConfigSideBar, setShowConfigSideBar] = useState(false);
-	const { holdOrderCount } = useSelector(state => state.UIActive);
-	const defaultSettings = useSelector(state => state.bigMenu.defaultSettings);
+	
+	const queryClient = useQueryClient();
+	const defaultSettings = queryClient.getQueryData("defaultScreen");
+
+
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	useDeployHotkeys();
 
-	// const handleClose = () => {
-	//       localStorage.removeItem("IP");
-	//       localStorage.removeItem("systemType");
-	// };
-
 	const getNewOrderPage = () => {
 		dispatch(resetFinalOrder());
-		dispatch(setActive({ key: "isCartActionDisable", name: false }));
-		dispatch(modifyCartData({ orderType: defaultSettings.default_order_type || "delivery" }));
-		dispatch(modifyCartData({ paymentMethod: defaultSettings.default_payment_type || "cash" }));
+		dispatch(modifyUIActive({ isCartActionDisable: false, restaurantPriceId: +defaultSettings?.default_restaurant_price || null, activeOrderBtns: ["save", "kot", "hold"] }));
+		dispatch(modifyCartData({ orderType: defaultSettings.default_order_type || "delivery", paymentMethod: defaultSettings.default_payment_type || "cash" }));
 		defaultSettings.default_view === "table_view" ? navigate("/Home/tableView") : navigate("/Home");
 	};
 
-	// useHotkeys("ctrl+o", () => navigate("LiveView/OrderView"));
-	// useHotkeys("ctrl+h", () => navigate("/Home"));
-	// useHotkeys("ctrl+k", () => navigate("LiveView/KOTView"));
-	// useHotkeys("ctrl+p", () => navigate("configuration/printerConfig/PrintersList"));
-	// useHotkeys("ctrl+t", () => navigate("tableView"));
 	useHotkeys("ctrl+n", () => getNewOrderPage());
 
 	return (
@@ -85,12 +79,10 @@ function MainNav() {
 						<Link className={styles.Link} to="LiveView/OrderView">
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faUsersViewfinder} />
 						</Link>
-						<Link className={styles.Link}>
-							<FontAwesomeIcon className={styles.LinkIcon} icon={faTruck} />
-						</Link>
+						<PendingOrderLink/>
 						<Link className={`${styles.holdOrderLink} ${styles.Link}`} onClick={() => setShowHoldOrders(true)}>
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faCirclePause} />
-							{holdOrderCount !== 0 ? <div className={styles.holdOrderCountBadge}>{holdOrderCount}</div> : null}
+							{/* {holdOrderCount !== 0 ? <div className={styles.holdOrderCountBadge}>{holdOrderCount}</div> : null} */}
 						</Link>
 						<Link className={styles.Link} to="tableView">
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faBellConcierge} />
@@ -110,7 +102,6 @@ function MainNav() {
 			<ToastContainer />
 			<HoldOrders showHoldOrders={showHoldOrders} setShowHoldOrders={setShowHoldOrders} />
 			<ConfigSideBar showConfigSideBar={showConfigSideBar} setShowConfigSideBar={setShowConfigSideBar} />
-
 			<Outlet />
 		</>
 	);

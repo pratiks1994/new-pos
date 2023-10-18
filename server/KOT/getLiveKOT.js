@@ -5,7 +5,7 @@ const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
 const getLiveKOT = () => {
-	const liveKOTs = db2.prepare("SELECT * FROM kot WHERE (kot_status = 'accepted') OR (order_type = 'dine_in' AND order_id IS NULL)").all([]);
+	const liveKOTs = db2.prepare("SELECT * FROM kot WHERE (kot_status = 'accepted') OR (order_type = 'dine_in' AND order_id IS NULL) AND kot_status != 'cancelled'").all([]);
 	// const liveKOTs = await dbAll(db, "SELECT * FROM KOT WHERE KOT_status = 'accepted'", []);
 
 	const prepareKOTItem = db2.prepare("SELECT * FROM kot_items WHERE kot_id = ?");
@@ -13,31 +13,61 @@ const getLiveKOT = () => {
 	const parentTaxStmt = db2.prepare("SELECT child_ids FROM taxes where id=?");
 
 	const taxesStmt = db2.prepare("SELECT * FROM taxes where id = ? ");
+	const tableStmt = db2.prepare("SELECT area_id FROM dine_in_tables WHERE table_no=?");
+	const areaStmt = db2.prepare("SELECT id,area,restaurant_price_id FROM areas WHERE id=?");
+	const defaultResaurantPriceStmt = db2.prepare("SELECT configuration FROM restaurants WHERE id=?");
+	const categoryStmt = db2.prepare("SELECT category_id FROM items WHERE id=?");
+	const configDetail = defaultResaurantPriceStmt.get([1]);
+	const defaultRestaurantPrice = JSON.parse(configDetail.configuration).default_restaurant_price;
+	const orderDetailStmt = db2.prepare("SELECT online_order_id FROM orders WHERE id =?");
 
-	const liveKOTsWithItems = liveKOTs.map((KOT) => {
+	const liveKOTsWithItems = liveKOTs.map(KOT => {
 		const KOTItems = prepareKOTItem.all([KOT.id]);
-		// const KOTItems = await dbAll(db, "SELECT * FROM KOT_items WHERE KOT_id = ?", [KOT.id]);
+		// const KOTItems = await dbAll(db, "SELECT * FROM KOT_items WHERE KOT_id = ?", [KOT.id])
 
-		const itemsWithAddons = KOTItems.map((item) => {
+		let restaurantPriceId = +defaultRestaurantPrice;
+		let areaName = "";
+		let areaId = "";
+		let online_order_id = null;
+
+		if (KOT.order_type === "dine_in") {
+			const table = tableStmt.get(KOT.table_no);
+
+			if (table && table.area_id) {
+				const area = areaStmt.get(table.area_id);
+				restaurantPriceId = +area.restaurant_price_id;
+				areaName = area.area;
+				areaId = area.id;
+			}
+		}
+
+		if (KOT.order_id !== null) {
+			const orderDetail = orderDetailStmt.get([KOT.order_id]);
+			online_order_id = orderDetail.online_order_id;
+		}
+
+		const itemsWithAddons = KOTItems.map(item => {
 			// const itemAddons = prepareAddon.all([item.id]);
 			// const itemAddons = await dbAll(db, "SELECT * FROM KOT_item_addongroupitems WHERE KOT_item_id = ?", [item.id]);
 
-			const childTaxesString = item.tax_id ? parentTaxStmt.get(item.tax_id) : {child_ids:""};
+			let itemData = categoryStmt.get([item.item_id]);
+			const childTaxesString = item.tax_id ? parentTaxStmt.get(item.tax_id) : { child_ids: "" };
 
 			const taxesIdArray = childTaxesString.child_ids.length ? childTaxesString.child_ids.split(",") : [];
 
-			const taxesArray = taxesIdArray.map((tax) => {
+			const taxesArray = taxesIdArray.map(tax => {
 				const taxData = taxesStmt.get(tax);
 
-                const itemTax = { tax_id: taxData.id, tax_name: taxData.name, tax_percent: taxData.tax, tax_amount: (taxData.tax * item.price) / 100 };
-				return itemTax
+				const itemTax = { tax_id: taxData.id, tax_name: taxData.name, tax_percent: taxData.tax, tax_amount: (taxData.tax * item.price) / 100 };
+				return itemTax;
 			});
 
+			
 
-			return { ...item, item_addons: JSON.parse(item.item_addon_items), item_tax:taxesArray };
+			return { ...item, categoryId: itemData.category_id, item_addons: JSON.parse(item.item_addon_items), item_tax: taxesArray };
 		});
 
-		return { ...KOT, items: itemsWithAddons };
+		return { ...KOT, items: itemsWithAddons, restaurantPriceId, areaName, areaId,online_order_id };
 	});
 
 	return liveKOTsWithItems;

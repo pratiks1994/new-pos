@@ -52,9 +52,18 @@ function ActiveTableCard({ order, printers }) {
 	};
 
 	const moveOrderToHome = order => {
+
+		let isCartActionDisable = true;
+		let activeOrderBtns = ["cancel"]
+		if (order.print_count === 0) {
+			activeOrderBtns = ["save","cancel"]
+			isCartActionDisable = false;
+		}
+
 		dispatch(liveOrderToCart({ order }));
-		dispatch(modifyUIActive({ isCartActionDisable: true, restaurantPriceId: order.restaurantPriceId }));
+		dispatch(modifyUIActive({ restaurantPriceId: order.restaurantPriceId, isCartActionDisable,activeOrderBtns }));
 		navigate("/Home");
+
 	};
 
 	const handleClick = async () => {

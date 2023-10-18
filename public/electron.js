@@ -23,7 +23,7 @@ const latestDbVersion = 4;
 
 // Create the native browser window.
 
-async function createWindow() {
+ function createWindow() {
 	mainWindow = new BrowserWindow({
 		width: 1024,
 		height: 768,
@@ -161,7 +161,6 @@ ipcMain.handle("setup", async (event, payload) => {
 });
 
 
-
 ipcMain.handle("getConnectedPrinters", async (event, payload) => {
 	const connectedPrinters = await mainWindow.webContents.getPrintersAsync();
 	// console.log(connectedPrinters)
@@ -205,6 +204,7 @@ ipcMain.handle("syncDatabase", async (event, payload) => {
 	return responce;
 });
 
+
 ipcMain.handle("kotPrint", async (event, payload) => {
 	try {
 		await printKot(payload);
@@ -213,6 +213,8 @@ ipcMain.handle("kotPrint", async (event, payload) => {
 		return err;
 	}
 });
+
+
 
 ipcMain.handle("printInvoice", async (event, payload) => {
 	try {

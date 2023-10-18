@@ -17,14 +17,17 @@ function OrderType() {
 	const queryClient = useQueryClient()
 	const dispatch = useDispatch();
 	const orderType = useSelector((state) => state.finalOrder.orderType);
-	const defaultRestaurantPrice = queryClient.getQueryData("defaultScreen")?.default_restaurant_price
+	const cartAction = useSelector(state => state.finalOrder.cartAction );
+	const orderId = useSelector(state => state.finalOrder.id)
+	const kotsDetail = useSelector(state => state.finalOrder.kotsDetail)
+	const defaultRestaurantPrice = +queryClient.getQueryData("defaultScreen")?.default_restaurant_price || null
 	
 
 	const handleOrderType = (orderType) => {
 		if (orderType === "delivery" || orderType === "pick_up") {
 			dispatch(modifyCartData({ tableNumber: "" }));
 		}
-		dispatch(setActive({ key: "restaurantPriceId", name: +defaultRestaurantPrice }));
+		dispatch(setActive({ key: "restaurantPriceId", name: defaultRestaurantPrice  }));
 		dispatch(modifyCartData({ orderType }));
 	};
 
@@ -41,7 +44,7 @@ function OrderType() {
 					);
 				})}
 			</div>
-			<OrderTypeDetail type={orderType} />
+			<OrderTypeDetail type={orderType} cartAction={cartAction} orderId={orderId} kotsDetail={kotsDetail} />
 		</div>
 	);
 }

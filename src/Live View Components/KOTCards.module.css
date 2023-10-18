@@ -1,6 +1,6 @@
 .KOTCard {
       width: 300px;
-      margin: 15px 15px;
+      /* margin: 15px 15px; */
       border-radius: 5px;
       display: flex;
       border-radius: 5px;
@@ -12,10 +12,13 @@
       display: flex;
       height: 50px;
       justify-content: space-evenly;
-      background-color: rgb(0, 131, 131);
+      background: rgba(7, 7, 61, 0.788);
       width: 100%;
       border-radius: 5px;
+      cursor: pointer;
+
 }
+
 
 .CardHeader > div {
       text-align: center;
@@ -80,6 +83,10 @@
       padding: 7px 5px 7px 15px;
 }
 
+.strikeThrough{
+      text-decoration: line-through
+}
+
 .KOTItemQty {
       flex: 3 ;
       padding: 7px 5px 7px 10px;
@@ -95,6 +102,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      gap:10px;
       padding: 7px;
       font-size: 15px;
       font-weight: 600;
@@ -113,3 +121,10 @@
       color: white;
 }
 
+.footer .cancelBtn {
+      background-color: white;
+      color: rgb(49, 49, 49);
+      border : 1px solid gray;
+      font-weight: 600;
+
+}

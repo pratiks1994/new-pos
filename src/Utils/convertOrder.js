@@ -1,6 +1,5 @@
 export const convertOrder = order => {
 	
-
 	const totalTaxes = [];
 	let totalQty = 0
 
@@ -58,4 +57,5 @@ export const convertOrder = order => {
 		totalTaxes,
 		totalQty
 	};
+	
 };
