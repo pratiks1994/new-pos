@@ -60,7 +60,7 @@ function TableNumber({ showDetailType }) {
 								let newitemTotal = newPrice + toppingPrice;
 								let newMultiItemTotal = cartItem.itemQty * newitemTotal;
 								let newTaxes = item.item_tax.map(tax => {
-									return { id: tax.id, name: tax.name, tax: (tax.tax / 100) * newitemTotal };
+									return { id: tax.id, name: tax.name, tax: (tax.tax / 100) * newitemTotal,tax_percent:tax.tax };
 								});
 
 								return { ...cartItem, basePrice: newPrice, itemTotal: newitemTotal, multiItemTotal: newMultiItemTotal, itemTax: newTaxes };

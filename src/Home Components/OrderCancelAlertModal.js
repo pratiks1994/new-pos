@@ -1,22 +1,24 @@
 import React, { useRef, useState } from "react";
 import styles from "./OrderCancelAlertModal.module.css";
 import { Modal } from "react-bootstrap";
-import { useCancelOrderMutation } from "../Utils/customMutationHooks";
+import { useAuthenticateMutation, useCancelOrderMutation } from "../Utils/customMutationHooks";
 
 function OrderCancelAlertModal({ show, hide, finalOrder }) {
-	const { mutate: cancelOrderMutate } = useCancelOrderMutation();
 	const passwordRef = useRef();
 	const [errorMessage, setErrorMessage] = useState("");
-
+	
+	const { mutate: cancelOrderMutate } = useCancelOrderMutation(hide,setErrorMessage);
+	
 	const cancelOrder = finalOrder => {
-		
-		if (passwordRef.current.value === "biller") {
-			cancelOrderMutate({ ...finalOrder, order_status: "cancelled" });
-			hide();
-		} else {
-			
-			setErrorMessage("Please enter correct password");
-		}
+		const billerCred = {
+			name: "Test Biller",
+			id: 1,
+			password: passwordRef.current.value,
+		};
+
+	 cancelOrderMutate({ ...finalOrder, order_status: "cancelled", billerCred });
+	
+	
 	};
 
 	return (
@@ -31,14 +33,13 @@ function OrderCancelAlertModal({ show, hide, finalOrder }) {
 					type="password"
 					placeholder="Password"
 					onChange={e => {
-						
 						setErrorMessage("");
 					}}
 				/>
 			</Modal.Body>
 			<Modal.Footer className={styles.footer}>
 				{errorMessage !== "" && <div className={styles.errMsg}>{errorMessage}</div>}
-			
+
 				<button onClick={hide} className={styles.noBtn}>
 					NO
 				</button>

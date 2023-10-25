@@ -40,6 +40,8 @@ const { getPendingOrder } = require("./pendingOrders/getPendingOrder");
 const { convertPendingOrderToOrder } = require("./common/convertPendingOrderToOrder");
 const { updatePendingOrder } = require("./pendingOrders/updatePendingOrder");
 const { updateOnlineOrderOnMainServer } = require("./pendingOrders/updateOnlineOrderOnMainServer");
+const { authenticateBiller } = require("./biller/authenticateBiller");
+const { isPending } = require("@reduxjs/toolkit");
 // const appPath = process.argv
 // console.log(appPath)
 
@@ -153,11 +155,8 @@ app.post("/order", (req, res, next) => {
 
 app.post("/order", (req, res) => {
 	const { userId, orderId, orderNo } = createOrder(req.body.finalOrder);
-
 	const kotTokenNo = createKot(req.body.finalOrder, userId, orderId);
-
 	const order = getOrder(orderId);
-
 	res.status(200).json({ isOldKOTsExist: false, orderNo, kotTokenNo, order, isOldOrderExist: false });
 	const orders = getLiveOrders();
 	io.emit("orders", orders);
@@ -322,17 +321,29 @@ app.get("/ordersSummary", (req, res) => {
 	res.status(200).json({ success: true, error: null, orderData: orders.filterdOrders, orderSummary: orders.salesSummaryData, duration: orders.duration });
 });
 
+app.post("/modifyOrder", async (req, res, next) => {
+	if (req.body.finalOrder.order_status === "cancelled") {
+		const billerCred = req.body.finalOrder.billerCred;
+		const isValid = await authenticateBiller(billerCred);
+		if (isValid) {
+			next();
+		} else {
+			res.status(401).json({ message: "invalid password" });
+		}
+	} else {
+		next();
+	}
+});
+
 app.post("/modifyOrder", (req, res) => {
 	const data = req.body;
 	let orderData = modifyExistingOrder(data.finalOrder);
-
 	if (orderData.success === false) {
 		res.status(400).json({ orderData, order: {} });
 	} else {
 		const order = getOrder(orderData.orderId);
 		res.status(200).json({ orderData, order, isOldKOTsExist: false, isOldOrderExist: true });
 	}
-
 	const orders = getLiveOrders();
 	io.emit("orders", orders);
 });
@@ -342,7 +353,6 @@ app.post("/kotToOrder", (req, res) => {
 	const orderData = createOrder(finalOrder);
 	const kotdata = modifyKot(finalOrder, orderData);
 	const order = getOrder(orderData.orderId);
-
 	res.status(200).json({ order, ...kotdata });
 	const orders = getLiveOrders();
 	io.emit("orders", orders);
@@ -366,6 +376,20 @@ app.put("/orderPrintCount", (req, res) => {
 	res.sendStatus(200);
 	const orders = getLiveOrders();
 	io.emit("orders", orders);
+});
+
+app.post("/authenticateBiller", async(req, res) => {
+	const billerCred = req.body.billerDetail
+	console.log(billerCred)
+	const isValid = await authenticateBiller(billerCred)
+
+	if(isValid){
+		res.status(200).json({message:"success",error:null})
+	}
+	else{
+		res.status(401).json({message:"invalide credentials",error:"invalide credentials"})
+	}
+	
 });
 
 app.post("/pendingOrderToOrder", async (req, res) => {
@@ -394,8 +418,8 @@ app.post("/pendingOrderToOrder", async (req, res) => {
 		updatePendingOrder(pendingOrderDetail.pendingOrderId);
 
 		const pendingOrders = getPendingOrders();
-
-		io.emit("pendingOrders", pendingOrders);
+        const isPending = false
+		io.emit("pendingOrders", pendingOrders,isPending);
 		if (pendingOrderDetail.status === "accepted") {
 			const orders = getLiveOrders();
 			io.emit("orders", orders);
@@ -405,17 +429,12 @@ app.post("/pendingOrderToOrder", async (req, res) => {
 	} else {
 		res.sendStatus(404);
 	}
-
-	//convert pending order to order
-
-	//create order
 });
 
 httpServer.listen(3001, err => {
 	if (err) {
 		console.log(err);
 	} else {
-		console.log("server started");
 		process.send({ status: "started" });
 		setPendingOrders();
 	}
@@ -426,7 +445,7 @@ const pendingOrderRefreshIterval = setInterval(async () => {
 
 	if (isUpdated) {
 		const pendingOrders = getPendingOrders();
-		io.emit("pendingOrders", pendingOrders);
+		io.emit("pendingOrders", pendingOrders , isUpdated);
 	}
 }, 5000);
 

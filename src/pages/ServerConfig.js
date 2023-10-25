@@ -42,7 +42,10 @@ function ServerConfig() {
 			// systemType && localStorage.setItem("systemType", systemType);
 			dispatch(modifyCartData({ orderType: data.default_order_type || "delivery"}));
 			dispatch(modifyCartData({ paymentMethod: data.default_payment_type || "cash" }));
-			data.default_view === "table_view" ? navigate("/Home/tableView") : navigate("/Home");
+            
+			navigate("../login")
+            
+			// data.default_view === "table_view" ? navigate("/Home/tableView") : navigate("/Home");
 		},	
 		onError: () => {
 			setClientLoading(false);

@@ -14,10 +14,10 @@ function PendingOrderLink() {
 
 	const pendingOrderCount = pendingOrders?.length || 0
 
-    useSocket("pendingOrders", orders => {
+    useSocket("pendingOrders", (orders,isPending) => {
 		queryClient.setQueryData("pendingOrders", orders);
 
-		if (!showPendingOrders) {
+		if (!showPendingOrders && isPending) {
 			setShowPendingOrders(true);
 	
 		}

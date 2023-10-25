@@ -25,7 +25,7 @@ const getLiveKOT = () => {
 		const KOTItems = prepareKOTItem.all([KOT.id]);
 		// const KOTItems = await dbAll(db, "SELECT * FROM KOT_items WHERE KOT_id = ?", [KOT.id])
 
-		let restaurantPriceId = +defaultRestaurantPrice;
+		let restaurantPriceId = defaultRestaurantPrice ? +defaultRestaurantPrice : null;
 		let areaName = "";
 		let areaId = "";
 		let online_order_id = null;
@@ -63,7 +63,6 @@ const getLiveKOT = () => {
 			});
 
 			
-
 			return { ...item, categoryId: itemData.category_id, item_addons: JSON.parse(item.item_addon_items), item_tax: taxesArray };
 		});
 

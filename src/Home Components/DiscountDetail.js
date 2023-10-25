@@ -2,8 +2,7 @@ import React, { useEffect } from "react";
 import styles from "./DiscountDetail.module.css";
 import { useSelector } from "react-redux";
 
-
-function DiscountDetail({ flatDiscountRef, percentDiscountRef, discountRef }) {
+function DiscountDetail({ flatDiscountRef, percentDiscountRef, discountRef, errorRef }) {
 	const discount = useSelector(state => state.finalOrder.discount);
 	const discount_percent = useSelector(state => state.finalOrder.discount_percent);
 	const discount_type = useSelector(state => state.finalOrder.discount_type);
@@ -32,14 +31,14 @@ function DiscountDetail({ flatDiscountRef, percentDiscountRef, discountRef }) {
 			<input type="text" placeholder="Reason" />
 			<div className={styles.discountDetailContainer}>
 				<div className={styles.discountType}>
-					<input type="radio" id="percent" name="discountType" value="percent" ref={percentDiscountRef} />
+					<input type="radio" id="percent" name="discountType" value="percent" ref={percentDiscountRef} onChange={() => (errorRef.current.style.display = "none")} />
 					<label htmlFor="percent">Percentage</label>
 				</div>
 				<div className={styles.discountType}>
-					<input type="radio" id="flat" name="discountType" value="flat" ref={flatDiscountRef} />
+					<input type="radio" id="flat" name="discountType" value="flat" ref={flatDiscountRef} onChange={() => (errorRef.current.style.display = "none")} />
 					<label htmlFor="flat">Flat</label>
 				</div>
-				<input className={styles.discount} type="number" ref={discountRef} />
+				<input className={styles.discount} type="number" ref={discountRef} onChange={() => (errorRef.current.style.display = "none")} />
 			</div>
 		</div>
 	);

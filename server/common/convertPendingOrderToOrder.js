@@ -19,38 +19,37 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 			let basePrice;
 			let toppings = [];
 			let toppingTotal = 0;
-			let totalTax = 0;
-			totalCartQty += +item.quantity;
+			let totalTaxPercent = 0;
 
+			totalCartQty += +item.quantity;
 			const itemDetail = itemStmt.get([item.item_id]);
 			const itemTaxArray = itemDetail.item_tax ? itemDetail.item_tax.split(",") : [];
 
 			const item_tax = itemTaxArray.map(tax => {
 				const taxData = taxesStmt.get([+tax]);
-				totalTax += taxData.tax;
+				totalTaxPercent += taxData.tax;
 				return taxData;
 			});
 
 			if (item.variation_id === null) {
 				if (pendingOrder.restaurant_price_id === null) {
-					basePrice = itemDetail.price_type === 1 ? itemDetail.price / (1 + totalTax / 100) : itemDetail.price;
+					basePrice = itemDetail.price_type === 1 ? itemDetail.price / (1 + totalTaxPercent / 100) : itemDetail.price;
 				} else {
-					console.log(item.item_id, item.variation_id, pendingOrder.restaurant_price_id);
 					const restaurantPrice = itemRestaurantPriceStmt.get([item.item_id, pendingOrder.restaurant_price_id]);
-					console.log(restaurantPrice);
-					basePrice = itemDetail.price_type === 1 ? restaurantPrice.price / (1 + totalTax / 100) : restaurantPrice.price;
+					basePrice = itemDetail.price_type === 1 ? restaurantPrice.price / (1 + totalTaxPercent / 100) : restaurantPrice.price;
 				}
 			} else {
 				const variationPrice = variationStmt.get([item.item_id, item.variation_id, pendingOrder.restaurant_price_id]);
-				basePrice = itemDetail.price_type === 1 ? variationPrice.price / (1 + totalTax / 100) : variationPrice.price;
+				basePrice = itemDetail.price_type === 1 ? variationPrice.price / (1 + totalTaxPercent / 100) : variationPrice.price;
 			}
 
 			if (item.addongroupitems.length) {
 				toppings = item.addongroupitems.map(topping => {
-					console.log(topping);
+
 					const toppingData = toppingStmt.get([topping.addongroupitem_id]);
-					const price = itemDetail.price_type === 1 ? +toppingData.price / (1 + totalTax / 100) : +toppingData.price;
-					toppingTotal += price * +topping.quantity;
+
+					const price = itemDetail.price_type === 1 ? +toppingData.price / (1 + totalTaxPercent / 100) : +toppingData.price;
+					toppingTotal += price * +topping.quantity 
 
 					return {
 						id: +topping.addongroupitem_id,
@@ -62,15 +61,15 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 			}
 
 			const itemTotal = basePrice + toppingTotal;
+			let item_discount = +item.item_discount;
+
 			subTotal += itemTotal * +item.quantity;
 
 			const itemTax = item_tax.map(tax => {
-				const itemTaxAmount =  itemTotal * (tax.tax / 100) * +item.quantity
-
+				const itemTaxAmount = (itemTotal - item_discount) * (tax.tax / 100) * +item.quantity;
 				totalCartTaxAmount += itemTaxAmount;
 
 				let existingTax = cartTaxDetail.find(totaltax => totaltax.id === +tax.id);
-
 				if (existingTax) {
 					existingTax.tax_amount += itemTaxAmount;
 				} else {
@@ -80,7 +79,7 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 				return {
 					id: +tax.id,
 					name: tax.name,
-					tax: itemTotal * (tax.tax / 100),
+					tax: (itemTotal - item_discount) * (tax.tax / 100),
 				};
 			});
 
@@ -92,8 +91,8 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 				itemName: item.item_name,
 				variation_id: +item.variation_id || null,
 				variant_display_name: item.variation_name,
-				variationName:item.variation_name,
-				variantName:item.variation_name,
+				variationName: item.variation_name,
+				variantName: item.variation_name,
 				basePrice,
 				toppings,
 				itemTotal,
@@ -103,11 +102,11 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 				kotId: null,
 				multiItemTotal: itemTotal * +item.quantity,
 				currentOrderItemId: null,
+				item_discount,
+				contains_free_item: item.contains_free_item,
+				is_it_free_item: item.is_it_free_item,
 			};
 		});
-
-
-		console.log(cartTaxDetail)
 
 		const finalOrder = {
 			online_order_id: pendingOrder.online_order_id,
@@ -129,12 +128,16 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 			orderType: orderDetail.order.order_type,
 			orderComment: orderDetail.order.description,
 			order_status: updatedStatus,
+			discount_percent: null,
 			tax: totalCartTaxAmount,
 			subTotal,
-			cartTotal: subTotal + totalCartTaxAmount,
+			cartTotal: subTotal + totalCartTaxAmount - +orderDetail.order.discount_total,
 			orderCart,
 			totalTaxes: cartTaxDetail,
 			totalQty: totalCartQty,
+			promo_id: +orderDetail.order.promo_id,
+			promo_code: orderDetail.order.promo_code,
+			promo_discount: +orderDetail.order.promo_discount,
 		};
 		return finalOrder;
 	} catch (error) {

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -17,17 +17,17 @@ import { modifyUIActive } from "../Redux/UIActiveSlice";
 import { ToastContainer } from "react-toastify";
 import { useHotkeys } from "react-hotkeys-hook";
 import useDeployHotkeys from "../Utils/useDeployHotkeys";
-import { useQueryClient } from "react-query";
-
 import PendingOrderLink from "./PendingOrderLink";
+import { useGetMenuQuery2 } from "../Utils/customQueryHooks";
+import { useLogoutMutation } from "../Utils/customMutationHooks";
 
 function MainNav() {
 	const [showHoldOrders, setShowHoldOrders] = useState(false);
 	const [showConfigSideBar, setShowConfigSideBar] = useState(false);
-	
-	const queryClient = useQueryClient();
-	const defaultSettings = queryClient.getQueryData("defaultScreen");
+	const {mutate:logoutMutate} = useLogoutMutation()
 
+	const { isLoading, data: bigMenu } = useGetMenuQuery2();
+	const defaultSettings = bigMenu?.defaultSettings || {};
 
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
@@ -39,6 +39,10 @@ function MainNav() {
 		dispatch(modifyCartData({ orderType: defaultSettings.default_order_type || "delivery", paymentMethod: defaultSettings.default_payment_type || "cash" }));
 		defaultSettings.default_view === "table_view" ? navigate("/Home/tableView") : navigate("/Home");
 	};
+
+	const handleLogout = () =>{
+		logoutMutate({name:null,password:null})
+	}
 
 	useHotkeys("ctrl+n", () => getNewOrderPage());
 
@@ -79,7 +83,7 @@ function MainNav() {
 						<Link className={styles.Link} to="LiveView/OrderView">
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faUsersViewfinder} />
 						</Link>
-						<PendingOrderLink/>
+						<PendingOrderLink />
 						<Link className={`${styles.holdOrderLink} ${styles.Link}`} onClick={() => setShowHoldOrders(true)}>
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faCirclePause} />
 							{/* {holdOrderCount !== 0 ? <div className={styles.holdOrderCountBadge}>{holdOrderCount}</div> : null} */}
@@ -93,13 +97,13 @@ function MainNav() {
 						<Link className={styles.Link}>
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faUser} />
 						</Link>
-						<Link className={styles.Link} to="../">
+						<div className={styles.Link} onClick={handleLogout}>
 							<FontAwesomeIcon className={styles.LinkIcon} icon={faPowerOff} />
-						</Link>
+						</div>
 					</div>
 				</Container>
 			</Navbar>
-			<ToastContainer />
+		
 			<HoldOrders showHoldOrders={showHoldOrders} setShowHoldOrders={setShowHoldOrders} />
 			<ConfigSideBar showConfigSideBar={showConfigSideBar} setShowConfigSideBar={setShowConfigSideBar} />
 			<Outlet />

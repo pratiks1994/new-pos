@@ -18,10 +18,10 @@ const setMenuData = async (token, syncCode, db2) => {
 	};
 	try {
 		const res = await axios(options);
-		if(res.status=== 200 ){
-		   db2.prepare("UPDATE startup_config SET value=? WHERE name='sync_code'").run(syncCode)
+		if (res.status === 200) {
+			db2.prepare("UPDATE startup_config SET value=? WHERE name='sync_code'").run(syncCode);
 		}
-		const menu = res.data
+		const menu = res.data;
 		const {
 			categories,
 			order_types,
@@ -38,16 +38,16 @@ const setMenuData = async (token, syncCode, db2) => {
 			orders,
 			brand,
 			attributes,
-			areas
+			areas,
+			promos,
+			biller: billers,
 		} = menu.data;
 
 		const categorystmt = db2.prepare(
 			"INSERT INTO categories (id,restaurant_id,main_category_id,parent_cat_id,name,display_name,image,call_to_action,bogo_item,sio,item_count,priority,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
 		);
 
-		const variationstmt = db2.prepare(
-			"INSERT INTO variations (id,restaurant_id,main_variation_id,name,display_name,groupname,bogo_item,sio,status,pp_id) VALUES(?,?,?,?,?,?,?,?,?,?)"
-		);
+		const variationstmt = db2.prepare("INSERT INTO variations (id,restaurant_id,main_variation_id,name,display_name,groupname,bogo_item,sio,status,pp_id) VALUES(?,?,?,?,?,?,?,?,?,?)");
 
 		const restaurantstmt = db2.prepare(
 			"INSERT INTO restaurants (id, user_id, name, legal_entity_name, gstin,address, contact,latitude, longitude, landmark, city_id, state_id, start_time, end_time, delivery_start_time1, delivery_end_time1, delivery_start_time2, delivery_end_time2,serviceable_radius, min_order_amt_for_free_delivery, delivery_charges_below_min_amount, min_order_amt_delivery, min_order_amt_pickup, min_order_amt_dinein, new_order_alert_number, has_extra_charges_for_delivery_per_km, normal_delivery_radius, extra_charges_per_km, accepting_delivery, accepting_pickup, accepting_dinein, cod_limit_pickup, cod_limit_delivery, cod_limit_dinein, cod_for_failed_payment, cod_fp_delivery, cod_fp_pickup, cod_fp_dinein, cod_for_failed_payment_limit, cod_delivery, cod_pickup, cod_dinein, op_delivery, op_pickup, op_dinein, pp_restaurant_code, menu_version, fssai_lic_number, has_dinein, ask_table_no, is_table_no_optional, pg_account_id, status, opening_date, image) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
@@ -77,6 +77,8 @@ const setMenuData = async (token, syncCode, db2) => {
 
 		const userGroupstmt = db2.prepare("INSERT INTO users_groups (user_id,group_id) VALUES (?,?) ");
 
+		const billerStmt = db2.prepare("INSERT INTO billers (id, user_id, restaurant_id, passcode, status, created_at, updated_at, name, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
 		const pricesstms = db2.prepare("INSERT INTO prices (id,name,type,status,created_at,updated_at) VALUES(?,?,?,?,?,?)");
 
 		const restaurantPricesstmt = db2.prepare("INSERT INTO restaurant_prices (id,price_id,restaurant_id,display_name,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)");
@@ -93,12 +95,16 @@ const setMenuData = async (token, syncCode, db2) => {
 
 		const orderItemTaxesstmt = db2.prepare("INSERT INTO order_item_taxes (id,order_item_id,tax_id,tax,tax_amount,created_at,updated_at) VALUES (?,?,?,?,?,?,?)");
 
-		const brandsstmt = db2.prepare(`
+		const brandsStmt = db2.prepare(`
             INSERT INTO brands ( id, uid, user_id, name, logo, primary_color, secondary_color, extra_light_color, h_desc, h_img, insta_url, fb_url, youtube_url, android_app_link, ios_app_link, app_ss, h_bg_img, is_our_story, our_story_img, our_story_desc, location, support_email, support_phone, is_fe, fe_phone, fe_email, fe_banner_img, domain, terms_and_conditions, refund_policy, faqs, terms_and_conditions_link,refund_policy_link, help_and_support_link, faqs_link, franchise_enquiry_link, pg_default_email, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
 		const attributesstmt = db2.prepare(`INSERT INTO attributes (id, name, status, pp_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`);
 
-		const areastmt = db2.prepare("INSERT INTO areas (id,restaurant_id,restaurant_price_id,area,status) VALUES (?,?,?,?,?)")
+		const areastmt = db2.prepare("INSERT INTO areas (id,restaurant_id,restaurant_price_id,area,status) VALUES (?,?,?,?,?)");
+
+		const promoStmt = db2.prepare(
+			`INSERT INTO promos (id, brand_id, restaurant_id, main_promo_id, title, description, promo_code, start_date, end_date, start_time, end_time, all_day, days_of_week, type, discount_value, min_order_value, max_discount, item_id, variation_id, usage_limit, max_limit, no_of_orders, total_order_amount, total_discount, visibility, store_edit, status,created_at,updated_at, other_data_json) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,? , ?)`
+		);
 
 		db2.transaction(() => {
 			// restaurantstmt.run(
@@ -107,7 +113,7 @@ const setMenuData = async (token, syncCode, db2) => {
 			// 	restaurant.name,
 			// 	restaurant.legal_entity_name,
 			// 	restaurant.gstin,
-			// 	restaurant.address, 
+			// 	restaurant.address,
 			// 	restaurant.contact,
 			// 	restaurant.latitude,
 			// 	restaurant.longitude,
@@ -171,7 +177,7 @@ const setMenuData = async (token, syncCode, db2) => {
 				attributesstmt.run(attribute.id, attribute.name, attribute.status, attribute.pp_id, attribute.created_at, attribute.updated_at);
 			}
 
-			brandsstmt.run(
+			brandsStmt.run(
 				brand.id,
 				brand.uid,
 				brand.user_id,
@@ -226,13 +232,60 @@ const setMenuData = async (token, syncCode, db2) => {
 				);
 			}
 
+			// for (const biller of billers) {
+			// 	const { id, user_id, restaurant_id, passcode, status, created_at, updated_at, name, password } = biller;
+			// 	billerStmt.run(id, user_id, restaurant_id, passcode, status, created_at, updated_at, name, password);
+			// }
+
+			for (const promo of promos) {
+				const {
+					promodays,
+					excluded_categories,
+					excluded_offers,
+					order_types,
+				} = promo;
+				const other_data_json = JSON.stringify({ promodays, excluded_categories, excluded_offers, order_types });
+
+				promoStmt.run([
+					promo.id,
+					promo.brand_id,
+					promo.restaurant_id,
+					promo.main_promo_id,
+					promo.title,
+					promo.description,
+					promo.promo_code,
+					promo.start_date,
+					promo.end_date,
+					promo.start_time,
+					promo.end_time,
+					promo.all_day,
+					promo.days_of_week,
+					promo.type,
+					promo.discount_value,
+					promo.min_order_value,
+					promo.max_discount,
+					promo.item_id,
+					promo.variation_id,
+					promo.usage_limit,
+					promo.max_limit,
+					promo.no_of_orders,
+					promo.total_order_amount,
+					promo.total_discount,
+					promo.visibility,
+					promo.store_edit,
+					promo.status,
+					promo.created_at,
+					promo.updated_at,
+					other_data_json,
+				]);
+			}
+
 			for (const area of areas) {
-				areastmt.run(area.id,area.restaurant_id,area.restaurant_price_id,area.area,area.status)
-				
+				areastmt.run(area.id, area.restaurant_id, area.restaurant_price_id, area.area, area.status);
 			}
 
 			for (const tax of taxes) {
-				taxstmt.run(tax.id, tax.restaurant_id, tax.main_tax_id, tax.name, tax.tax, tax.order_types, tax.status, tax.priority, tax.pp_id,tax.child_ids);
+				taxstmt.run(tax.id, tax.restaurant_id, tax.main_tax_id, tax.name, tax.tax, tax.order_types, tax.status, tax.priority, tax.pp_id, tax.child_ids);
 			}
 
 			for (const category of categories) {
@@ -477,16 +530,7 @@ const setMenuData = async (token, syncCode, db2) => {
 			if (customers.length < 2000) {
 				db2.transaction(() => {
 					for (const customer of allCustomers) {
-						userstmt.run(
-							customer.id,
-							customer.name,
-							customer.number,
-							customer.otp,
-							customer.email,
-							customer.pg_cust_id,
-							customer.email_varified_at,
-							customer.activated
-						);
+						userstmt.run(customer.id, customer.name, customer.number, customer.otp, customer.email, customer.pg_cust_id, customer.email_varified_at, customer.activated);
 						userGroupstmt.run(customer.id, customer.group_id);
 					}
 				})();
@@ -570,7 +614,6 @@ const setMenuData = async (token, syncCode, db2) => {
 		//       console.log("Total time taken : " + timeTaken + " milliseconds");
 		// });
 
-		
 		return { data: {}, statusText: "OK", status: 200, err: null };
 	} catch (err) {
 		console.log(err);
@@ -578,4 +621,4 @@ const setMenuData = async (token, syncCode, db2) => {
 	}
 };
 
-module.exports = {setMenuData}
+module.exports = { setMenuData };

@@ -5,7 +5,8 @@ const getLocalDb = (destinationFile) =>{
     const db2 = new Database(destinationFile, {fileMustExist:true});
     return db2
 }catch(err){
-    console.log(err)
+    console.log("database file not found :" , err  )
+    return undefined
 }
 }
 

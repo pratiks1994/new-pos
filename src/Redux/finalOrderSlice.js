@@ -2,27 +2,43 @@ import { createSlice } from "@reduxjs/toolkit";
 import { getIdentifier } from "../Utils/getIdentifier";
 
 const reCalculateOrderData = state => {
-	let subTotal = 0;
 	let totalTax = 0;
 
-	for (const item of state.orderCart) {
+	const subTotal = state.orderCart.reduce((total, item) => {
 		if (!["removed", "cancelled"].includes(item.itemStatus)) {
-			subTotal += item.multiItemTotal;
+			total += item.itemTotal * item.itemQty;
 		}
+		return total;
+	}, 0);
+
+	let flatDiscount;
+
+	if (state.discount_type === "percent") {
+		flatDiscount = (subTotal * state.discount_percent) / 100;
+	} else {
+		flatDiscount = state.discount >= subTotal ? subTotal : state.discount;
 	}
+
+	// const flatDiscount = state.discount_type === "percent" ? (subTotal * state.discount_percent) / 100 : state.discount || 0;
 
 	for (const item of state.orderCart) {
 		if (!["removed", "cancelled"].includes(item.itemStatus)) {
-			for (const taxItem of item.itemTax) {
-				totalTax += taxItem.tax * item.itemQty;
+			const itemDiscount = (item.itemTotal * flatDiscount) / subTotal;
+
+			item.item_discount = itemDiscount;
+
+			for (const tax of item.itemTax) {
+				const taxAfterDiscount = (item.itemTotal - itemDiscount) * (tax.tax_percent / 100);
+				tax.tax = taxAfterDiscount;
+				totalTax += taxAfterDiscount * item.itemQty;
 			}
 		}
 	}
 
-	let cartTotal = subTotal + totalTax;
-	state.cartTotal = cartTotal;
-	state.tax = totalTax;
+	state.discount = flatDiscount;
 	state.subTotal = subTotal;
+	state.cartTotal = subTotal + totalTax - flatDiscount;
+	state.tax = totalTax;
 };
 
 const initialFinalOrder = {
@@ -49,7 +65,7 @@ const initialFinalOrder = {
 	personCount: 0,
 	orderType: "delivery",
 	orderComment: "",
-	cartTotal: 0, // subtotal + tax (amount should be payable)
+	cartTotal: 0, // subtotal + tax - discount (amount should be payable)
 	order_status: "accepted",
 };
 
@@ -83,7 +99,6 @@ const finalOrderSlice = createSlice({
 					state.orderCart.push(orderItem);
 				}
 			}
-
 			reCalculateOrderData(state);
 		},
 
@@ -224,7 +239,6 @@ const finalOrderSlice = createSlice({
 
 		changePriceOnAreaChange: (state, action) => {
 			state.orderCart = action.payload.newCartItems;
-
 			reCalculateOrderData(state);
 		},
 
@@ -249,6 +263,8 @@ const finalOrderSlice = createSlice({
 			state.printCount = order.print_count;
 			state.tableArea = order.areaName;
 			state.kotsDetail = order.KOTDetail;
+			state.discount_type = order.discount_percent ? "percent" : "flat";
+			state.discount_percent = order.discount_percent;
 
 			state.orderCart = order.items.map(item => {
 				const itemIdentifier = getIdentifier(item.item_id, item.variation_id, item.itemAddons);
@@ -256,7 +272,7 @@ const finalOrderSlice = createSlice({
 				let toppingsTotal = item.itemAddons.reduce((total, topping) => (total += topping.quantity * topping.price), 0);
 
 				let itemTax = item.itemTax.map(tax => {
-					return { id: tax.tax_id, name: tax.tax_name, tax: tax.tax_amount };
+					return { id: tax.tax_id, name: tax.tax_name, tax: tax.tax_amount, tax_percent: tax.tax_percent };
 				});
 
 				return {
@@ -271,6 +287,7 @@ const finalOrderSlice = createSlice({
 					basePrice: item.price - toppingsTotal,
 					toppings: item.itemAddons,
 					itemTotal: item.price,
+					item_discount: item.item_discount,
 					multiItemTotal: item.price * item.quantity,
 					itemTax: itemTax,
 					itemNotes: item.description,
@@ -298,9 +315,11 @@ const finalOrderSlice = createSlice({
 			state.printCount = 0;
 			state.tableArea = KOT.areaName;
 			state.kotsDetail = kotsDetail;
+			state.discount_type = "flat";
+			state.discount_percent = null;
 
 			let subTotal = 0;
-			let tax = 0;
+			let totalTax = 0;
 
 			state.orderCart = KOT.items.map(item => {
 				const itemIdentifier = getIdentifier(item.item_id, item.variation_id, item.item_addons);
@@ -308,10 +327,10 @@ const finalOrderSlice = createSlice({
 				let toppingsTotal = item.item_addons.reduce((total, topping) => (total += topping.quantity * topping.price), 0);
 
 				subTotal += item.status === -1 ? 0 : item.price * item.quantity;
-				tax += item.status === -1 ? 0 : item.tax * item.quantity;
 
 				let itemTax = item.item_tax.map(tax => {
-					return { id: tax.tax_id, name: tax.tax_name, tax: tax.tax_amount };
+					totalTax += item.status === -1 ? 0 : tax.tax_amount * item.quantity;
+					return { id: tax.tax_id, name: tax.tax_name, tax: tax.tax_amount, tax_percent: tax.tax_percent };
 				});
 
 				return {
@@ -333,27 +352,45 @@ const finalOrderSlice = createSlice({
 					itemIdentifier,
 					categoryId: item.categoryId,
 					kotId: item.kotId || KOT.id,
+					item_discount: 0,
 				};
 			});
 
 			state.subTotal = subTotal;
-			state.tax = tax;
-			state.cartTotal = subTotal + tax;
+			state.tax = totalTax;
+			state.cartTotal = subTotal + totalTax;
 		},
 		applyDiscount: (state, action) => {
 			const { discountType, discount } = action.payload;
+			//discount can be percent or flat depending on discounType
 			state.discount_type = discountType;
+			let flatDiscount;
+			let totalTax = 0;
 
 			if (discountType === "percent") {
 				state.discount_percent = discount;
-				const flatDiscount = (state.subTotal * discount) / 100;
-				state.discount = flatDiscount;
-
-				
+				flatDiscount = (state.subTotal * discount) / 100;
 			} else {
 				state.discount_percent = null;
-				state.discount = discount;
+				flatDiscount = discount;
 			}
+			state.discount = flatDiscount;
+
+			state.orderCart.forEach(item => {
+				if (!["removed", "cancelled"].includes(item.itemStatus)) {
+					const itemDiscount = (item.itemTotal * flatDiscount) / state.subTotal;
+					item.item_discount = itemDiscount;
+
+					item.itemTax.forEach(tax => {
+						const taxAfterDiscount = (item.itemTotal - itemDiscount) * (tax.tax_percent / 100);
+						tax.tax = taxAfterDiscount;
+						totalTax += taxAfterDiscount * item.itemQty;
+					});
+				}
+			});
+
+			state.tax = totalTax;
+			state.cartTotal = state.subTotal - flatDiscount + totalTax;
 		},
 	},
 });

@@ -65,7 +65,7 @@ const createKot = (order, userId, orderId) => {
 					itemNotes,
 					totalItemTax,
 					itemTotal,
-					multiItemTotal,
+					itemTotal,
 					JSON.stringify(toppings),
 					parent_tax,
 				]);

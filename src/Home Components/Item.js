@@ -53,7 +53,7 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 			};
 
 			const itemTax = item_tax.map(tax => {
-				return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 };
+				return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 , tax_percent:tax.tax};
 			});
 
 			dispatch(addOrderItem({ ...currentItem, itemTax}));
@@ -69,7 +69,7 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 		let itemIdentifier = getIdentifier(currentItem.itemId,currentItem.variation_id,currentItem.toppings);
 		
 		const itemTax = item_tax.map(tax => {
-			return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 };
+			return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 ,tax_percent:tax.tax};
 		});
          
 		

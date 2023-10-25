@@ -62,7 +62,6 @@ function ActiveKotTableCard({ orders, areaId, printers }) {
 		const kotData = orders.reduce(
 			(data, order) => {
 				data.kotsDetail.push({ id: order.id, token_no: order.token_no });
-
 				const items = order.items.map(item => ({ ...item, kotId: order.id }));
 				data.items.push(...items);
 				return data;
@@ -71,6 +70,7 @@ function ActiveKotTableCard({ orders, areaId, printers }) {
 		);
 
 		KOT.items = kotData.items;
+		KOT.kot_status = "accepted"
 
 		console.log(KOT);
 
@@ -83,9 +83,7 @@ function ActiveKotTableCard({ orders, areaId, printers }) {
 
 	const selectTable = (order ) =>{
         
-		const kot = order[0]
-
-
+		const kot = order[0]	
 		dispatch(resetFinalOrder());
 		dispatch(modifyUIActive({ restaurantPriceId: kot.restaurantPriceId, isCartActionDisable: false, activeOrderBtns:["save","kot","hold"] }));
 		dispatch(modifyCartData({ tableNumber: kot.table_no, orderType: "dine_in", tableArea: kot.areaName }));
@@ -108,6 +106,7 @@ function ActiveKotTableCard({ orders, areaId, printers }) {
 			deliveryCharge: 0,
 			packagingCharge: 0,
 			discount: 0,
+			discount_percent : null,
 			paymentMethod: "cash",
 			tableNumber: orders[0].table_no.toString(),
 			personCount: 0,

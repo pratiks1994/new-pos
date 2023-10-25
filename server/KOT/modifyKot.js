@@ -61,14 +61,14 @@ const modifyKot = (order, orderData) => {
 					itemNotes,
 					totalItemTax,
 					itemTotal,
-					multiItemTotal,
+					itemTotal,
 					JSON.stringify(toppings),
 					parent_tax,
 				]);
 			} else if (itemStatus === "new" && order.orderType === "dine_in") {
 				newKotItems.push(item);
 			} else if (itemStatus === "updated") {
-				updateItemStmt.run([itemQty, multiItemTotal, currentOrderItemId]);
+				updateItemStmt.run([itemQty,itemTotal, currentOrderItemId]);
 			} else if (itemStatus === "removed") {
 				removeItemStmt.run([-1, currentOrderItemId]);
 			}

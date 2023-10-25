@@ -11,11 +11,13 @@ const { printInvoice } = require("./electronUtils/printInvoice");
 const { setupMainDatabase } = require("./electronUtils/setupMainDatabse");
 const { getLocalDb } = require("./electronUtils/getLocalDb");
 const { updateDatabaseSchema } = require("./electronUtils/updateDatabaseSchema");
+const { getServerData } = require("./electronUtils/getServerData");
+const { getLandingPage, initiateServer } = require("./electronUtils/initiateApp");
 
 const destinationFolder = app.isPackaged ? path.join(app.getAppPath(), "..", "..", "..", "..", "pos_db") : path.join(app.getAppPath(), "..", "..", "pos_db");
 const sourceFile = app.isPackaged ? path.join(app.getAppPath(), "..", "..", "posDatabse.sqlite") : path.join(app.getAppPath(), "posDatabse.sqlite");
 const destinationFile = app.isPackaged ? path.join(destinationFolder, "posDatabse.sqlite") : path.join(destinationFolder, "posDatabse.sqlite");
-
+const serverFilePath = path.join(app.getAppPath(), "server", "server");
 let db2 = getLocalDb(destinationFile);
 let mainWindow;
 let serverProcess;
@@ -23,18 +25,24 @@ const latestDbVersion = 4;
 
 // Create the native browser window.
 
- function createWindow() {
+function createWindow() {
 	mainWindow = new BrowserWindow({
 		width: 1024,
 		height: 768,
 		minWidth: 1024,
 		minHeight: 768,
-		// Set the path of an additional "preload" script that can be used to
-		// communicate between node-land and browser-land.
 		webPreferences: {
 			preload: path.join(__dirname, "preload.js"),
 		},
 	});
+
+	const startupConfig = getServerData(db2);
+
+		serverProcess = initiateServer(startupConfig, serverFilePath, destinationFile);
+	
+	// landingPage = getLandingPage(startupConfig);
+
+	// console.log(landingPage);
 
 	const appURL = app.isPackaged
 		? url.format({
@@ -42,11 +50,19 @@ const latestDbVersion = 4;
 				protocol: "file:",
 				slashes: true,
 		  })
-		: "http://localhost:3006/#/Home";
+		: `http://localhost:3006/#/home`;
 
 	console.log(appURL);
 
-	mainWindow.loadURL(appURL);
+	if (startupConfig?.system_type === "server") {
+		serverProcess?.on("message", message => {
+			if (message.status === "started") {
+				mainWindow.loadURL(appURL);
+			}
+		});
+	} else {
+		mainWindow.loadURL(appURL);
+	}
 }
 
 app.on("ready", function () {
@@ -99,8 +115,6 @@ autoUpdater.on("update-downloaded", info => {
 	console.log("Update downloaded");
 });
 
-
-
 function setupLocalFilesNormalizerProxy() {
 	protocol.registerHttpProtocol("file", request => {
 		console.log(request);
@@ -112,9 +126,6 @@ function setupLocalFilesNormalizerProxy() {
 app.whenReady().then(() => {
 	createWindow();
 	setupLocalFilesNormalizerProxy();
-	serverProcess?.on("message",(message)=>{
-		console.log(message)
-	})
 
 	app.on("activate", function () {
 		// On macOS it's common to re-create a window in the app when the
@@ -137,10 +148,6 @@ app.on("window-all-closed", function () {
 	}
 });
 
-// If your app has no need to navigate or only needs to navigate to known pages,
-// it is a good idea to limit navigation outright to that known scope,
-// disallowing any other kinds of navigation.
-
 const allowedNavigationDestinations = "https://my-electron-app.com";
 app.on("web-contents-created", (event, contents) => {
 	contents.on("will-navigate", (event, navigationUrl) => {
@@ -160,10 +167,22 @@ ipcMain.handle("setup", async (event, payload) => {
 	}
 });
 
+ipcMain.handle("updateLoginUser", async (event, payload) => {
+	const { name } = payload;
+	console.log(name);
+	try {
+		db2.transaction(() => {
+			db2.prepare("UPDATE startup_config SET value = ? WHERE name='last_login_user'").run([name]);
+		})();
+		return { sucess: "true", status: 200, error: null };
+	} catch (error) {
+		console.log(error);
+		return { sucess: "false", status: 404, error: null };
+	}
+});
 
 ipcMain.handle("getConnectedPrinters", async (event, payload) => {
 	const connectedPrinters = await mainWindow.webContents.getPrintersAsync();
-	// console.log(connectedPrinters)
 	return connectedPrinters;
 });
 
@@ -178,32 +197,18 @@ ipcMain.handle("storeServerData", async (event, payload) => {
 });
 
 ipcMain.handle("getServerData", async (event, payload) => {
-	const networkInterfaces = os.networkInterfaces();
-	const ipAddress = networkInterfaces["Ethernet"][1].address;
-	try {
-		// const db2 = getLocalDb(destinationFile);
-		console.log("getServerData ran");
-
-		const startUpData = db2.prepare("SELECT * FROM startup_config").all();
-		const resultObject = {};
-		for (const item of startUpData) {
-			resultObject[item.name] = item.value || null;
-		}
-		return resultObject;
-	} catch (err) {
-		console.log(err);
-		return err;
-	}
+	// const networkInterfaces = os.networkInterfaces();
+	// const ipAddress = networkInterfaces["Ethernet"][1].address;
+	const serverData = getServerData(db2);
+	return serverData;
 });
 
 ipcMain.handle("syncDatabase", async (event, payload) => {
 	await setupMainDatabase(destinationFolder, sourceFile, destinationFile);
-
 	db2 = getLocalDb(destinationFile);
 	const responce = await setMenuData(payload.token, payload.syncCode, db2);
 	return responce;
 });
-
 
 ipcMain.handle("kotPrint", async (event, payload) => {
 	try {
@@ -213,8 +218,6 @@ ipcMain.handle("kotPrint", async (event, payload) => {
 		return err;
 	}
 });
-
-
 
 ipcMain.handle("printInvoice", async (event, payload) => {
 	try {

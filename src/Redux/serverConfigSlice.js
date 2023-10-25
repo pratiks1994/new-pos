@@ -7,15 +7,15 @@ const serverConfigSlice = createSlice({
       systemType:"",
       IPAddress :"",
       refetchInterval :400000,
+      biller:null
    },
    reducers:{
       setSystem :(state,action)=>{
           const {name,value} = action.payload
-
           state[name]=value
+   
+      },
       
-          
-      }
 
    }
 })

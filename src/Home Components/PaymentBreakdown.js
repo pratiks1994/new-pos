@@ -57,7 +57,7 @@ function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
                <div className={`${styles.breakDownItem} d-flex justify-content-between`}>
                     <div className="ms-4">Discount</div>
                     <div  className={styles.discountBtn} onClick={()=>setShowDiscountModal(true)}>Add Discount</div>
-                    <div className="me-4">0.00</div>
+                    <div className="me-4">{finalOrder.discount.toFixed(2)}</div>
                </div>
                <div className={`${styles.breakDownItem} d-flex justify-content-between py-1 align-items-center`}>
                     <div className="ms-4">Delivery Charge</div>

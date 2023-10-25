@@ -13,7 +13,8 @@ const getOldKOTs = (tableNo) => {
             customerAdd:"",
             customerLocality:"",
             orderCart:[],
-            orderComment:""
+            orderComment:"",
+            subTotal:0
       }
 
       let kotComments = []
@@ -50,10 +51,11 @@ const getOldKOTs = (tableNo) => {
 
 			const taxesArray = taxesIdArray.map((tax) => {
 				const taxData = taxesStmt.get(tax);
-
                         const itemTax = { tax_id: taxData.id, tax_name: taxData.name, tax_percent: taxData.tax, tax_amount: (taxData.tax * item.price) / 100 };
 				return itemTax
 			});
+
+                  mergedKot.subTotal += item.price * item.quantity
 
                   return { ...item, item_addons: JSON.parse(item.item_addon_items), item_tax:taxesArray };
                   // return { ...item, item_addons:JSON.parse(item.item_addon_items), item_tax: item.tax }

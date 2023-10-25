@@ -20,6 +20,14 @@
 	background-color: gray;
 }
 
+.error{
+	font-size: 14px;
+	font-weight: 500;
+	display: none;
+	margin-right: auto !important;
+	color: rgb(204, 13, 13);
+}
+
 .modelHeader, .modelFooter {
 	padding: 10px 15px;
 }

@@ -44,7 +44,12 @@ const createOrder = order => {
 		orderCart,
 		printCount,
 		order_status,
-		online_order_id,
+		online_order_id = null,
+		discount_type,
+		discount_percent,
+		promo_id = null,
+		promo_discount = 0,
+		promo_code = null,
 	} = order;
 
 	if (customerContact) {
@@ -83,7 +88,7 @@ const createOrder = order => {
 	const orderTrans = db2.transaction(userId => {
 		const orderInfo = db2
 			.prepare(
-				"INSERT INTO orders (user_id,order_number,restaurant_id,customer_name,complete_address,phone_number,order_type,dine_in_table_no,item_total,description,total_discount,total_tax,delivery_charges,total,payment_type,order_status,print_count,online_order_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
+				"INSERT INTO orders (user_id,order_number,restaurant_id,customer_name,complete_address,phone_number,order_type,dine_in_table_no,item_total,description,total_discount,discount_percent,total_tax,delivery_charges,total,payment_type,order_status,print_count,online_order_id,promo_id,promo_code,promo_discount,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
 			)
 			.run([
 				userId,
@@ -97,28 +102,50 @@ const createOrder = order => {
 				subTotal,
 				orderComment,
 				discount,
+				discount_percent,
 				tax,
 				deliveryCharge,
 				cartTotal,
 				paymentMethod,
 				order_status,
-				printCount,
+				printCount,	
 				online_order_id,
+				promo_id,
+				promo_code,
+				promo_discount
 			]);
 
 		const cartTrans = db2.transaction((orderCart, orderId) => {
 			const prepareItem = db2.prepare(
-				"INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id,description,tax_id,tax,item_addon_items) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
+				"INSERT INTO order_items (order_id,item_id,item_name,price,item_discount,final_price,quantity,variation_name,variation_id,description,tax_id,tax,item_addon_items,contains_free_item,main_order_item_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 			);
 
 			// const prepareTax = db2.prepare("INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)");
 
 			// const prepareToppings = db2.prepare("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)");
 
+			let main_order_item_id = null
 			orderCart.forEach(item => {
 				if (!["removed", "cancelled"].includes(item.itemStatus)) {
-					const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax, variant_display_name, itemNotes, parent_tax } = item;
+					const {
+						itemQty,
+						itemId,
+						itemName,
+						variation_id,
+						variantName,
+						itemTotal,
+						item_discount,
+						multiItemTotal,
+						toppings,
+						itemTax,
+						variant_display_name,
+						itemNotes,
+						parent_tax,
+						contains_free_item = 0,
+						is_it_free_item = 0,
+					} = item;
 
+					const final_price = itemTotal - item_discount;
 					const totalItemTax = itemTax.reduce((total, tax) => (total += tax.tax), 0);
 
 					const toppingsJson = JSON.stringify(toppings);
@@ -128,7 +155,8 @@ const createOrder = order => {
 						itemId,
 						itemName,
 						itemTotal,
-						multiItemTotal,
+						item_discount,
+						final_price,
 						itemQty,
 						variant_display_name,
 						variation_id,
@@ -136,7 +164,11 @@ const createOrder = order => {
 						parent_tax,
 						totalItemTax,
 						toppingsJson,
+						contains_free_item,
+						main_order_item_id
 					]);
+
+					main_order_item_id = contains_free_item ? itemInfo.lastInsertRowid : null
 
 					// const taxTrans = db2.transaction((itemTax, orderItemId) => {
 					// 	itemTax.forEach((tax) => {

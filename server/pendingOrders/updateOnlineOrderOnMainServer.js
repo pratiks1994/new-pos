@@ -26,22 +26,16 @@ const updateOnlineOrderOnMainServer = async pendingOrderDetail => {
 
 	try {
 		const response = await axios.request(config);
-	
-        if(response.data.status){
-            return {success:true,error:null}
-        }
-        else{
-            return {success:false,error:null}
-        }
 
-
+		if (response.data.status) {
+			return { success: true, error: null };
+		} else {
+			return { success: false, error: null };
+		}
 	} catch (error) {
 		console.log(error);
-        return {success:false,error}
-
+		return { success: false, error };
 	}
-
-
 };
 
-module.exports = {updateOnlineOrderOnMainServer}
+module.exports = { updateOnlineOrderOnMainServer };

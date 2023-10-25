@@ -10,10 +10,11 @@ function Timer({ startTime }) {
       function getTimeDifference(initialTime) {
             const now = new Date();
             const difference = now - initialTime;
+            const hours = Math.floor(difference/(1000*60*60))
+            const min = Math.floor(difference % (1000*60*60)/60000)
             const minutes = Math.floor(difference / 60000);
             const seconds = ((difference % 60000) / 1000).toFixed(0);
-            const timer = `${minutes} : ${seconds < 10 ? "0" : ""}${seconds}`;
-
+            const timer = `${hours < 1 ? "" : `${hours} :`} ${minutes < 10 ? "0" : ""}${min} : ${seconds < 10 ? "0" : ""}${seconds}`;
             setTimer(timer);
       }
 

@@ -7,6 +7,8 @@ import { modifyUIActive } from "../Redux/UIActiveSlice";
 import { executeBillPrint, executeKotPrint } from "./executePrint";
 import { convertOrder } from "./convertOrder";
 import { printModifiedKots } from "./printModifiedKots";
+import { useNavigate } from "react-router-dom";
+import { setSystem } from "../Redux/serverConfigSlice";
 
 //============================================for save order and modify existing order ===================================================================//
 
@@ -100,7 +102,7 @@ export const usePrintOrderMutation = (setShowKOTExistModal, setShouldPrintOrder,
 
 //======================================= cancel already existing order =============================================================================================//
 
-export const useCancelOrderMutation = () => {
+export const useCancelOrderMutation = (hide, setErrorMessage) => {
 	const dispatch = useDispatch();
 	const { IPAddress } = useSelector(state => state.serverConfig);
 	const queryClient = useQueryClient();
@@ -118,11 +120,13 @@ export const useCancelOrderMutation = () => {
 			notify("success", "order Cancelled");
 			dispatch(resetFinalOrder());
 			dispatch(modifyUIActive({ activeOrderBtns: ["save", "kot", "hold"] }));
+			hide();
 			queryClient.invalidateQueries({ queryKey: ["liveOrders"] });
 		},
 		onError: error => {
 			console.error(error);
-			notify("err", "something went wrong");
+			setErrorMessage("invalid password");
+			notify("err", "invalid password");
 		},
 		enabled: !!IPAddress,
 	});
@@ -294,7 +298,7 @@ export const usePendingOrderToOrderMutation = printers => {
 	};
 
 	return useMutation({
-		mutationKey: ["pendingOrderToOrder"],	
+		mutationKey: ["pendingOrderToOrder"],
 		mutationFn: pendingOrderToOrderRequest,
 		onSuccess: data => {
 			// Destructure isModify from the result
@@ -311,6 +315,58 @@ export const usePendingOrderToOrderMutation = printers => {
 			console.error(error);
 			notify("err", "something went wrong");
 		},
+		enabled: !!IPAddress,
+	});
+};
+
+//=======================================================================================================
+
+export const useAuthenticateMutation = () => {
+	const { IPAddress } = useSelector(state => state.serverConfig);
+	const navigate = useNavigate();
+
+	const authenticateBillerRequest = async billerDetail => {
+		let { data } = await axios.post(`http://${IPAddress}:3001/authenticateBiller`, { billerDetail });
+		data.billerDetail = billerDetail;
+		return data;
+	};
+
+	return useMutation({
+		mutationKey: ["authenticate"],
+		mutationFn: authenticateBillerRequest,
+		onSuccess: async data => {
+			notify("success", "Login success");
+			await window.apiKey.request("updateLoginUser", data.billerDetail);
+			navigate("../Home");
+		},
+		onError: data => {
+			console.log("fail login");
+			notify("fail", "invalid credentials");
+		},
+		enabled: !!IPAddress,
+	});
+};
+
+//======================================= logout===============================================================
+
+export const useLogoutMutation = () => {
+	const { IPAddress } = useSelector(state => state.serverConfig);
+	const dispatch = useDispatch();
+	const navigate = useNavigate();
+
+	const logoutRequest = async billerDetail => {
+		const data = await window.apiKey.request("updateLoginUser", billerDetail);
+		return data;
+	};
+
+	return useMutation({
+		mutationKey: ["logout"],
+		mutationFn: logoutRequest,
+		onSuccess: data => {
+			dispatch(setSystem({ name: "biller", value: null }));
+			navigate("../login");
+		},
+		onError: data => {},
 		enabled: !!IPAddress,
 	});
 };
