@@ -16,28 +16,47 @@ const reCalculateOrderData = state => {
 	if (state.discount_type === "percent") {
 		flatDiscount = (subTotal * state.discount_percent) / 100;
 	} else {
-		flatDiscount = state.discount >= subTotal ? subTotal : state.discount;
+		if (state.maxFlatDiscount >= subTotal) {
+			flatDiscount = subTotal;
+		} else {
+			flatDiscount = state.maxFlatDiscount;
+		}
 	}
+
+	let updatedTaxDetails = [];
 
 	// const flatDiscount = state.discount_type === "percent" ? (subTotal * state.discount_percent) / 100 : state.discount || 0;
 
 	for (const item of state.orderCart) {
 		if (!["removed", "cancelled"].includes(item.itemStatus)) {
 			const itemDiscount = (item.itemTotal * flatDiscount) / subTotal;
-
 			item.item_discount = itemDiscount;
+
+			if (itemDiscount > 0) {
+				item.discount_detail = [{ id: null, type: "special_discount", mame: "pos_discount", discount: item.item_discount }];
+			} else {
+				item.discount_detail = [];
+			}
 
 			for (const tax of item.itemTax) {
 				const taxAfterDiscount = (item.itemTotal - itemDiscount) * (tax.tax_percent / 100);
 				tax.tax = taxAfterDiscount;
 				totalTax += taxAfterDiscount * item.itemQty;
+
+				const existingTaxIndexInTaxDetails = updatedTaxDetails.findIndex(detailTax => detailTax.id === tax.id);
+				if (existingTaxIndexInTaxDetails === -1) {
+					updatedTaxDetails.push({ ...tax, tax: tax.tax * item.itemQty });
+				} else {
+					updatedTaxDetails[existingTaxIndexInTaxDetails].tax += taxAfterDiscount * item.itemQty;
+				}
 			}
 		}
 	}
 
 	state.discount = flatDiscount;
+	state.taxDetails = updatedTaxDetails;
 	state.subTotal = subTotal;
-	state.cartTotal = subTotal + totalTax - flatDiscount;
+	state.cartTotal = subTotal + totalTax - flatDiscount + state.deliveryCharge + state.packagingCharge	;
 	state.tax = totalTax;
 };
 
@@ -56,6 +75,7 @@ const initialFinalOrder = {
 	subTotal: 0, // total of the cart without tax
 	tax: 0, // total tax of whole cart
 	deliveryCharge: 0,
+	tip: 0,
 	packagingCharge: 0,
 	discount: 0,
 	discount_percent: null,
@@ -67,6 +87,20 @@ const initialFinalOrder = {
 	orderComment: "",
 	cartTotal: 0, // subtotal + tax - discount (amount should be payable)
 	order_status: "accepted",
+	maxFlatDiscount: 0,
+	billPaid: false,
+	biller_id : 1,
+	biller_name : "biller",
+	taxDetails: [],
+	multipay: [
+		{ name: "upi_phonepe", amount: 0 },
+		{ name: "upi_gpay", amount: 0 },
+		{ name: "upi_paytm", amount: 0 },
+		{ name: "upi", amount: 0 },
+		{ name: "card", amount: 0 },
+		{ name: "due", amount: 0 },
+		{ name: "cash", amount: 0 },
+	],
 };
 
 const finalOrderSlice = createSlice({
@@ -104,6 +138,19 @@ const finalOrderSlice = createSlice({
 
 		modifyCartData: (state, action) => {
 			let data = action.payload;
+
+			if (Object.keys(data)[0] === "packagingCharge") {
+				const packagingCharge = +Object.values(data)[0]
+				let cartTotal = state.subTotal + state.tax - state.discount + state.deliveryCharge + packagingCharge;
+				return { ...state, packagingCharge, cartTotal };
+			}
+
+			if (Object.keys(data)[0] === "deliveryCharge") {
+				const deliveryCharge = +Object.values(data)[0]
+				let cartTotal = state.subTotal + state.tax - state.discount + state.packagingCharge + deliveryCharge;
+				return { ...state, deliveryCharge, cartTotal };
+			}
+
 			return { ...state, ...data };
 		},
 
@@ -124,9 +171,15 @@ const finalOrderSlice = createSlice({
 
 			reCalculateOrderData(state);
 		},
+		// changeOrderData : (state,action) =>{
+		// 	let data = action.payload
+		// 	return {...state,...data}
+
+		// },
 
 		addItemNotes: (state, action) => {
 			const { currentOrderItemId, notes } = action.payload;
+
 			let existingItem = state.orderCart.find(item => item.currentOrderItemId === currentOrderItemId);
 			existingItem.itemNotes = notes;
 		},
@@ -148,6 +201,10 @@ const finalOrderSlice = createSlice({
 				}
 			}
 			reCalculateOrderData(state);
+		},
+		setPaymentMethod: (state, action) => {
+			const { method } = action.payload;
+			state.paymentMethod = method;
 		},
 
 		removeItem: (state, action) => {
@@ -265,6 +322,20 @@ const finalOrderSlice = createSlice({
 			state.kotsDetail = order.KOTDetail;
 			state.discount_type = order.discount_percent ? "percent" : "flat";
 			state.discount_percent = order.discount_percent;
+			state.multipay = initialFinalOrder.multipay;
+			state.maxFlatDiscount = order.discount_percent ? 0 : order.total_discount;
+			state.taxDetails = order.tax_details;
+
+			if (order.payment_type === "multipay") {
+				state.multipay = state.multipay.map(pay => {
+					const existingOrderPay = order.multipay.find(orderPay => orderPay.payment_type === pay.name);
+					if (existingOrderPay) {
+						return { ...pay, amount: existingOrderPay.amount };
+					} else {
+						return pay;
+					}
+				});
+			}
 
 			state.orderCart = order.items.map(item => {
 				const itemIdentifier = getIdentifier(item.item_id, item.variation_id, item.itemAddons);
@@ -293,6 +364,7 @@ const finalOrderSlice = createSlice({
 					itemNotes: item.description,
 					parent_tax: item.tax_id,
 					itemIdentifier,
+					discount_detail: item.discount_detail,
 				};
 			});
 		},
@@ -317,9 +389,12 @@ const finalOrderSlice = createSlice({
 			state.kotsDetail = kotsDetail;
 			state.discount_type = "flat";
 			state.discount_percent = null;
+			state.multipay = initialFinalOrder.multipay;
+			state.maxFlatDiscount = 0;
 
 			let subTotal = 0;
 			let totalTax = 0;
+			let taxDetails = [];
 
 			state.orderCart = KOT.items.map(item => {
 				const itemIdentifier = getIdentifier(item.item_id, item.variation_id, item.item_addons);
@@ -330,6 +405,14 @@ const finalOrderSlice = createSlice({
 
 				let itemTax = item.item_tax.map(tax => {
 					totalTax += item.status === -1 ? 0 : tax.tax_amount * item.quantity;
+
+					let existingTax = taxDetails.find(totaltax => totaltax.id === tax.tax_id);
+					if (existingTax) {
+						existingTax.tax += tax.tax_amount * item.quantity;
+					} else {
+						taxDetails.push({ id: tax.tax_id, name: tax.tax_name, tax: tax.tax_amount, tax_percent: tax.tax_percent });
+					}
+
 					return { id: tax.tax_id, name: tax.tax_name, tax: tax.tax_amount, tax_percent: tax.tax_percent };
 				});
 
@@ -353,15 +436,17 @@ const finalOrderSlice = createSlice({
 					categoryId: item.categoryId,
 					kotId: item.kotId || KOT.id,
 					item_discount: 0,
+					discount_detail: [],
 				};
 			});
 
 			state.subTotal = subTotal;
 			state.tax = totalTax;
 			state.cartTotal = subTotal + totalTax;
+			state.taxDetails = taxDetails;
 		},
 		applyDiscount: (state, action) => {
-			const { discountType, discount } = action.payload;
+			const { discountType, discount, id } = action.payload;
 			//discount can be percent or flat depending on discounType
 			state.discount_type = discountType;
 			let flatDiscount;
@@ -373,24 +458,41 @@ const finalOrderSlice = createSlice({
 			} else {
 				state.discount_percent = null;
 				flatDiscount = discount;
+				state.maxFlatDiscount = discount;
 			}
+
 			state.discount = flatDiscount;
+			let updatedTaxDetails = [];
 
 			state.orderCart.forEach(item => {
 				if (!["removed", "cancelled"].includes(item.itemStatus)) {
+					if (state.cartAction === "modifyOrder" && item.itemStatus !== "new") {
+						item.itemStatus = "updated";
+					}
+
 					const itemDiscount = (item.itemTotal * flatDiscount) / state.subTotal;
 					item.item_discount = itemDiscount;
+
+					item.discount_detail = itemDiscount > 0 ? [{ id, type: "special_discount", name: "pos_discount", discount: itemDiscount }] : [];
 
 					item.itemTax.forEach(tax => {
 						const taxAfterDiscount = (item.itemTotal - itemDiscount) * (tax.tax_percent / 100);
 						tax.tax = taxAfterDiscount;
 						totalTax += taxAfterDiscount * item.itemQty;
+
+						const existingTaxIndexInTaxDetails = updatedTaxDetails.findIndex(detailTax => detailTax.id === tax.id);
+						if (existingTaxIndexInTaxDetails === -1) {
+							updatedTaxDetails.push({ ...tax, tax: tax.tax * item.itemQty });
+						} else {
+							updatedTaxDetails[existingTaxIndexInTaxDetails].tax += taxAfterDiscount * item.itemQty;
+						}
 					});
 				}
 			});
 
 			state.tax = totalTax;
-			state.cartTotal = state.subTotal - flatDiscount + totalTax;
+			state.taxDetails = updatedTaxDetails;
+			state.cartTotal = state.subTotal - flatDiscount + totalTax + state.deliveryCharge + state.packagingCharge;
 		},
 	},
 });
@@ -411,4 +513,5 @@ export const {
 	changePriceOnAreaChange,
 	liveKotToCart,
 	applyDiscount,
+	setPaymentMethod,
 } = finalOrderSlice.actions;

@@ -1,32 +1,30 @@
 import React from "react";
 import styles from "./OrderExistAlertModal.module.css";
 import { Modal, Row, Col } from "react-bootstrap";
-import axios from "axios";
-import { useDispatch } from "react-redux";
-import { resetFinalOrder } from "../Redux/finalOrderSlice";
-import { useMutation } from "react-query";
-import { executeKotPrint } from "../Utils/executePrint";
+import { useUpdateOrderAndCreateKOTMutation } from "../Utils/customMutationHooks";
 
 
-function OrderExistAlertModal({ show, hide, IPAddress, finalOrder, notify ,printers}) {
-      const dispatch = useDispatch();
+function OrderExistAlertModal({ show, hide, finalOrder ,printers}) {
 
-      const handleConfirm = async (finalOrder) => {
-            let { data } = await axios.post(`http://${IPAddress}:3001/updateOrderAndCreateKOT`, finalOrder);
-            return data;
-      };
 
-      const { mutate, isLoading } = useMutation({      
-            mutationKey: "updateOrderAndCreateKOT",
-            mutationFn: handleConfirm,
-            onSuccess: async (data) => {
-                  console.log(data)
-                  hide();
-                  await executeKotPrint({...finalOrder,kotTokenNo:data}, printers);
-                  dispatch(resetFinalOrder());
-                  notify("success", "Orders and KOT updated");
-            },
-      });
+      const {mutate,isLoading} = useUpdateOrderAndCreateKOTMutation(printers,hide,finalOrder)
+
+      // const handleConfirm = async (finalOrder) => {
+      //       let { data } = await axios.post(`http://${IPAddress}:3001/updateOrderAndCreateKOT`, finalOrder);
+      //       return data;
+      // };
+
+      // const { mutate, isLoading } = useMutation({      
+      //       mutationKey: "updateOrderAndCreateKOT",
+      //       mutationFn: handleConfirm,
+      //       onSuccess:  (data) => {
+      //             console.log(data)
+      //             hide();
+      //             executeKotPrint({...finalOrder,kotTokenNo:data}, printers);
+      //             dispatch(resetFinalOrder());
+      //             notify("success", "Orders and KOT updated");
+      //       },
+      // });
 
       return (
             <Modal show={show} onHide={hide} backdrop="static" centered animation={false}>

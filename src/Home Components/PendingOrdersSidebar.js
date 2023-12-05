@@ -1,15 +1,14 @@
-import React from 'react'
-import styles from './PendingOrdersSidebar.module.css'
+import React from "react";
+import styles from "./PendingOrdersSidebar.module.css";
 import Offcanvas from "react-bootstrap/Offcanvas";
-import Loading from '../Feature Components/Loading';
-import PendingOrdersList from './PendingOrdersList';
+import Loading from "../Feature Components/Loading";
+import PendingOrdersList from "./PendingOrdersList";
 
-function PendingOrdersSidebar({showPendingOrders, setShowPendingOrders,pendingOrders,isLoading}) {
+function PendingOrdersSidebar({ showPendingOrders, setShowPendingOrders, pendingOrders, isLoading }) {
+	const handleClose = () => setShowPendingOrders(false);
 
-    const handleClose = () => setShowPendingOrders(false);
-
-  return (
-    <Offcanvas className={styles.holdOrderSidebar} show={showPendingOrders} onHide={handleClose} placement="start"  backdrop={false} scroll ={true} >
+	return (
+		<Offcanvas className={styles.holdOrderSidebar} show={showPendingOrders} onHide={handleClose} placement="start" backdrop={false} scroll={true}>
 			<Offcanvas.Header closeButton className={styles.holdOrderHeader}>
 				Pending Orders
 			</Offcanvas.Header>
@@ -17,11 +16,10 @@ function PendingOrdersSidebar({showPendingOrders, setShowPendingOrders,pendingOr
 				<PendingOrdersList pendingOrders={pendingOrders} isLoading={isLoading} />
 			</Offcanvas.Body>
 		</Offcanvas>
-    
-  )
+	);
 }
 
-export default PendingOrdersSidebar
+export default PendingOrdersSidebar;
 
 const finalOrder = {
 	kotsDetail: [],

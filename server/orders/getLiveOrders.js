@@ -1,7 +1,3 @@
-// const { dbAll, dbRun } = require("../common/dbExecute");
-// const Database = require("better-sqlite3");
-// const db2 = new Database("restaurant.sqlite", {});
-
 const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
@@ -9,22 +5,26 @@ const getLiveOrders = () => {
 	try {
 		const liveOrders = db2
 			.prepare(
-				"SELECT id, order_number, customer_name, complete_address, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, discount_percent, total_tax, delivery_charges, total, payment_type, order_status, created_at, print_count,online_order_id FROM orders WHERE (order_type IN ('delivery', 'pick_up') AND order_status NOT IN ('delivered', 'picked_up','rejected','cancelled','pending','pending_payment')) OR (order_type = 'dine_in' AND order_status = 'accepted' AND settle_amount IS NULL)"
+				"SELECT id, bill_no, customer_name, complete_address, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, discount_percent, total_tax, delivery_charges, total, payment_type, order_status, created_at, print_count,bill_paid,tax_details,extra_data FROM pos_orders WHERE (order_type IN ('delivery', 'pick_up') AND order_status NOT IN ('delivered', 'picked_up','rejected','cancelled','pending','pending_payment')) OR (order_type = 'dine_in' AND order_status = 'accepted' AND settle_amount IS NULL)"
 			)
 			.all([]);
 
 		const prepareItem = db2.prepare(
-			"SELECT id,item_id,item_name,price,final_price, item_discount,quantity,variation_name,variation_id,tax_id,item_addon_items,description FROM order_items WHERE order_id = ?"
+			"SELECT id,item_id,item_name,price,final_price, item_discount,discount_detail,quantity,variation_name,variation_id,tax_id,item_addon_items,description FROM pos_order_items WHERE pos_order_id = ? AND status = 1"
 		);
+
 		// const prepareToppings = db2.prepare("SELECT addongroupitem_id,name,price,quantity FROM order_item_addongroupitems WHERE order_item_id = ?");
 		// const prepareTax = db2.prepare("SELECT tax_id,tax_amount FROM order_item_taxes WHERE order_item_id = ?");
-		const prapareKOT = db2.prepare("SELECT id,token_no FROM kot WHERE order_id=?");
-		const parentTaxStmt = db2.prepare("SELECT child_ids FROM taxes where id=?");
-		const taxesStmt = db2.prepare("SELECT * FROM taxes where id = ? ");
 
+		const prapareKOT = db2.prepare("SELECT id,token_no FROM kot WHERE pos_order_id=?");
+
+		const parentTaxStmt = db2.prepare("SELECT child_ids FROM taxes where id=?");
+
+		const taxesStmt = db2.prepare("SELECT * FROM taxes where id = ? ");
 		const tableStmt = db2.prepare("SELECT area_id FROM dine_in_tables WHERE table_no=?");
 		const areaStmt = db2.prepare("SELECT id,area,restaurant_price_id FROM areas WHERE id=?");
 		const defaultResaurantPriceStmt = db2.prepare("SELECT configuration FROM restaurants WHERE id=?");
+		const mutipayStmt = db2.prepare("SELECT payment_type,amount FROM multipays WHERE pos_order_id = ?");
 		const configDetail = defaultResaurantPriceStmt.get([1]);
 		const defaultRestaurantPrice = JSON.parse(configDetail.configuration).default_restaurant_price;
 
@@ -46,6 +46,13 @@ const getLiveOrders = () => {
 				}
 			}
 
+			if (order.payment_type === "multipay") {
+				const multipayDetail = mutipayStmt.all([order.id]);
+				order.multipay = multipayDetail;
+			} else {
+				order.multipay = [];
+			}
+
 			const KOTDetail = prapareKOT.all([order.id]);
 
 			const itemsWithAddons = orderItems.map(item => {
@@ -64,10 +71,10 @@ const getLiveOrders = () => {
 
 				// const itemTax = prepareTax.all([item.id]);
 
-				return { ...item, itemAddons: JSON.parse(item.item_addon_items), itemTax: taxesArray };
+				return { ...item, itemAddons: JSON.parse(item.item_addon_items), itemTax: taxesArray, discount_detail: JSON.parse(item.discount_detail) };
 			});
 
-			return { ...order, items: itemsWithAddons, KOTDetail, restaurantPriceId, areaName, areaId };
+			return { ...order, items: itemsWithAddons, KOTDetail, restaurantPriceId, areaName, areaId, extra_data: JSON.parse(order.extra_data), tax_details: JSON.parse(order.tax_details) };
 		});
 
 		return liveOrdersWithItems;

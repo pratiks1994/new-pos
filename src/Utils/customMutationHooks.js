@@ -76,11 +76,11 @@ export const usePrintOrderMutation = (setShowKOTExistModal, setShouldPrintOrder,
 			}
 
 			if (!data.isOldOrderExist && finalOrder.cartAction !== "modifyOrder") {
-				await executeKotPrint({ ...finalOrder, kotTokenNo: data.kotTokenNo, orderNo: data.orderNo, isModified: false }, printers);
+				executeKotPrint({ ...finalOrder, kotTokenNo: data.kotTokenNo, orderNo: data.orderNo, isModified: false }, printers);
 			}
 
 			const orderToPrint = convertOrder(data.order);
-			await executeBillPrint(orderToPrint, printers);
+			executeBillPrint(orderToPrint, printers);
 
 			if (finalOrder.cartAction === "modifyOrder") {
 				queryClient.invalidateQueries({ queryKey: ["liveOrders"] });
@@ -176,9 +176,9 @@ export const useKotToPrintOrderMutation = printers => {
 		mutationKey: ["kotToPrintOrder"],
 		mutationFn: kotToPrintOrderRequest,
 		onSuccess: async ({ data, finalOrder }) => {
-			await printModifiedKots(finalOrder, data.kotTokenNo, data.newKotTokenNo, printers);
+			printModifiedKots(finalOrder, data.kotTokenNo, data.newKotTokenNo, printers);
 			const orderToPrint = convertOrder(data.order);
-			await executeBillPrint(orderToPrint, printers);
+			executeBillPrint(orderToPrint, printers);
 			notify("success", "Order placed success ");
 			dispatch(resetFinalOrder());
 			dispatch(modifyUIActive({ activeOrderBtns: ["save", "kot", "hold"] }));
@@ -194,7 +194,7 @@ export const useKotToPrintOrderMutation = printers => {
 
 //===================================================================================================================================================//
 
-export const useKotMutation = (printers, setShowOrderExistModal) => {
+export const useKotMutation = (printers, setShowOrderExistModal, setShowMultipay, setMultipayControlType) => {
 	const dispatch = useDispatch();
 	const { IPAddress } = useSelector(state => state.serverConfig);
 	const queryClient = useQueryClient();
@@ -221,8 +221,16 @@ export const useKotMutation = (printers, setShowOrderExistModal) => {
 				dispatch(resetFinalOrder());
 				dispatch(modifyUIActive({ activeOrderBtns: ["save", "kot", "hold"] }));
 				notify("success", "KOT Success");
-			} else if (data.orderExist) {
+				return;
+			}
+			if (data.orderExist) {
+				if (finalOrder.paymentMethod === "multipay") {
+					setMultipayControlType("kot");
+					setShowMultipay(true);
+					return;
+				}
 				setShowOrderExistModal(true);
+				return;
 			}
 		},
 		onError: error => {
@@ -335,7 +343,7 @@ export const useAuthenticateMutation = () => {
 		mutationKey: ["authenticate"],
 		mutationFn: authenticateBillerRequest,
 		onSuccess: async data => {
-			notify("success", "Login success");
+			notify("success", `Welcome ${data.billerDetail.name}`);
 			await window.apiKey.request("updateLoginUser", data.billerDetail);
 			navigate("../Home");
 		},
@@ -367,6 +375,65 @@ export const useLogoutMutation = () => {
 			navigate("../login");
 		},
 		onError: data => {},
+		enabled: !!IPAddress,
+	});
+};
+
+//==========================================include kots and create new order =============================================================
+
+export const useIncludeKotAndCreateOrderMutation = (finalOrder, hide, shouldPrintOrder, setShouldPrintOrder, printers) => {
+	const { IPAddress } = useSelector(state => state.serverConfig);
+	const dispatch = useDispatch();
+
+	const IncludeKotAndCreateOrder = async finalOrder => {
+		const printCount = shouldPrintOrder ? 1 : 0;
+		let { data } = await axios.post(`http://${IPAddress}:3001/includeKOTsAndCreateOrder`, { ...finalOrder, printCount });
+		return data;
+	};
+
+	return useMutation({
+		mutationKey: ["includeKOTsAndCreateOrder"],
+		mutationFn: IncludeKotAndCreateOrder,
+		onSuccess: data => {
+			const { orderNo, kotTokenNo, order } = data;
+
+			if (shouldPrintOrder) {
+				try {
+					const orderToPrint = convertOrder(order);
+					executeKotPrint({ ...finalOrder, kotTokenNo }, printers);
+					executeBillPrint(orderToPrint, printers);
+				} catch (err) {
+					console.log(err);
+				}
+			}
+			setShouldPrintOrder(false);
+			hide();
+			dispatch(resetFinalOrder());
+			notify("success", "Orders and KOT updated");
+		},
+		onError: data => {},
+		enabled: !!IPAddress,
+	});
+};
+
+export const useUpdateOrderAndCreateKOTMutation = (printers, hide, finalOrder) => {
+	const { IPAddress } = useSelector(state => state.serverConfig);
+	const dispatch = useDispatch();
+
+	const handleConfirm = async finalOrder => {
+		let { data } = await axios.post(`http://${IPAddress}:3001/updateOrderAndCreateKOT`, finalOrder);
+		return data;
+	};
+
+	return useMutation({
+		mutationKey: "updateOrderAndCreateKOT",
+		mutationFn: handleConfirm,
+		onSuccess: data => {
+			hide();
+			executeKotPrint({ ...finalOrder, kotTokenNo: data }, printers);
+			dispatch(resetFinalOrder());
+			notify("success", "Orders and KOT updated");
+		},
 		enabled: !!IPAddress,
 	});
 };

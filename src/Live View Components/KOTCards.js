@@ -31,7 +31,7 @@ function KOTCards({ KOT, idx }) {
 	});
 
 	const moveKotToCart = KOT => {
-		if (KOT.order_id) {
+		if (KOT.pos_order_id) {
 			setShowOrderExistModal(true);
 			return;
 		}
@@ -49,7 +49,7 @@ function KOTCards({ KOT, idx }) {
 	const getColor = type => (type !== "dine_in" ? { backgroundColor: "rgba(116, 116, 0, 0.87)" } : null);
 
 	return (
-		<motion.div layout className={styles.KOTCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1, delay: idx * 0.03 }}>
+		<motion.div layout className={styles.KOTCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit = {{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.1, delay: idx * 0.03 }}>
 			<div className={styles.CardHeader} style={getColor(KOT.order_type)} onClick={() => moveKotToCart(KOT)}>
 				<div>
 					{KOT.table_no && <div>{KOT.table_no}</div>}
@@ -93,15 +93,15 @@ function KOTCards({ KOT, idx }) {
 			})}
 			<div className={styles.footer}>
 				<button
-					onClick={() => KOTmutation({ id: KOT.id, order_id: KOT.order_id, order_type: KOT.order_type, kot_status: "food_is_ready", online_order_id: KOT.online_order_id })}
+					onClick={() => KOTmutation({ id: KOT.id, order_id: KOT.pos_order_id, order_type: KOT.order_type, kot_status: "food_is_ready", online_order_id: KOT.online_order_id })}
 					disabled={isLoading}>
 					{isLoading ? "loading..." : "Food Is Ready"}
 				</button>
-				{!KOT.order_id && (
+				{!KOT.pos_order_id && (
 					<button
 						className={styles.cancelBtn}
 						disabled={isLoading}
-						onClick={() => KOTmutation({ id: KOT.id, order_id: KOT.order_id, order_type: KOT.order_type, kot_status: "cancelled" })}>
+						onClick={() => KOTmutation({ id: KOT.id, order_id: KOT.pos_order_id, order_type: KOT.order_type, kot_status: "cancelled", online_order_id: KOT.online_order_id })}>
 						Cancel
 					</button>
 				)}
@@ -166,5 +166,5 @@ export default KOTCards;
 // 		excluded_categories:[1,2,3,7],
 // 		excluded_offers:[1,2],
 // 		order_types:["delivery","pick_up","dine_in"]
-// 	} 
+// 	}
 // };

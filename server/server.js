@@ -1,4 +1,3 @@
-// const { getCategories } = require("./menuData/getData");
 const { createServer } = require("http");
 const express = require("express");
 const { Server } = require("socket.io");
@@ -41,7 +40,13 @@ const { convertPendingOrderToOrder } = require("./common/convertPendingOrderToOr
 const { updatePendingOrder } = require("./pendingOrders/updatePendingOrder");
 const { updateOnlineOrderOnMainServer } = require("./pendingOrders/updateOnlineOrderOnMainServer");
 const { authenticateBiller } = require("./biller/authenticateBiller");
-const { isPending } = require("@reduxjs/toolkit");
+const { getDueOrders } = require("./orders/getDueOrders");
+const { getExistingOrder, getMergedOrder } = require("./orders/getExistingOrder");
+const { getMergedOrderAndKotData } = require("./KOT/getMergedOrderAndKotData");
+const { syncCustomers } = require("./sync/syncCustomers");
+const { syncCustomerAddresses } = require("./sync/syncCustomerAddresses");
+const { syncOrders } = require("./sync/syncOrders");
+
 // const appPath = process.argv
 // console.log(appPath)
 
@@ -95,6 +100,7 @@ app.put("/liveKot", async (req, res, next) => {
 	const { kot_status, online_order_id, order_type } = req.body;
 
 	if (online_order_id !== null && order_type !== "dine_in") {
+		console.log(online_order_id);
 		const onlineOrderDetail = { pendingOrderId: null, status: kot_status, onlineOrderId: online_order_id };
 		const { success, error } = await updateOnlineOrderOnMainServer(onlineOrderDetail);
 		if (success) {
@@ -221,6 +227,22 @@ app.get("/users", async (req, res) => {
 	res.status(200).json(userSuggest);
 });
 
+app.post("/existingOrder", (req, res) => {
+	const latestOrder = req.body;
+	const mergedOrderData = getMergedOrder(latestOrder);
+	if (mergedOrderData) {
+		res.status(200).json({ mergedOrderData, type: "order" });
+		return;
+	}
+
+	const MergedOrderAndKotData = getMergedOrderAndKotData(latestOrder);
+	if (MergedOrderAndKotData) {
+		res.status(200).json({ mergedOrderData: MergedOrderAndKotData, type: "kot" });
+	}
+
+	res.status(200).json({ mergedOrderData: null, type: null });
+});
+
 app.post("/holdOrder", async (req, res) => {
 	createHoldOrder(req.body);
 	res.sendStatus(200);
@@ -260,7 +282,7 @@ app.put("/assignPrinterToBill", (req, res) => {
 	res.sendStatus(200);
 });
 
-// ===================== for adding kot to already existing order on same table =======================================
+// ========================= for adding kot to already existing order on same table =======================================
 
 app.post("/updateOrderAndCreateKOT", (req, res) => {
 	// const db = openDb();
@@ -278,7 +300,6 @@ app.post("/updateOrderAndCreateKOT", (req, res) => {
 
 app.post("/includeKOTsAndCreateOrder", (req, res) => {
 	const oldKOTs = getOldKOTs(req.body.tableNumber);
-	// console.log(oldKOTs)
 	let kotTokenNo;
 
 	if (req.body.orderCart.length) {
@@ -317,7 +338,6 @@ app.patch("/defaultScreenData", (req, res) => {
 app.get("/ordersSummary", (req, res) => {
 	const filters = req.query;
 	const orders = getOrderSummary(filters);
-
 	res.status(200).json({ success: true, error: null, orderData: orders.filterdOrders, orderSummary: orders.salesSummaryData, duration: orders.duration });
 });
 
@@ -378,18 +398,16 @@ app.put("/orderPrintCount", (req, res) => {
 	io.emit("orders", orders);
 });
 
-app.post("/authenticateBiller", async(req, res) => {
-	const billerCred = req.body.billerDetail
-	console.log(billerCred)
-	const isValid = await authenticateBiller(billerCred)
+app.post("/authenticateBiller", async (req, res) => {
+	const billerCred = req.body.billerDetail;
+	console.log(billerCred);
+	const isValid = await authenticateBiller(billerCred);
 
-	if(isValid){
-		res.status(200).json({message:"success",error:null})
+	if (isValid) {
+		res.status(200).json({ message: "success", error: null });
+	} else {
+		res.status(401).json({ message: "invalide credentials", error: "invalide credentials" });
 	}
-	else{
-		res.status(401).json({message:"invalide credentials",error:"invalide credentials"})
-	}
-	
 });
 
 app.post("/pendingOrderToOrder", async (req, res) => {
@@ -418,8 +436,9 @@ app.post("/pendingOrderToOrder", async (req, res) => {
 		updatePendingOrder(pendingOrderDetail.pendingOrderId);
 
 		const pendingOrders = getPendingOrders();
-        const isPending = false
-		io.emit("pendingOrders", pendingOrders,isPending);
+		const isPending = false;
+		const customerNames = []
+		io.emit("pendingOrders", pendingOrders, isPending,customerNames);
 		if (pendingOrderDetail.status === "accepted") {
 			const orders = getLiveOrders();
 			io.emit("orders", orders);
@@ -431,28 +450,70 @@ app.post("/pendingOrderToOrder", async (req, res) => {
 	}
 });
 
-httpServer.listen(3001, err => {
+app.get("/dueOrders", async (req, res) => {
+	const orderDetail = req.query;
+	const dueOrders = getDueOrders(orderDetail);
+	if (dueOrders.success) {
+		res.status(200).json(dueOrders);
+	} else {
+		res.status(500).json(dueOrders);
+	}
+});
+
+httpServer.listen(3001, async(err) => {
 	if (err) {
 		console.log(err);
 	} else {
 		process.send({ status: "started" });
-		setPendingOrders();
+		const { isUpdated,customerNames } = await setPendingOrders();
+	if (isUpdated) {
+		const pendingOrders = getPendingOrders();
+		io.emit("pendingOrders", pendingOrders, isUpdated,customerNames);
+	}
+		
 	}
 });
 
 const pendingOrderRefreshIterval = setInterval(async () => {
-	const { isUpdated } = await setPendingOrders();
-
+	const { isUpdated,customerNames } = await setPendingOrders();
 	if (isUpdated) {
 		const pendingOrders = getPendingOrders();
-		io.emit("pendingOrders", pendingOrders , isUpdated);
+		io.emit("pendingOrders", pendingOrders, isUpdated,customerNames);
 	}
 }, 5000);
+
+const syncCustomersInterval = setInterval(async () => {
+	await syncCustomers();
+	await syncCustomerAddresses();
+	await syncOrders();
+}, 12000);
 
 process.on("message", message => {
 	if (message.command === "shutdown") {
 		console.log("shutting down");
 		clearInterval(pendingOrderRefreshIterval);
+		clearInterval(syncCustomersInterval);
 		process.exit(0);
 	}
 });
+
+// data: [
+// 	{
+// 		pos_order_id: 1, // pod order id,
+// 		web_order_id: 12, // new generated id,
+// 		updated_at: "date time", //will be same on pos and server,
+// 		order_items: [
+// 			{
+// 				pos_item_id: 2, // pos item id
+// 				web_item_id: 11, // new generated id,
+// 				updated_at: "date time",
+// 			},
+// 			{
+// 				pos_item_id: 2, // pos item id
+// 				web_item_id: 11, // new generated id,
+// 				updated_at: "date time",
+// 			}, //..... other items
+// 		],
+// 	},
+// 	//...other orders
+// ];

@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {useRef } from "react";
 import styles from "./DiscountModal.module.css";
 import { Modal } from "react-bootstrap";
 import DiscountDetail from "./DiscountDetail";
 import { useDispatch, useSelector } from "react-redux";
-import { applyDiscount, modifyCartData } from "../Redux/finalOrderSlice";
+import { applyDiscount } from "../Redux/finalOrderSlice";
 
 function DiscountModal({ show, hide }) {
 	const dispatch = useDispatch();
@@ -18,17 +18,17 @@ function DiscountModal({ show, hide }) {
 		const discountType = flatDiscountRef.current.checked ? flatDiscountRef.current.value : percentDiscountRef.current.value;
 		const discount = +discountRef.current.value;
 
-		if (discount < 0 || discountType === "percent" && discount > 100 ) {
+		if (discount < 0 || (discountType === "percent" && discount > 100)) {
 			errorRef.current.style.display = "block";
 			return;
 		}
 
-		if (discount < 0 || discountType === "flat" && discount > subTotal) {
+		if (discount < 0 || (discountType === "flat" && discount > subTotal)) {
 			errorRef.current.style.display = "block";
 			return;
 		}
 
-		dispatch(applyDiscount({ discountType, discount }));
+		dispatch(applyDiscount({ discountType, discount ,id:null }));
 		hide();
 	};
 

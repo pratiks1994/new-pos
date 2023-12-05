@@ -5,7 +5,7 @@ const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
 const getLiveKOT = () => {
-	const liveKOTs = db2.prepare("SELECT * FROM kot WHERE (kot_status = 'accepted') OR (order_type = 'dine_in' AND order_id IS NULL) AND kot_status != 'cancelled'").all([]);
+	const liveKOTs = db2.prepare("SELECT * FROM kot WHERE (kot_status = 'accepted') OR (order_type = 'dine_in' AND pos_order_id IS NULL) AND kot_status != 'cancelled'").all([]);
 	// const liveKOTs = await dbAll(db, "SELECT * FROM KOT WHERE KOT_status = 'accepted'", []);
 
 	const prepareKOTItem = db2.prepare("SELECT * FROM kot_items WHERE kot_id = ?");
@@ -19,11 +19,11 @@ const getLiveKOT = () => {
 	const categoryStmt = db2.prepare("SELECT category_id FROM items WHERE id=?");
 	const configDetail = defaultResaurantPriceStmt.get([1]);
 	const defaultRestaurantPrice = JSON.parse(configDetail.configuration).default_restaurant_price;
-	const orderDetailStmt = db2.prepare("SELECT online_order_id FROM orders WHERE id =?");
+	const orderDetailStmt = db2.prepare("SELECT extra_data FROM pos_orders WHERE id = ?");
 
 	const liveKOTsWithItems = liveKOTs.map(KOT => {
 		const KOTItems = prepareKOTItem.all([KOT.id]);
-		// const KOTItems = await dbAll(db, "SELECT * FROM KOT_items WHERE KOT_id = ?", [KOT.id])
+		
 
 		let restaurantPriceId = defaultRestaurantPrice ? +defaultRestaurantPrice : null;
 		let areaName = "";
@@ -41,9 +41,11 @@ const getLiveKOT = () => {
 			}
 		}
 
-		if (KOT.order_id !== null) {
-			const orderDetail = orderDetailStmt.get([KOT.order_id]);
-			online_order_id = orderDetail.online_order_id;
+		if (KOT.pos_order_id !== null) {
+			const orderDetail = orderDetailStmt.get([KOT.pos_order_id]);
+			
+			online_order_id = JSON.parse(orderDetail?.extra_data)?.online_order_id
+			
 		}
 
 		const itemsWithAddons = KOTItems.map(item => {

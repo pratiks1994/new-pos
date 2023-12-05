@@ -6,7 +6,6 @@ const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
 const createKot = (order, userId, orderId) => {
-	
 	let restaurantId = 1;
 	let tokenNo;
 	const {
@@ -25,7 +24,6 @@ const createKot = (order, userId, orderId) => {
 		subTotal,
 		tableNumber,
 		orderCart,
-		
 	} = order;
 
 	// create token comparing date of last date and current kot date , reset token no if the date is changed
@@ -39,9 +37,9 @@ const createKot = (order, userId, orderId) => {
 
 		const { lastInsertRowid: KOTId } = db2
 			.prepare(
-				"INSERT INTO kot (order_id,restaurant_id,token_no,order_type,user_id,customer_name,phone_number,address,landmark,table_id,table_no,print_count,kot_status,description,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
+				"INSERT INTO kot (pos_order_id,restaurant_id,token_no,order_type,customer_id,customer_name,phone_number,address,landmark,table_id,table_no,print_count,kot_status,description,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
 			)
-			.run([orderId, restaurantId, tokenNo, orderType, userId, customerName, customerContact, customerAdd, customerLocality, tableNumber, tableNumber, 1, "accepted",orderComment]);
+			.run([orderId, restaurantId, tokenNo, orderType, userId, customerName, customerContact, customerAdd, customerLocality, tableNumber, tableNumber, 1, "accepted", orderComment]);
 
 		db2.transaction(() => {
 			const prepareItem = db2.prepare(
@@ -51,7 +49,7 @@ const createKot = (order, userId, orderId) => {
 			// const prepareToppings = db2.prepare("INSERT INTO KOT_item_addongroupitems (KOT_item_id,addongroupitem_id,name,quantity) VALUES (?,?,?,?)");
 
 			orderCart.forEach(item => {
-				const { itemQty, itemId, itemName, variation_id,itemNotes, variantName, toppings, itemTax, itemTotal, multiItemTotal, variant_display_name, parent_tax } = item;
+				const { itemQty, itemId, itemName, variation_id, itemNotes, variantName, toppings, itemTax, itemTotal, multiItemTotal, variant_display_name, parent_tax } = item;
 
 				const totalItemTax = itemTax.reduce((total, tax) => (total += tax.tax), 0);
 

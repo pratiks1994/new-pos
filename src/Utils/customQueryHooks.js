@@ -99,7 +99,6 @@ export const useGetLiveOrdersQuery = () => {
 	});
 };
 
-
 //===================================================================================================================//
 
 export const useGetConnectedPrintersQuery = () => {
@@ -132,11 +131,11 @@ export const useGetHoldOrdersQuery = () => {
 		refetchOnWindowFocus: false,
 		enabled: !!IPAddress,
 	});
-}
+};
 
 //======================================================================================================================//
 
-export const useGetOrderSummaryQuery = (filters) => {
+export const useGetOrderSummaryQuery = filters => {
 	const { IPAddress } = useSelector(state => state.serverConfig);
 
 	const getOrderSummary = async filters => {
@@ -150,9 +149,9 @@ export const useGetOrderSummaryQuery = (filters) => {
 
 	return useQuery({
 		queryKey: ["ordersSummary"],
-		queryFn: () => getOrderSummary(filters)
+		queryFn: () => getOrderSummary(filters),
 	});
-}
+};
 
 //=====================================================================================================================//
 
@@ -169,5 +168,22 @@ export const useGetPendingOrdersQuery = () => {
 		refetchIntervalInBackground: 500000,
 		refetchOnWindowFocus: false,
 		enabled: !!IPAddress,
+	});
+};
+
+export const useGetExistingOrdersQuery = (finalOrder,shouldFetchExistingOrder) => {
+	const { IPAddress } = useSelector(state => state.serverConfig);
+	const getExistingOrder = async finalOrder => {
+		let { data } = await axios.post(`http://${IPAddress}:3001/existingOrder`, finalOrder);
+		return data;
+	};
+
+	return useQuery({
+		queryKey: ["existingDineInOrder"],
+		queryFn: () => getExistingOrder(finalOrder),
+		enabled: !!IPAddress && shouldFetchExistingOrder,
+		refetchOnWindowFocus:false,
+		cacheTime:0
+
 	});
 };

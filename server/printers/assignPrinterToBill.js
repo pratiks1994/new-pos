@@ -12,7 +12,7 @@ const assignPrinterToBill = (printerData) => {
 			+printerData.printerId
 		);
 	} else {
-		console.log(printerData);
+		// console.log(printerData);
 		db2.prepare("UPDATE printers SET kot_print_orderTypes=?, kot_print_copy_count=? WHERE id=?").run(
 			printerData.kotPrintOrderTypes,
 			printerData.kotPrintCopyCount,

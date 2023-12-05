@@ -7,7 +7,7 @@ const martinozUrl = "https://martinozpizza.emergingcoders.com/api/pos/v1";
 
 const updateOnlineOrderOnMainServer = async pendingOrderDetail => {
 	const { pendingOrderId, status, onlineOrderId } = pendingOrderDetail;
-
+	try {
 	let data = new FormData();
 	data.append("restaurant_id", "1");
 	data.append("pending_order_id", onlineOrderId.toString());
@@ -24,7 +24,6 @@ const updateOnlineOrderOnMainServer = async pendingOrderDetail => {
 		data: data,
 	};
 
-	try {
 		const response = await axios.request(config);
 
 		if (response.data.status) {

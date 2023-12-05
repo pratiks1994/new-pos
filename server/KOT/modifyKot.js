@@ -8,8 +8,8 @@ const modifyKot = (order, orderData) => {
 	const userId = orderData.userId;
 	let newKotTokenNo = null;
 
-	const kotUpdateStmt = db2.prepare("UPDATE kot SET order_id = ? , user_id = ? WHERE id = ?");
-	const allDineInKotsUpdateStmt = db2.prepare("UPDATE kot SET order_id = ? , user_id = ? WHERE order_type='dine_in' AND table_no=? AND order_id IS NULL");
+	const kotUpdateStmt = db2.prepare("UPDATE kot SET pos_order_id = ? , customer_id = ? WHERE id = ?");
+	const allDineInKotsUpdateStmt = db2.prepare("UPDATE kot SET pos_order_id = ? , customer_id = ? WHERE order_type='dine_in' AND table_no=? AND pos_order_id IS NULL");
 
 	const kotTokeData = db2.prepare("SELECT token_no FROM kot WHERE Id=?").get(KOTId);
 

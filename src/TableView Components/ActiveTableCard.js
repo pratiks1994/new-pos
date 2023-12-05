@@ -23,7 +23,7 @@ function ActiveTableCard({ order, printers }) {
 
 	const [showSettleModal, setShowSettleModal] = useState(false);
 
-	const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId, print_count, tip, paymentType, customerPaid, settleAmount, multipay }) => {
+	const updateLiveOrders = async ({ orderStatus, orderId, orderType, KOTId,online_order_id, print_count, tip, paymentType, customerPaid, settleAmount, multipay }) => {
 		let { data } = await axios.put(`http://${IPAddress}:3001/liveorders`, {
 			orderStatus,
 			orderId,
@@ -35,6 +35,7 @@ function ActiveTableCard({ order, printers }) {
 			customerPaid,
 			settleAmount,
 			multipay,
+			online_order_id
 		});
 		return data;
 	};
@@ -55,6 +56,7 @@ function ActiveTableCard({ order, printers }) {
 
 		let isCartActionDisable = true;
 		let activeOrderBtns = ["cancel"]
+		
 		if (order.print_count === 0) {
 			activeOrderBtns = ["save","cancel"]
 			isCartActionDisable = false;
@@ -84,6 +86,7 @@ function ActiveTableCard({ order, printers }) {
 				tip: null,
 				settleAmount: null,
 				multipay: null,
+				online_order_id : order.extra_data.online_order_id
 			});
 		}
 	};

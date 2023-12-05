@@ -19,7 +19,6 @@
 .mainSuggest{
     position: absolute;
     width: min(36vw,450px) ;
-    z-index: 10000;
     background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(4px);
     border: 1px solid rgb(219, 219, 219);
@@ -28,8 +27,8 @@
     top:36px;
     left:70px;
     max-height: 230px;
+    z-index:1000;
     
-
 }
 
 .mainSuggest::-webkit-scrollbar {

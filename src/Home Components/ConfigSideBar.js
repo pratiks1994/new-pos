@@ -36,7 +36,7 @@ function ConfigSideBar({ showConfigSideBar, setShowConfigSideBar }) {
 				<div className={styles.items} onClick={() => setToggleReport(prev => !prev)}>
 					<img src={reportIcon} className={styles.itemIcon} />
 					<div className={styles.itemName}>Reports</div>
-					<img src={arrowDown} className={`${styles.arrow} ${toggleReport ? styles.arrowLeft : null }`} />
+					<img src={arrowDown} className={`${styles.arrow} ${toggleReport ? styles.arrowLeft : null}`} />
 				</div>
 				<SideBarReportsList toggleReport={toggleReport} handleClose={handleClose} />
 				<Link to="liveView/OrderView" className={styles.items} onClick={handleClose}>

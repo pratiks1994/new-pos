@@ -4,6 +4,7 @@ import Loading from "../Feature Components/Loading";
 import PendingOrderCard from "./PendingOrderCard";
 import { useGetPrintersQuery } from "../Utils/customQueryHooks";
 import sortPrinters from "../Utils/shortPrinters";
+import { AnimatePresence } from "framer-motion";
 
 function PendingOrdersList({ pendingOrders, isLoading }) {
 	const { data: printerArr } = useGetPrintersQuery();
@@ -13,14 +14,15 @@ function PendingOrdersList({ pendingOrders, isLoading }) {
 		return <Loading />;
 	}
 
-	
 	return (
 		<div className={styles.pendingOrderContainer}>
-			{pendingOrders.length ?pendingOrders.map((order, idx) => (
-				<PendingOrderCard order={order} key={order.id} idx={idx} printers={printers} />
-			))
-			:
-			<div className={styles.noPendingOrders}>There are no pending orders</div> }
+			<AnimatePresence>
+				{pendingOrders.length ? (
+					pendingOrders.map((order, idx) => <PendingOrderCard order={order} key={order.id} idx={idx} printers={printers} />)
+				) : (
+					<div className={styles.noPendingOrders}>There are no pending orders</div>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 }

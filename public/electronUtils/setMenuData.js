@@ -73,7 +73,7 @@ const setMenuData = async (token, syncCode, db2) => {
 
 		const groupstmt = db2.prepare("INSERT INTO groups (id,name,permissions) VALUES (?,?,?)");
 
-		const userstmt = db2.prepare("INSERT INTO users (id,name,number,otp,email,pg_cust_id,email_verified_at,activated) VALUES (?,?,?,?,?,?,?,?)");
+		const userstmt = db2.prepare("INSERT INTO customers (id,name,number,otp,email,pg_cust_id,email_verified_at,activated) VALUES (?,?,?,?,?,?,?,?)");
 
 		const userGroupstmt = db2.prepare("INSERT INTO users_groups (user_id,group_id) VALUES (?,?) ");
 
@@ -536,7 +536,7 @@ const setMenuData = async (token, syncCode, db2) => {
 				})();
 				hasData = false;
 				let timeTaken = Date.now() - start;
-				console.log("Total time taken : " + timeTaken + " milliseconds");
+			
 			}
 
 			i++;

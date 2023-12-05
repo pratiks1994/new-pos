@@ -37,81 +37,89 @@ function ReportTable({ orders }) {
 				header: "Order No.",
 				id: "Order No",
 				accessorKey: "order_number",
-				footer: "-",
+				footer: " ",
 			},
 			{
 				header: "Date",
 				id: "Date",
 				accessorFn: row => row.created_at,
 				cell: info => info.getValue().split(" ")[0],
-				footer: "-",
+				footer: " ",
 			},
 			{
 				header: "Payment Type",
 				id: "Payment Type",
 				accessorFn: row => getDisplayName(row.payment_type),
 				// accessorKey: "payment_type",
-				footer: "-",
+				footer: " ",
 			},
 			{
 				header: "Order Type",
 				id: "Order Type",
 				accessorFn: row => getDisplayName(row.order_type),
 				// accessorKey: "order_type",
-				footer: "-",
+				footer: " ",
 			},
 			{
 				header: "Area Type",
 				id: "Area",
 				accessorFn: row => row.order_area || "-",
-				footer: "-",
+				footer: " ",
 			},
 			{
 				header: "My Amount (₹)",
 				id: "My Amount",
 				accessorFn: row => row.item_total.toFixed(2),
+				cell: info => <div style={{textAlign:"right"}}>{info.getValue()}</div>,
 				footer: ({ table }) => getColumnTotal(table, "My Amount").toFixed(2),
 			},
 			{
 				header: "Discount (₹)",
 				id: "Discount",
 				accessorFn: row => row.total_discount.toFixed(2),
+				cell: info => <div style={{textAlign:"right"}}>{info.getValue()}</div>,
 				footer: ({ table }) => getColumnTotal(table, "Discount").toFixed(2),
 			},
 			{
 				header: "Delivery Charge (₹)",
 				id: "Delivery",
 				accessorFn: row => row.delivery_charges.toFixed(2),
+				cell: info => <div style={{textAlign:"right"}}>{info.getValue()}</div>,
 				footer: ({ table }) => getColumnTotal(table, "Delivery").toFixed(2),
 			},
 			{
 				header: "Tax (₹)",
 				id: "Tax",
 				accessorFn: row => row.total_tax.toFixed(2),
+				cell: info => <div style={{textAlign:"right"}}>{info.getValue()}</div>,
 				footer: ({ table }) => getColumnTotal(table, "Tax").toFixed(2),
 			},
 			{
 				header: "Waived Off (₹)",
 				id: "Waived Off",
-				accessorFn: row => (+row.settle_amount - +row.item_total - +row.total_tax).toFixed(2),
-				footer: ({ table }) => (getColumnTotal(table, "Total") - getColumnTotal(table, "Tax") - getColumnTotal(table, "My Amount")).toFixed(2),
+				accessorFn: row => (+row.settle_amount - +row.item_total - +row.total_tax + +row.total_discount).toFixed(2),
+				cell: info => <div style={{textAlign:"right"}}>{info.getValue()}</div>,
+				footer: ({ table }) => (getColumnTotal(table, "Total") - getColumnTotal(table, "Tax") - getColumnTotal(table, "My Amount") + getColumnTotal(table,"Discount")).toFixed(2),
 			},
 			{
 				header: "Total (₹)",
 				id: "Total",
 				accessorFn: row => row.settle_amount?.toFixed(2) || 0,
+				cell: info => <div style={{textAlign:"right"}}>{info.getValue()}</div>,
 				footer: ({ table }) => getColumnTotal(table, "Total").toFixed(2),
 			},
 			{
 				header: "Tip (₹)",
 				id: "Tip",
 				accessorFn: row => row.tip?.toFixed(2) || 0,
+				cell: info => <div style={{textAlign:"right"}}>{info.getValue()}</div>,
 				footer: ({ table }) => getColumnTotal(table, "Tip").toFixed(2),
 			},
 			{
 				header: "Tip + Total (₹)",
 				id: "Tip + Total",
 				accessorFn: row => ((+row?.tip || 0) + (+row?.settle_amount || 0)).toFixed(2),
+				cell: info => <div style={{textAlign:"right"}}>{info.getValue()}</div>,
 				footer: ({ table }) => (getColumnTotal(table, "Tip") + getColumnTotal(table, "Total")).toFixed(2),
 			},
 		],
@@ -191,7 +199,7 @@ function ReportTable({ orders }) {
 							{table.getFooterGroups().map(footerGroup => (
 								<tr key={footerGroup.id}>
 									{footerGroup.headers.map(header => (
-										<th key={header.id} colSpan={header.colSpan}>
+										<th key={header.id} colSpan={header.colSpan} className={styles.footerCell}>
 											{header.isPlaceholder ? null : flexRender(header.column.columnDef.footer, header.getContext())}
 										</th>
 									))}

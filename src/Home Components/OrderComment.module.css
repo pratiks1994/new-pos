@@ -1,22 +1,16 @@
 .orderComment{
-   height: 0px;
-   transform: scaleY(0);
-   padding-inline: 10px;
-   /* padding-top: 12px;
-   padding-bottom: 12px;  */
-   transition: all 0.2s ease-in-out;
    font-size: 13px;
    display: flex;
    flex-direction: column;
    
 }
 
-.orderComment.show{
+/* .orderComment.show{
    transform: scaleY(1);
    height: 120px;
    padding-top: 8px;
    padding-bottom: 12px ; 
-}
+} */
 
 .orderComment label {
    font-size: 14px;
@@ -25,6 +19,7 @@
 }
 
 .orderComment textarea{
+   
    font-size: 14px;
    font-weight: 500;
    color: rgb(61, 61, 61);

@@ -6,7 +6,7 @@ const db2 = getDb()
 
 const addOrderIdToOldKots = (orderId,tableNo) =>{
     
-    db2.prepare("UPDATE kot SET order_id = ? WHERE order_type='dine_in' AND table_no=? AND order_id IS NULL").run([orderId,tableNo])
+db2.prepare("UPDATE kot SET pos_order_id = ? WHERE order_type='dine_in' AND table_no=? AND pos_order_id IS NULL").run([orderId,tableNo])
 
 
 }

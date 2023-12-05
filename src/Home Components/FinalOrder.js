@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import styles from "./FinalOrder.module.css";
 import { incrementQty, decrementQty, removeItem } from "../Redux/finalOrderSlice";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import FinalOrderItemModal from "./FinalOrderItemModal";
 
 function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, itemStatus, variantName, multiItemTotal, itemTax, toppings, itemNotes, defaultPriceType }) {
@@ -28,13 +28,15 @@ function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, itemStat
 		return null;
 	}
 	return (
-		<motion.div
+		
+		 <motion.div
 			layout
+			layoutId={currentOrderItemId}
 			className={styles.finalOrderItem}
 			initial={{ opacity: 0, scale: 0.5 }}
 			exit={{ opacity: 0, scale: 0.5 }}
 			animate={{ opacity: 1, scale: 1 }}
-			transition={{ duration: 0.15 }}>
+			transition={{ duration: 0.1}}>
 			<div className={styles.itemNameContainer}>
 				<div
 					className={styles.removeBtn}
@@ -79,6 +81,7 @@ function FinalOrder({ currentOrderItemId, itemQty, itemName, itemTotal, itemStat
 				/>
 			)}
 		</motion.div>
+		
 	);
 }
 

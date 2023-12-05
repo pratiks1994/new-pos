@@ -1,10 +1,9 @@
-const sortPrinters = (printers) => {
-	return printers.map((printer) => {
+const sortPrinters = printers => {
+	return printers.map(printer => {
 		// const kotPrintCategories =  printer.kot_print_categories.split
 
 		const billPrintOrderTypes = printer.bill_print_ordertypes.length
-		
-			? printer.bill_print_ordertypes.split(",")?.map((orderType) => {
+			? printer.bill_print_ordertypes.split(",")?.map(orderType => {
 					if (orderType === "1") {
 						return { orderType: "delivery", copyCount: +printer.bill_print_copy_count.split(",")[0] };
 					}
@@ -18,7 +17,7 @@ const sortPrinters = (printers) => {
 			: [];
 
 		const kotPrintOrderTypes = printer.kot_print_ordertypes.length
-			? printer.kot_print_ordertypes.split(",")?.map((orderType) => {
+			? printer.kot_print_ordertypes.split(",")?.map(orderType => {
 					if (orderType === "1") {
 						return { orderType: "delivery", copyCount: +printer.kot_print_copy_count.split(",")[0] };
 					}
@@ -38,12 +37,10 @@ const sortPrinters = (printers) => {
 			kotPrintOrderTypes,
 			kotPrintStatus: printer.kot_print_status,
 			billPrintStatus: printer.bill_print_status,
-			kotPrintCategories:printer.kot_print_categories,
-			kotPrintItems:printer.kot_print_items
+			kotPrintCategories: printer.kot_print_categories,
+			kotPrintItems: printer.kot_print_items,
 		};
 	});
-
-    
 };
 
 export default sortPrinters;

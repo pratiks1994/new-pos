@@ -49,9 +49,19 @@ function SalesOrdersStatusTable({ salesTotalSummary }) {
 					</tr>
 					<tr>
 						<td>Cancelled</td>
-						<td>0.00</td>
-						<td>0.00</td>
-						<td>0</td>
+						<td>
+							{salesTotalSummary?.totalMyAmount?.cancelled.toLocaleString("en-US", {
+								minimumFractionDigits: 2,
+								maximumFractionDigits: 2,
+							})}{" "}
+						</td>
+						<td>
+							{salesTotalSummary?.totalSettleAmount?.cancelled.toLocaleString("en-US", {
+								minimumFractionDigits: 2,
+								maximumFractionDigits: 2,
+							})}
+						</td>
+						<td>{salesTotalSummary?.orderCount?.cancelled}</td>
 					</tr>
 					<tr>
 						<td>Complementory</td>

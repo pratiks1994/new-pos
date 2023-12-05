@@ -11,7 +11,7 @@ import dineInIng from "../icons/liveview-dinein.png";
 import { liveOrderToCart } from "../Redux/finalOrderSlice";
 import { useNavigate } from "react-router-dom";
 import { modifyUIActive } from "../Redux/UIActiveSlice";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import SettleOrderModal from "./SettleOrderModal";
 import getDisplayName from "../Utils/getDisplayName";
 import { executeBillPrint } from "../Utils/executePrint";
@@ -92,12 +92,10 @@ function OrderCard({ order, idx }) {
 	};
 
 	const moveOrderToHome = order => {
-
-         if(order.online_order_id){
-			setShowOnlineOrderExistModal(true)
-			return
-		 }
-
+		if (order.extra_data.online_order_id) {
+			setShowOnlineOrderExistModal(true);
+			return;
+		}
 
 		let isCartActionDisable = true;
 		let activeOrderBtns = ["cancel"];
@@ -141,7 +139,7 @@ function OrderCard({ order, idx }) {
 				tip: null,
 				settleAmount: null,
 				multipay: null,
-				online_order_id:order.online_order_id
+				online_order_id: order.extra_data.online_order_id,
 			};
 			orderMutation(updateData);
 		}
@@ -156,7 +154,20 @@ function OrderCard({ order, idx }) {
 	};
 
 	return (
-		<motion.div layout className={styles.orderCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1, delay: idx * 0.05 }}>
+		<motion.div
+			layout
+			layoutId={order.id}
+			className={styles.orderCard}
+			key="order"
+			initial="initial"
+			animate="open"
+			exit="collapsed"
+			variants={{
+				open: { opacity: 1, scale: 1 },
+				collapsed: { opacity: 0, scale: 0.8, transition: { duration: 0.1 } },
+				initial: { opacity: 0, scale: 0.9 },
+			}}
+			transition={{ duration: 0.1, delay: idx * 0.05 }}>
 			<header className={styles.cardHeader} style={getHeaderTheme(order.order_type).style} onClick={() => moveOrderToHome(order)}>
 				<div>
 					<div> Martinoz...</div>
@@ -167,7 +178,7 @@ function OrderCard({ order, idx }) {
 				</div>
 				<div>
 					<div>
-						KOT : {order.KOTDetail.map(kot => kot.token_no).join(",")} | BILL : {order.order_number}
+						KOT : {order.KOTDetail.map(kot => kot.token_no).join(",")} | BILL : {order.bill_no}
 					</div>
 					<div>{getDisplayName(order.order_type)}</div>
 				</div>
@@ -211,7 +222,9 @@ function OrderCard({ order, idx }) {
 				</button>
 			</div>
 			{showSettleModal && <SettleOrderModal show={showSettleModal} hide={() => setShowSettleModal(false)} order={order} orderMutation={orderMutation} />}
-			{showOnlineOrderExistModal && <KotEditDeniedModal show={showOnlineOrderExistModal} hide ={()=>setShowOnlineOrderExistModal(false)} message={"sorry this order is placed online. it can not be edited"} />}
+			{showOnlineOrderExistModal && (
+				<KotEditDeniedModal show={showOnlineOrderExistModal} hide={() => setShowOnlineOrderExistModal(false)} message={"sorry this order is placed online. it can not be edited"} />
+			)}
 		</motion.div>
 	);
 }

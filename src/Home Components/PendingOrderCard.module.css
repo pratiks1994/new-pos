@@ -10,8 +10,9 @@
 	overflow: hidden;
 	margin-inline: 10px;
 	/* min-height: 260px; */
-
 }
+
+
 
 .cardHeader {
 	width: 100%;
@@ -25,13 +26,13 @@
 	font-size: 14px;
 	font-weight: 500;
 	gap: 5px;
-    position: relative;
+	position: relative;
 }
 
-.logo{
-    width: 24px;
-    height: 24px;
-    /* margin-right:5px ; */
+.logo {
+	width: 24px;
+	height: 24px;
+	/* margin-right:5px ; */
 }
 
 .orderType {
@@ -57,6 +58,7 @@
 
 .orderDetail {
 	width: 100%;
+	line-height: 1px;
 	display: flex;
 	justify-content: space-between;
 	background-color: rgba(255, 255, 255, 0.527);
@@ -67,13 +69,15 @@
 	font-weight: 500;
 	font-size: 12px;
 	border-bottom: 1px solid rgb(199, 199, 199);
+	line-height: 17px;
+	letter-spacing: -0.25px;
 }
 
-.title{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap:5px
+.title {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 5px;
 }
 
 .orderNumber {
@@ -97,13 +101,13 @@
 	align-items: flex-start;
 	/* background-color: rgba(231, 231, 231, 0.377); */
 	background-color: (231 231 231 / 43%);
-    color: rgb(19, 19, 19);
+	color: rgb(19, 19, 19);
 }
 
-.itemContainer{
-    display: flex;
-    width: 50%;
-    padding: 5px 2px;
+.itemContainer {
+	display: flex;
+	width: 50%;
+	padding: 5px 2px;
 }
 
 .orderItems::-webkit-scrollbar {
@@ -115,16 +119,15 @@
 	border-radius: 5px;
 }
 
-.itemQty{
-    white-space: nowrap;
-    padding-right: 5px;
+.itemQty {
+	white-space: nowrap;
+	padding-right: 5px;
 }
 
 .addon {
 	color: rgb(95, 95, 95);
 	font-size: 12px;
 }
-
 
 .orderFooter {
 	padding: 5px 10px;

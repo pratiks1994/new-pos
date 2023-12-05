@@ -2,16 +2,18 @@ import React, { useRef, useState } from "react";
 import styles from "./OrderCancelAlertModal.module.css";
 import { Modal } from "react-bootstrap";
 import { useAuthenticateMutation, useCancelOrderMutation } from "../Utils/customMutationHooks";
+import { useSelector } from "react-redux";
 
 function OrderCancelAlertModal({ show, hide, finalOrder }) {
 	const passwordRef = useRef();
 	const [errorMessage, setErrorMessage] = useState("");
+	const biller = useSelector(state => state.serverConfig.biller);
 	
 	const { mutate: cancelOrderMutate } = useCancelOrderMutation(hide,setErrorMessage);
 	
 	const cancelOrder = finalOrder => {
 		const billerCred = {
-			name: "Test Biller",
+			name: biller,
 			id: 1,
 			password: passwordRef.current.value,
 		};

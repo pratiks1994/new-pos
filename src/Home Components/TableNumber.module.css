@@ -1,17 +1,5 @@
 .tableNumber{
-   height: 0px;
-   transform: scaleY(0);
-   padding-inline: 10px;
-   font-size: 13px;
-   transition: all 0.2s ease-in-out;
-
-   
-}
-.tableNumber.show{
-   transform: scaleY(1) ;
-   height: 55px;
-   padding-top: 12px;
-   padding-bottom: 12px ; 
+   font-size: 13px;  
 }
 
 .tableNumber input{

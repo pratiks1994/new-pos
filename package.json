@@ -99,7 +99,6 @@
 		"electron": "^24.7.1",
 		"electron-builder": "^24.6.3",
 		"electron-devtools-installer": "^3.2.0",
-		"electron-rebuild": "^3.2.9",
 		"electronmon": "^2.0.2",
 		"wait-on": "^7.0.1"
 	},

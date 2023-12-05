@@ -1,5 +1,5 @@
 const { fork } = require("child_process");
-const { app, BrowserWindow, protocol, ipcMain } = require("electron");
+const { app, BrowserWindow, protocol, ipcMain, Menu, Notification } = require("electron");
 const path = require("path");
 const url = require("url");
 const { autoUpdater } = require("electron-updater");
@@ -25,6 +25,7 @@ const latestDbVersion = 4;
 
 // Create the native browser window.
 
+Menu.setApplicationMenu(null);
 function createWindow() {
 	mainWindow = new BrowserWindow({
 		width: 1024,
@@ -38,8 +39,8 @@ function createWindow() {
 
 	const startupConfig = getServerData(db2);
 
-		serverProcess = initiateServer(startupConfig, serverFilePath, destinationFile);
-	
+	serverProcess = initiateServer(startupConfig, serverFilePath, destinationFile);
+
 	// landingPage = getLandingPage(startupConfig);
 
 	// console.log(landingPage);
@@ -184,6 +185,19 @@ ipcMain.handle("updateLoginUser", async (event, payload) => {
 ipcMain.handle("getConnectedPrinters", async (event, payload) => {
 	const connectedPrinters = await mainWindow.webContents.getPrintersAsync();
 	return connectedPrinters;
+});
+
+ipcMain.handle("newOnlineOrder", async (event, payload) => {
+	const { customerNames } = payload;
+
+	const messageBody = customerNames.length === 1 ? `There is new order from ${customerNames[0]}` : `There are ${customerNames.length} new orders `;
+	const notification = new Notification({ title: "POS", subtitle: "New Order", body: messageBody });
+
+	notification.on("click", () => {
+		
+		mainWindow.show();
+	});
+	notification.show();
 });
 
 ipcMain.handle("storeServerData", async (event, payload) => {

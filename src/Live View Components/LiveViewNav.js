@@ -3,7 +3,7 @@ import styles from "./LiveViewNav.module.css";
 import { Link, NavLink, useLocation, useNavigate, useResolvedPath } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setActive } from "../Redux/UIActiveSlice";
-import BackButton from "../Feature Components/BackButton";
+
 import { AnimatePresence, motion } from "framer-motion";
 
 function LiveViewNav() {
@@ -27,11 +27,13 @@ function LiveViewNav() {
 
 	return (
 		<nav className={styles.liveViewNav}>
-			<NavLink to="OrderView" end className={({ isActive }) => (isActive ? `${styles.active} ${styles.navLink}` : styles.navLink)}>
-				Order View
+			<NavLink to="OrderView" end className={styles.navLink}>
+				{"Order View"}
+				{!isKOT && <motion.div layoutId="activeNav"  transition={{duration:0.2}} className={styles.overline}></motion.div>}
 			</NavLink>
-			<NavLink to="KOTView" end className={({ isActive }) => (isActive ? `${styles.active} ${styles.navLink}` : styles.navLink)}>
+			<NavLink to="KOTView" end className={styles.navLink}>
 				KOT View
+				{isKOT && <motion.div layoutId="activeNav" transition={{duration:0.2}} className={styles.overline}></motion.div>}
 			</NavLink>
 			<div className={styles.OrderStatusFilter}>
 				<AnimatePresence>

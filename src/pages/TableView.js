@@ -14,9 +14,11 @@ import Loading from "../Feature Components/Loading";
 import sortPrinters from "../Utils/shortPrinters";
 
 function TableView() {
+
 	const queryClient = useQueryClient();
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
+	
 
 	const { data: orders, isLoading: isOrdersLoading, error, isError } = useGetLiveOrdersQuery();
 	const { data: bigMenu, isLoading: isBigMenuLoading } = useGetMenuQuery2();

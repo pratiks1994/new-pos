@@ -14,7 +14,6 @@ import { useDispatch } from "react-redux";
 import ConfigSideBar from "./ConfigSideBar";
 import HoldOrders from "./HoldOrders";
 import { modifyUIActive } from "../Redux/UIActiveSlice";
-import { ToastContainer } from "react-toastify";
 import { useHotkeys } from "react-hotkeys-hook";
 import useDeployHotkeys from "../Utils/useDeployHotkeys";
 import PendingOrderLink from "./PendingOrderLink";

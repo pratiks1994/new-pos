@@ -2,37 +2,31 @@ const { dbAll, dbRun } = require("../common/dbExecute");
 // const Database = require("better-sqlite3");
 // const db2 = new Database("restaurant.sqlite", {});
 
-const { getDb } = require("../common/getDb")
-const db2 = getDb()
+const { getDb } = require("../common/getDb");
+const db2 = getDb();
 
-
-const getUserSuggest = (data) => {
+const getUserSuggest = data => {
 	let matches;
 
 	if (data.customerContact) {
-		matches = db2.prepare(`SELECT id, name, number FROM users WHERE number LIKE $number || '%' LIMIT 10`).all({
-			number: data.customerContact,
-		});
-		// matches = db2.prepare(`SELECT id,name,number FROM users WHERE number LIKE "${data.customerContact}%" LIMIT 10`).all();
-		// matches = await dbAll(db, `SELECT id,name,number FROM users WHERE number LIKE "${data.customerContact}%" LIMIT 10`, []);
+		matches = db2
+			.prepare(
+				`SELECT id, name, number FROM customers WHERE number LIKE $number || '%' ORDER BY CASE WHEN number = $number THEN 0 WHEN number LIKE $number || '%' THEN 1 ELSE 2 END LIMIT 15`
+			)
+			.all({
+				number: data.customerContact,
+			});
 	} else {
-		matches = db2.prepare(`SELECT id, name, number FROM users WHERE name LIKE $name || '%' LIMIT 10`).all({
+		matches = db2.prepare(`SELECT id, name, number FROM customers WHERE name LIKE $name || '%' ORDER BY CASE WHEN name = $name THEN 0 WHEN name LIKE $name || '%' THEN 1 ELSE 2 END LIMIT 15`).all({
 			name: data.customerName,
 		});
 		// matches = await dbAll(db, `SELECT id,name,number FROM users WHERE name LIKE "${data.customerName}%" LIMIT 10`, []);
 	}
 
 	for (const match of matches) {
-		match.addresses = db2.prepare("SELECT complete_address,landmark FROM user_addresses WHERE user_id=?").all(match.id);
+		match.addresses = db2.prepare("SELECT complete_address,landmark FROM customer_addresses WHERE customer_id=?").all(match.id);
 	}
 	return matches;
-
-	// return await Promise.all(
-	//       matches.map(async (match) => {
-	//             const addresses = await dbAll(db, "SELECT complete_address,landmark FROM user_addresses WHERE user_id=?", [match.id]);
-	//             return { ...match, addresses };
-	//       })
-	// );
 };
 
 module.exports = { getUserSuggest };

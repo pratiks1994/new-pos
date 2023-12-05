@@ -1,13 +1,18 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import styles from "./TableNumber.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { changePriceOnAreaChange, modifyCartData } from "../Redux/finalOrderSlice";
 import { modifyUIActive } from "../Redux/UIActiveSlice";
 import { useGetMenuQuery2 } from "../Utils/customQueryHooks";
+import { useSearchParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { useAutofocus } from "../Utils/useAutofocus";
 
 function TableNumber({ showDetailType }) {
 	const orderCart = useSelector(state => state.finalOrder.orderCart);
 	const tableNumber = useSelector(state => state.finalOrder.tableNumber);
+
+	const autoFocusRef = useAutofocus(showDetailType, "tableNumber");
 
 	const { data: bigMenu } = useGetMenuQuery2();
 
@@ -25,7 +30,7 @@ function TableNumber({ showDetailType }) {
 	};
 
 	useEffect(() => {
-		// const start = performance.now();
+	
 		let timeOut = setTimeout(() => {
 			console.log("table changed");
 			if (orderCart.length > 0) {
@@ -60,7 +65,7 @@ function TableNumber({ showDetailType }) {
 								let newitemTotal = newPrice + toppingPrice;
 								let newMultiItemTotal = cartItem.itemQty * newitemTotal;
 								let newTaxes = item.item_tax.map(tax => {
-									return { id: tax.id, name: tax.name, tax: (tax.tax / 100) * newitemTotal,tax_percent:tax.tax };
+									return { id: tax.id, name: tax.name, tax: (tax.tax / 100) * newitemTotal, tax_percent: tax.tax };
 								});
 
 								return { ...cartItem, basePrice: newPrice, itemTotal: newitemTotal, multiItemTotal: newMultiItemTotal, itemTax: newTaxes };
@@ -74,15 +79,28 @@ function TableNumber({ showDetailType }) {
 		}, 300);
 
 		return () => clearTimeout(timeOut);
-	}, [restaurantPriceId,bigMenu]);
-
-	let showTableNumber = showDetailType === "tableNumber" ? `${styles.show} ${styles.tableNumber}` : `${styles.tableNumber}`;
+	}, [restaurantPriceId, bigMenu]);
 
 	return (
-		<div className={showTableNumber}>
-			<span className="mx-2">please enter Table No.</span>
-			<input className="px-2" type="number" min={0} step={1} pattern="[0-9]*" inputMode="numeric" value={tableNumber} onChange={e => hanndleChange(e)} />
-		</div>
+		<AnimatePresence initial={true}>
+			{showDetailType === "tableNumber" && (
+				<motion.div
+					layout
+					key="tableNumber"
+					initial="collapsed"
+					animate="open"
+					exit="collapsed"
+					variants={{
+						open: { opacity: 1, originY: 0, height: 55, padding: 12 },
+						collapsed: { opacity: 0, originY: 0, height: 0, padding: 0 },
+					}}
+					transition={{ duration: 0.2 }}
+					className={styles.tableNumber}>
+					<span className="mx-2">please enter Table No.</span>
+					<input className="px-2" ref={autoFocusRef} type="number" min={0} step={1} pattern="[0-9]*" inputMode="numeric" value={tableNumber} onChange={e => hanndleChange(e)} />
+				</motion.div>
+			)}
+		</AnimatePresence>
 	);
 }
 

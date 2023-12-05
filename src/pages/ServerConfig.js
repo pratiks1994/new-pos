@@ -15,7 +15,7 @@ function ServerConfig() {
 
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
-
+	
 	const getServerStatus = async () => {
 		const { data } = await axios.get(`http://${IPAddress}:3001/defaultScreenData`, { timeout: 5000 });
 		// console.log(data)

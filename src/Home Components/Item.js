@@ -14,8 +14,9 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 	const [modalShow, setModalShow] = useState(false);
 	const [err, setErr] = useState("");
 	const currentItem = useSelector(state => state.currentItem);
+	const [flipped,setFlipper] = useState(false)
 
-	const { restaurantPriceId} = useSelector(state => state.UIActive);
+	const { restaurantPriceId } = useSelector(state => state.UIActive);
 	const restaurantPriceVariations = variations.filter(variation => variation.restaurantPriceId === restaurantPriceId);
 	const totalTax = item_tax.reduce((acc, tax) => (acc += tax.tax), 0);
 
@@ -30,7 +31,6 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 
 			dispatch(addCurrentItem({ id, name, orderItemId, defaultVariantName, defaultVariantId, defaultVariantPrice, defaultVariantDisplayName, category_id, parent_tax }));
 		} else {
-            
 			const restaurantItemPrice = restaurantPriceId ? restaurantPrices.find(price => price.restaurant_price_id === restaurantPriceId).price : price;
 			let currentItem = {
 				currentOrderItemId: orderItemId,
@@ -48,15 +48,16 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 				itemIdentifier: id.toString(),
 				itemNotes: "",
 				parent_tax: parent_tax,
-				kotId:null,
-				item_discount:0
+				kotId: null,
+				item_discount: 0,
+				discount_detail: [],
 			};
 
 			const itemTax = item_tax.map(tax => {
-				return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 , tax_percent:tax.tax};
+				return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100, tax_percent: tax.tax };
 			});
 
-			dispatch(addOrderItem({ ...currentItem, itemTax}));
+			dispatch(addOrderItem({ ...currentItem, itemTax }));
 		}
 	};
 
@@ -66,14 +67,13 @@ function Item({ name, id, variations, has_variation, price, display_name, item_t
 	};
 
 	const handleSave = () => {
-		let itemIdentifier = getIdentifier(currentItem.itemId,currentItem.variation_id,currentItem.toppings);
-		
+		let itemIdentifier = getIdentifier(currentItem.itemId, currentItem.variation_id, currentItem.toppings);
+
 		const itemTax = item_tax.map(tax => {
-			return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100 ,tax_percent:tax.tax};
+			return { id: tax.id, name: tax.name, tax: (currentItem.itemTotal * tax.tax) / 100, tax_percent: tax.tax };
 		});
-         
-		
-		dispatch(addOrderItem({ ...currentItem, itemIdentifier, itemTax}));
+
+		dispatch(addOrderItem({ ...currentItem, itemIdentifier, itemTax }));
 		dispatch(clearCurrentItem());
 		setModalShow(false);
 	};

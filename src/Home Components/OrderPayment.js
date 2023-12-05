@@ -6,7 +6,7 @@ import PaymentBreakdown from "./PaymentBreakdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useSelector, useDispatch } from "react-redux";
-import { resetFinalOrder } from "../Redux/finalOrderSlice";
+import { resetFinalOrder, setPaymentMethod } from "../Redux/finalOrderSlice";
 import { modifyCartData } from "../Redux/finalOrderSlice";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
@@ -19,15 +19,14 @@ import sortPrinters from "../Utils/shortPrinters";
 import { validateOrder } from "../Utils/validateOrder";
 import { useKotMutation, useKotToOrderMutation, useKotToPrintOrderMutation, useModifyKotMutation, useOrderMutation, usePrintOrderMutation } from "../Utils/customMutationHooks";
 import OrderCancelAlertModal from "./OrderCancelAlertModal";
+import MultipayModal from "./MultipayModal";
 
 function OrderPayment() {
 	const finalOrder = useSelector(state => state.finalOrder);
 
 	const { data: printerArr } = useGetPrintersQuery();
 	const { data: bigMenu } = useGetMenuQuery2();
-
 	const activeOrderBtns = useSelector(state => state.UIActive.activeOrderBtns);
-
 	const customerPhoneMandatory =
 		bigMenu?.defaultSettings?.customer_phone_mandatory.split(",").map(orderType => {
 			if (orderType === "1") {
@@ -41,27 +40,34 @@ function OrderPayment() {
 		}) || [];
 
 	const printers = printerArr?.length ? sortPrinters(printerArr) : [];
-	let [searchParams, setSearchParams] = useSearchParams();
 
+	let [searchParams, setSearchParams] = useSearchParams();
 	const [shouldPrintOrder, setShouldPrintOrder] = useState(false);
 	const [showOrderExistModal, setShowOrderExistModal] = useState(false);
 	const [showKOTExistMOdal, setShowKOTExistModal] = useState(false);
 	const [showCancelModal, setShowCancelModal] = useState(false);
+	const [showMultipay, setShowMultipay] = useState(false);
+	const [multipayControlType, setMultipayControlType] = useState("order");
 
 	const { IPAddress } = useSelector(state => state.serverConfig);
 	const dispatch = useDispatch();
 
 	// add payment method to finalOrder redux state
 	const handleChange = e => {
-		let { name, value } = e.target;
-		dispatch(modifyCartData({ [name]: value }));
+		let { name, value, checked } = e.target;
+		if (name === "isPaid") {
+			dispatch(modifyCartData({ billPaid: checked }));
+			return;
+		}
+
+		dispatch(setPaymentMethod({ method: value }));
 	};
 
 	const { mutate: orderMutate } = useOrderMutation(setShowKOTExistModal);
 
 	const { mutate: kotToOrderMutate } = useKotToOrderMutation();
 
-	const { mutate: kotMutate } = useKotMutation(printers, setShowOrderExistModal);
+	const { mutate: kotMutate } = useKotMutation(printers, setShowOrderExistModal, setShowMultipay, setMultipayControlType);
 
 	const { mutate: modifyKotMutate } = useModifyKotMutation(printers);
 
@@ -71,8 +77,12 @@ function OrderPayment() {
 
 	const saveOrder = async finalOrder => {
 		const isValid = validateOrder(finalOrder, setSearchParams, customerPhoneMandatory);
-
 		if (!isValid) {
+			return;
+		}
+
+		if (finalOrder.paymentMethod === "multipay") {
+			setShowMultipay(true);
 			return;
 		}
 
@@ -81,32 +91,6 @@ function OrderPayment() {
 		} else {
 			orderMutate(finalOrder);
 		}
-		// if (finalOrder.cartAction === "modifyOrder") {
-		// 	try {
-		// 		const { data } = await axios.post(`http://${IPAddress}:3001/modifyOrder`, { finalOrder });
-		// 		console.log(data);
-		// 		notify("success", "order Modified");
-		// 		dispatch(resetFinalOrder());
-		// 		queryClient.invalidateQueries({ queryKey: ["liveOrders"] });
-		// 	} catch (error) {
-		// 		console.log("err");
-		// 		notify("err", "something went wrong");
-		// 	}
-		// } else {
-		// 	try {
-		// 		const { data } = await axios.post(`http://${IPAddress}:3001/order`, {finalOrder});
-		// 		if (data.isOldKOTsExist) {
-		// 			setShowKOTExistModal(true);
-		// 			return;
-		// 		}
-		// 		notify("success", "order Placed");
-		// 		dispatch(resetFinalOrder());
-		// 		queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
-		// 	} catch (error) {
-		// 		console.log(error);
-		// 		notify("err", "something went wrong");
-		// 	}
-		// }
 	};
 
 	const saveAndPrintOrder = async finalOrder => {
@@ -116,47 +100,16 @@ function OrderPayment() {
 			return;
 		}
 
+		if (finalOrder.paymentMethod === "multipay") {
+			setShowMultipay(true);
+			return;
+		}
+
 		if (finalOrder.cartAction === "modifyKot") {
 			kotToPrintOrderMutate({ ...finalOrder, printCount: finalOrder.printCount + 1 });
 		} else {
 			printOrderMutate({ ...finalOrder, printCount: finalOrder.printCount + 1 });
 		}
-
-		// if (finalOrder.cartAction === "modifyOrder") {
-		// 	try {
-		// 		const { data } = await axios.post(`http://${IPAddress}:3001/modifyOrder`, { finalOrder: { ...finalOrder, printCount: finalOrder.printCount + 1 } });
-		// 		notify("success", "order Modified");
-		// 		dispatch(resetFinalOrder());
-
-		// 		queryClient.invalidateQueries({ queryKey: ["liveOrders"] });
-		// 		const orderToPrint = convertOrder(data.order);
-		// 		await executeBillPrint(orderToPrint, printers);
-		// 	} catch (error) {
-		// 		console.log(error);
-		// 		notify("err", "something went wrong");
-		// 	}
-		// } else {
-		// 	try {
-		// 		const { data } = await axios.post(`http://${IPAddress}:3001/order`, { finalOrder: { ...finalOrder, printCount: 1 } });
-		// 		if (data.isOldKOTsExist) {
-		// 			setShouldPrintOrder(true);
-		// 			setShowKOTExistModal(true);
-		// 			return;
-		// 		}
-		// 		const orderToPrint = convertOrder(data.order);
-		// 		await executeBillPrint(orderToPrint, printers);
-
-		// 		if (!data.isOldOrderExist) {
-		// 			await executeKotPrint({ ...finalOrder, kotTokenNo: data.kotTokenNo, orderNo: data.orderNo }, printers);
-		// 		}
-		// 		notify("success", "order Placed");
-		// 		dispatch(resetFinalOrder());
-		// 		queryClient.invalidateQueries({ queryKey: ["KOTs", "liveOrders"] });
-		// 	} catch (error) {
-		// 		console.log(error);
-		// 		notify("err", "something went wrong");
-		// 	}
-		// }
 	};
 
 	const holdOrder = async () => {
@@ -184,29 +137,6 @@ function OrderPayment() {
 		}
 
 		kotMutate(finalOrder);
-
-		// try {
-		// 	let res = await axios.post(`http://${IPAddress}:3001/KOT`, finalOrder);
-
-		// 	if (res.statusText === "OK" && !res.data.orderExist) {
-		// 		finalOrder = { ...finalOrder, kotTokenNo: res.data.kotTokenNo };
-
-		// 		await executeKotPrint(finalOrder, printers);
-
-		// 		queryClient.invalidateQueries("KOTs");
-
-		// 		notify("success", "KOT Success");
-		// 		// set finalorder redux state to initial state after api call completion
-
-		// 		dispatch(resetFinalOrder());
-		// 	} else if (res.statusText === "OK" && res.data.orderExist) {
-		// 		setShowOrderExistModal(true);
-		// 	} else {
-		// 		notify("err", "something went wrong");
-		// 	}
-		// } catch (error) {
-		// 	notify("err", "something went wrong");
-		// }
 	};
 
 	const handleCancel = () => {
@@ -249,10 +179,13 @@ function OrderPayment() {
 					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="other" checked={finalOrder.paymentMethod === "other"} />
 					Other
 				</label>
+				<label>
+					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="multipay" checked={finalOrder.paymentMethod === "multipay"} />
+					Multipay
+				</label>
 			</div>
-
 			<div className={`${styles.paymentModesCheck} d-flex justify-content-center p-2  text-white`}>
-				<input type="checkbox" />
+				<input type="checkbox" checked={finalOrder.billPaid} name="isPaid" onChange={handleChange} />
 				<label className="ms-3">its paid</label>
 			</div>
 
@@ -322,6 +255,22 @@ function OrderPayment() {
 				/>
 			)}
 			{showCancelModal && <OrderCancelAlertModal show={showCancelModal} hide={() => setShowCancelModal(false)} finalOrder={finalOrder} />}
+			{showMultipay && (
+				<MultipayModal
+					show={showMultipay}
+					hide={() => setShowMultipay(false)}
+					kotToOrderMutate={kotToOrderMutate}
+					kotToPrintOrderMutate={kotToPrintOrderMutate}
+					orderMutate={orderMutate}
+					printOrderMutate={printOrderMutate}
+					finalOrder={finalOrder}
+					printers={printers}
+					shouldPrintOrder={shouldPrintOrder}
+					setShouldPrintOrder={setShouldPrintOrder}
+					multipayControlType={multipayControlType}
+					setMultipayControlType={setMultipayControlType}
+				/>
+			)}
 		</div>
 	);
 }

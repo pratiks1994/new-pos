@@ -51,9 +51,9 @@ function FinalOrderItemModal({ hideModal, show, itemName, itemTax, toppings, cur
 
 				{itemTax.map(tax => {
 					return (
-						<Row>
+						<Row key={tax.id}>
 							<Col className={styles.addonsTaxes}>
-								{tax.name}(2.5%) - {tax.tax}
+								{tax.name}(2.5%) - {tax.tax.toFixed(2)}
 							</Col>
 						</Row>
 					);

@@ -45,11 +45,10 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 
 			if (item.addongroupitems.length) {
 				toppings = item.addongroupitems.map(topping => {
-
 					const toppingData = toppingStmt.get([topping.addongroupitem_id]);
 
 					const price = itemDetail.price_type === 1 ? +toppingData.price / (1 + totalTaxPercent / 100) : +toppingData.price;
-					toppingTotal += price * +topping.quantity 
+					toppingTotal += price * +topping.quantity;
 
 					return {
 						id: +topping.addongroupitem_id,
@@ -71,9 +70,9 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 
 				let existingTax = cartTaxDetail.find(totaltax => totaltax.id === +tax.id);
 				if (existingTax) {
-					existingTax.tax_amount += itemTaxAmount;
+					existingTax.tax += itemTaxAmount;
 				} else {
-					cartTaxDetail.push({ id: +tax.id, name: tax.name, tax_amount: itemTaxAmount });
+					cartTaxDetail.push({ id: +tax.id, name: tax.name, tax: itemTaxAmount * +item.quantity, tax_percent: tax.tax });
 				}
 
 				return {
@@ -82,6 +81,8 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 					tax: (itemTotal - item_discount) * (tax.tax / 100),
 				};
 			});
+
+			// console.log( JSON.parse(item.discount_details))
 
 			return {
 				itemStatus: "default",
@@ -105,6 +106,7 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 				item_discount,
 				contains_free_item: item.contains_free_item,
 				is_it_free_item: item.is_it_free_item,
+				discount_detail : item.discount_details ? JSON.parse(item?.discount_details ) : []
 			};
 		});
 
@@ -133,7 +135,7 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 			subTotal,
 			cartTotal: subTotal + totalCartTaxAmount - +orderDetail.order.discount_total,
 			orderCart,
-			totalTaxes: cartTaxDetail,
+			taxDetails: cartTaxDetail,
 			totalQty: totalCartQty,
 			promo_id: +orderDetail.order.promo_id,
 			promo_code: orderDetail.order.promo_code,

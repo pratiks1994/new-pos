@@ -7,7 +7,7 @@ const getOrderSummary = filters => {
 	const to = filters.to.replace("T", " ");
 
 	let qry =
-		"SELECT id,user_id,order_number,restaurant_id,customer_name,phone_number,order_type,dine_in_table_no,item_total,total_discount,total_tax,delivery_charges,total,payment_type,order_status,created_at,user_paid,settle_amount,print_count,tip FROM orders WHERE created_at BETWEEN ? AND ? AND settle_amount IS NOT NULL ";
+		"SELECT id,customer_id,bill_no,restaurant_id,customer_name,phone_number,order_type,dine_in_table_no,item_total,total_discount,total_tax,delivery_charges,total,payment_type,order_status,created_at,settle_amount,print_count,tip FROM pos_orders WHERE created_at BETWEEN ? AND ? AND settle_amount IS NOT NULL ";
 
 	let queryParams = [from, to];
 
@@ -25,8 +25,6 @@ const getOrderSummary = filters => {
 		}
 	}
 
-	console.log(qry);
-
 	const filterdOrders = db2.prepare(qry).all(queryParams);
 
 	const salesSummaryData = filterdOrders.reduce(
@@ -37,10 +35,14 @@ const getOrderSummary = filters => {
 			data.totalTip += +order.tip;
 			data.orderCount.total += 1;
 
-			if (order.print_count === 0) {
+			if (order.print_count === 0 && order.order_status !== "cancelled") {
 				data.totalSettleAmount.saved += +order.settle_amount;
 				data.totalMyAmount.saved += +order.item_total;
 				data.orderCount.saved += 1;
+			} else if (order.order_status === "cancelled") {
+				data.totalSettleAmount.cancelled += +order.settle_amount;
+				data.totalMyAmount.cancelled += +order.item_total;
+				data.orderCount.cancelled += 1;
 			} else {
 				data.totalSettleAmount.printed += +order.settle_amount;
 				data.totalMyAmount.printed += +order.item_total;
@@ -56,7 +58,7 @@ const getOrderSummary = filters => {
 			} else if (order.payment_type.includes("upi")) {
 				data.totalUpi += +order.settle_amount;
 			} else if (order.payment_type === "multipay") {
-				const payments = db2.prepare("SELECT payment_type,amount FROM multipays WHERE order_id = ?").all(order.id);
+				const payments = db2.prepare("SELECT payment_type,amount FROM multipays WHERE pos_order_id = ?").all(order.id);
 				payments.forEach(payment => {
 					if (payment.payment_type === "cash") {
 						data.totalCash += +payment.amount;
@@ -70,7 +72,6 @@ const getOrderSummary = filters => {
 				});
 				data.totalMultiPay += +order.settle_amount;
 			}
-
 			return data;
 		},
 		{
@@ -78,16 +79,19 @@ const getOrderSummary = filters => {
 				total: 0,
 				saved: 0,
 				printed: 0,
+				cancelled: 0,
 			},
 			totalMyAmount: {
 				total: 0,
 				saved: 0,
 				printed: 0,
+				cancelled: 0,
 			},
 			orderCount: {
 				total: 0,
 				saved: 0,
 				printed: 0,
+				cancelled: 0,
 			},
 			totalCash: 0,
 			totalCard: 0,

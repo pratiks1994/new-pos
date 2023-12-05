@@ -15,6 +15,7 @@ function DineInArea({ area, restaurantPriceId,printers }) {
 							return <ActiveTableCard key={order.id} order={order} printers={printers} />;
 						});
 					}
+					
 					if (table.orders.length && table.type === "kot") {
 						return <ActiveKotTableCard key={table.orders[0].id} orders={table.orders} areaId={area.id} printers={printers} />;
 					} else {

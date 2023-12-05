@@ -1,15 +1,7 @@
 .customerDetail {
-   transform: scaleY(0);
-   height: 0px;
-   padding-inline: 10px;
-   transition: all 0.2s ease-in-out;
    font-size: 13px;
-   
-}
-
-.customerDetail.show {
-   transform: scaleY(1);
-   height: 173px;
+   overflow-y: visible;
+ 
 }
 
 .custemerFieldWrapper{

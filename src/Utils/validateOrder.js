@@ -1,6 +1,6 @@
 import notify from "../Feature Components/notify";
 
-export const validateOrder = (finalOrder, setSearchParams, customerPhoneMandatory) => {
+export const validateOrder = (finalOrder, setSearchParams, customerPhoneMandatory ) => {
 	if (finalOrder.orderType === "dine_in" && finalOrder.tableNumber === "") {
 		notify("err", "please Enter Table No.");
 		setSearchParams(prev => ({ openTable: "true" }));
@@ -17,6 +17,8 @@ export const validateOrder = (finalOrder, setSearchParams, customerPhoneMandator
         notify("err", "Cart is Empty");
         return false
     }
+
+
     return true
 };
 

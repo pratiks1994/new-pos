@@ -64,13 +64,24 @@
 .control {
 	font-size: 12px;
 	padding-inline: 10px;
+	padding-bottom: 3px;
 	display: flex;
+	position: relative;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 	height: 100%;
 	width: 70px;
 	border-right: 1px solid rgb(212, 212, 212);
+}
+
+.overline{
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 4px;
+	background-color: rgb(182, 0, 0);
 }
 
 .icon {
@@ -84,9 +95,6 @@
 	color: rgb(58, 58, 58);
 }
 
-.control.active {
-	border-bottom: 4px solid rgb(196, 3, 3);
-}
 
 .OrderViewMain {
 	width: 100%;

@@ -14,15 +14,24 @@ function PendingOrderLink() {
 
 	const pendingOrderCount = pendingOrders?.length || 0
 
-    useSocket("pendingOrders", (orders,isPending) => {
+    useSocket("pendingOrders", (orders,isPending,customerNames) => {
 		queryClient.setQueryData("pendingOrders", orders);
 
 		if (!showPendingOrders && isPending) {
 			setShowPendingOrders(true);
 	
 		}
-	});
 
+		if(isPending){
+			try {
+				
+				window.apiKey.request("newOnlineOrder",{customerNames})
+			} catch (error) {
+				console.log("erroe")
+			}
+		}
+
+	});
 	return (
         <>
 		<div className={styles.Link} onClick={() => setShowPendingOrders(true)}>

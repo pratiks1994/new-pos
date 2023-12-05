@@ -10,7 +10,7 @@ export const matchOrderAndKotsWithTables = (orders = [], areas = [], kots = []) 
 
 			const orderOnTable = orders?.filter(order => order.order_type === "dine_in" && order.dine_in_table_no === table.table_no);
 
-			const kotOnTable = kots?.filter(kot => kot.order_type === "dine_in" && kot.table_no.toString() === table.table_no.toString() && kot.order_id === null);
+			const kotOnTable = kots?.filter(kot => kot.order_type === "dine_in" && kot.table_no.toString() === table.table_no.toString() && kot.pos_order_id === null);
 
 			if (orderOnTable.length) {
 				updatedTableWithOrder.push({ ...table, orders: orderOnTable, type: "order" });
@@ -46,7 +46,7 @@ export const matchOrderAndKotsWithTables = (orders = [], areas = [], kots = []) 
 
 	const otherOrders = orders.filter(order => order.order_type === "dine_in" && !listedTableNo.includes(order.dine_in_table_no));
 
-	const otherKots = kots.filter(kot => kot.order_type === "dine_in" && kot.order_id === null && !listedTableNo.includes(kot.table_no.toString()));
+	const otherKots = kots.filter(kot => kot.order_type === "dine_in" && kot.pos_order_id === null && !listedTableNo.includes(kot.table_no.toString()));
 
 	const otherTableKots = [];
 

@@ -19,7 +19,6 @@ const printKot = async payload => {
 	// };
 
 	const fullDate = new Date();
-	console.log(fullDate.getMonth());
 	const date = `${fullDate.getDate()}/${fullDate.getMonth() + 1}/${fullDate.getFullYear()}`;
 	const time = `${fullDate.getHours()}:${fullDate.getMinutes()}:${fullDate.getSeconds()}`;
 	const orderTypedisplayNames = { dine_in: "Dine In", pick_up: "Pick Up", delivery: "Delivery" };
@@ -114,7 +113,7 @@ const printKot = async payload => {
 			${data.orderCart
 				.map(item => {
 
-					console.log(item)
+				
 					const itemStatus = item.itemStatus !== "default" && data.isModified ? `[${itemStatusDisplayName[item.itemStatus]}]` : "";
 
 					const itemCard = `<article class="itemCard">

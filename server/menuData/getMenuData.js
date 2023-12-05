@@ -7,7 +7,8 @@ const { getDefaultScreenData } = require("../settings/getDefaultScreenData");
 const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
-const getMenuData = () => {
+const getMenuData = data => {
+	// const {name,emain,pass} = data
 	const categoryPrepare = db2.prepare("SELECT id,restaurant_id,name,display_name,item_count FROM categories WHERE restaurant_id=1 AND status=1");
 
 	const itemsPrepare = db2.prepare(

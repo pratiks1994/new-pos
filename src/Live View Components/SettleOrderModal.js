@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styles from "./SettleOrderModal.module.css";
 import { Modal, Row, Col } from "react-bootstrap";
 import OtherPaymentOptions from "./OtherPaymentOptions";
@@ -6,10 +6,10 @@ import MultipayOptions from "./MultipayOptions";
 
 function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 	const [paymentDetail, setPaymentDetail] = useState({
-		paymentType: "cash",
+		paymentType: order.payment_type,
 		customerPaid: "",
 		customerReturn: "",
-		tip: "",
+		tip: order.tip || 0,
 		settleAmount: "",
 		multipay: [
 			{ name: "upi_phonepe", displayName: "PhonePe", amount: "" },
@@ -21,7 +21,24 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 			{ name: "cash", displayName: "Cash", amount: Math.round(order.total).toString() },
 		],
 	});
-	
+
+	useEffect(() => {
+		if (order.payment_type === "multipay") {
+			setPaymentDetail(prev => {
+				const updatedMultipay = prev.multipay.map(pay => {
+					const existingPay = order.multipay.find(orderPay => orderPay.payment_type === pay.name);
+					if (existingPay) {
+						return { ...pay, amount: existingPay.amount };
+					} else {
+						return pay;
+					}
+				});
+
+				return { ...prev, multipay: updatedMultipay };
+			});
+		}
+	}, []);
+
 	const otherOptions = ["upi_gpay", "upi_paytm", "upi_phonepe", "upi"];
 
 	const handleChange = useCallback(e => {
@@ -59,8 +76,9 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 			paymentType: paymentDetail.paymentType,
 			customerPaid: paymentDetail.customerPaid,
 			tip: paymentDetail.tip,
-			settleAmount: paymentDetail.settleAmount,
+			settleAmount: paymentDetail.paymentType === "due" ? order.total : paymentDetail.settleAmount,
 			multipay: paymentDetail.multipay,
+			online_order_id: order.extra_data.online_order_id
 		});
 
 		hide();
@@ -69,7 +87,7 @@ function SettleOrderModal({ show, hide, order, orderMutation, isLoading }) {
 	return (
 		<Modal show={show} onHide={hide} size="md" aria-labelledby="contained-modal-title-vcenter" centered animation={false}>
 			<Modal.Header closeButton className={styles.settleModalHeader}>
-				Save & Settle for - {order.dine_in_table_no} [ ₹ {order.total}]
+				Save & Settle for - {order.dine_in_table_no} [ ₹ {order.total.toFixed(2)}]
 			</Modal.Header>
 			<Modal.Body className={styles.settleModalBody}>
 				<Row>

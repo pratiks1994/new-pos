@@ -4,7 +4,7 @@ import Categories from "./Categories";
 import Items from "./Items";
 import { useSelector, useDispatch } from "react-redux";
 import { setMenuItems } from "../Redux/menuItemsSlice";
-import { useGetMenuQuery, useGetMenuQuery2, useGetPrintersQuery } from "../Utils/customQueryHooks";
+import { useGetMenuQuery2 } from "../Utils/customQueryHooks";
 import Loading from "../Feature Components/Loading";
 
 function MainMenu() {

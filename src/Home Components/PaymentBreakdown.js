@@ -61,11 +61,11 @@ function PaymentBreakdown({ showPaymentBreakdown, setShowPaymentBreakdown }) {
                </div>
                <div className={`${styles.breakDownItem} d-flex justify-content-between py-1 align-items-center`}>
                     <div className="ms-4">Delivery Charge</div>
-                    <input className="me-4" onChange={handleChange} name="deliveryCharge" value={finalOrder.deliveryCharge} />
+                    <input className="me-4" type="number" min={0} onChange={handleChange} name="deliveryCharge" value={finalOrder.deliveryCharge || ""} placeholder="0" />
                </div>
                <div className={`${styles.breakDownItem} d-flex justify-content-between py-1 align-items-center`}>
                     <div className="ms-4">Containe Charge</div>
-                    <input className="me-4"  onChange={handleChange} name="packagingCharge" value={finalOrder.packagingCharge} />
+                    <input className="me-4" type="number" min={0} onChange={handleChange} name="packagingCharge" value={finalOrder.packagingCharge || ""} placeholder="0"/>
                </div>
                <div className={`${styles.breakDownItem} d-flex justify-content-between`}>
                     <div className="ms-4">Tax</div>

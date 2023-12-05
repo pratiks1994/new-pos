@@ -97,7 +97,7 @@ const printInvoice = async payload => {
 			value: `<div style="flex : 7" > ${item.itemName} ${item.variationName} </div>
                   <div style="flex : 2 ; text-align:center"> x${item.itemQty} </div> 
                   <div style="flex : 3 ; text-align:center" > ${item.itemTotal.toFixed(2)} </div>
-                  <div style="flex : 3 ; text-align:center"> ${item.multiItemTotal.toFixed(2)}</div>`,
+                  <div style="flex : 3 ; text-align:center"> ${item.itemTotal.toFixed(2)}</div>`,
 			style: { textAlign: "left", fontSize: "13px", display: "flex", justifyContent: "space-between", margin: "5px 8px 5px 8px", fontFamily: "Roboto" },
 		};
 		
@@ -140,12 +140,24 @@ const printInvoice = async payload => {
 				padding: "5px 0",
 				fontFamily: "Roboto",
 			},
-		},
+		},{
+			type: "text",
+			value: `<div style="padding-left:65px" > Discount : ${data.discount.toFixed(2)} </div>`,
+			style: {
+				textAlign: "left",
+				fontSize: "13px",
+				display: "flex",
+				justifyContent: "flex-end",
+				margin: "2px 15px 0 8px",
+				fontFamily: "Roboto",
+			},
+		}
+
 	];
 
 	let printTotalTax = [];
 
-	data.totalTaxes.forEach(tax => {
+	data?.totalTaxes?.forEach(tax => {
 		printTotalTax.push({
 			type: "text",
 			value: `<div style="padding-left:65px" > ${tax.name} </div>

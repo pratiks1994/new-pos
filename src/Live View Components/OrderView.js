@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setActive } from "../Redux/UIActiveSlice";
 import { useQueryClient } from "react-query";
 import OrderCard from "./OrderCard";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import useSocket from "../Utils/useSocket";
 import { useGetLiveOrdersQuery } from "../Utils/customQueryHooks";
@@ -46,27 +46,23 @@ function OrderView() {
 		dispatch(setActive({ name, key }));
 	};
 
-	const { data: orders, isLoading,isError } = useGetLiveOrdersQuery();
+	const { data: orders, isLoading, isError } = useGetLiveOrdersQuery();
 
 	useSocket("orders", orders => {
 		queryClient.setQueryData("liveOrders", orders);
 	});
 
-	if(isLoading ){
-		return <Loading/>
+	if (isLoading) {
+		return <Loading />;
 	}
 
-	if(isError){
-		return <div>something went wrong...</div>
+	if (isError) {
+		return <div>something went wrong...</div>;
 	}
 
 	return (
-		<motion.div
-			className={styles.orderView}
-			initial={{ opacity: 0, scale: 0.98 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ duration: 0.15 }}
-			exit={{ opacity: 0, scale: 1 }}>
+		
+		<motion.div className={styles.orderView} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.15 }} exit={{ opacity: 0, scale: 0.9 }}>
 			<div className={styles.orderViewControl}>
 				<button className={styles.searchBtn}>
 					<FontAwesomeIcon icon={faMagnifyingGlass} />
@@ -74,12 +70,10 @@ function OrderView() {
 				<div className={styles.controls}>
 					{controls.map(control => {
 						return (
-							<div
-								key={control.name}
-								className={liveViewOrderType === control.name ? `${styles.control} ${styles.active}` : styles.control}
-								onClick={() => handleControl(control.name)}>
+							<div key={control.name} className={styles.control} onClick={() => handleControl(control.name)}>
 								<div className={styles.icon}>{control.icon}</div>
 								<div className={styles.name}>{control.display_name}</div>
+								{liveViewOrderType === control.name && <motion.div layoutId="underline" transition={{ duration: 0.2 }} className={styles.overline}></motion.div>}
 							</div>
 						);
 					})}
@@ -88,12 +82,14 @@ function OrderView() {
 				<button className={styles.mfrBtn}>MFR</button>
 			</div>
 			<div className={styles.OrderViewMain}>
-				{orders?.length !== 0
-					? orders
-							?.filter(order => (liveViewOrderType === "all" ? true : order.order_type === liveViewOrderType))
-							.sort((a, b) => (sortType === "asc" ? a.id - b.id : b.id - a.id))
-							.map((order, idx) => <OrderCard order={order} key={order.id} idx={idx} />)
-					: null}
+				<AnimatePresence>
+					{orders?.length !== 0
+						? orders
+								?.filter(order => (liveViewOrderType === "all" ? true : order.order_type === liveViewOrderType))
+								.sort((a, b) => (sortType === "asc" ? a.id - b.id : b.id - a.id))
+								.map((order, idx) => <OrderCard order={order} key={order.id} idx={idx} />)
+						: null}
+				</AnimatePresence>
 			</div>
 		</motion.div>
 	);

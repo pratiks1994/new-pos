@@ -17,7 +17,7 @@ const createOrder = order => {
 	};
 
 	// const lastEntry = await dbAll(db, "SELECT id FROM orders ORDER BY ID DESC LIMIT 1", []);
-	const { id } = db2.prepare("SELECT id FROM orders ORDER BY ID DESC LIMIT 1").get([]) || { id: 0 };
+	const { id } = db2.prepare("SELECT id FROM pos_orders ORDER BY ID DESC LIMIT 1").get([]) || { id: 0 };
 	// const orderNo = `ON00${id + 1}`;
 	const currentId = id + 1 || 0;
 	const orderNo = generateOrderNo(currentId);
@@ -27,12 +27,12 @@ const createOrder = order => {
 	let orderId;
 
 	const {
-		customerName,
-		customerContact,
-		customerAdd,
-		customerLocality,
-		deliveryCharge,
-		packagingCharge,
+		customerName = "",
+		customerContact = "",
+		customerAdd = "",
+		customerLocality = "",
+		deliveryCharge = 0,
+		packagingCharge = 0,
 		discount,
 		paymentMethod,
 		orderType,
@@ -50,37 +50,42 @@ const createOrder = order => {
 		promo_id = null,
 		promo_discount = 0,
 		promo_code = null,
+		billPaid = 0,
+		multipay = [],
+		pending_order_id = null,
+		taxDetails = [],
+		biller_id = 1,
+		biller_name = "biller",
 	} = order;
 
+	const extra_data_string = JSON.stringify({ online_order_id, pending_order_id });
+	const tax_details = JSON.stringify(taxDetails);
+
 	if (customerContact) {
-		const existingUserInfo = db2.prepare("SELECT id FROM users WHERE number = ?").get([customerContact.trim()]);
-		// const user = await dbAll(db, "SELECT id FROM users WHERE number = ?", [customerContact.trim()]);
+		const existingUserInfo = db2.prepare("SELECT id FROM customers WHERE number = ?").get([customerContact.trim()]);
 
 		if (!existingUserInfo) {
 			db2.transaction(() => {
-				const newUserInfo = db2.prepare("INSERT INTO users (name,number,password) VALUES(?,?,?)").run([customerName, customerContact, ""]);
+				const newUserInfo = db2
+					.prepare("INSERT INTO customers (name,number,created_at,updated_at) VALUES(?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))")
+					.run([customerName, customerContact]);
 				userId = newUserInfo.lastInsertRowid;
-				// userId = await dbRun(db, "INSERT INTO users (name,number,password) VALUES(?,?,?)", [customerName, customerContact, ""]);
-				db2.prepare("INSERT INTO user_addresses (user_id,complete_address,landmark) VALUES(?,?,?)").run([userId, customerAdd, customerLocality]);
-				// dbRun(db, "INSERT INTO user_addresses (user_id,complete_address,landmark) VALUES(?,?,?)", [userId, customerAdd, customerLocality]);
-				db2.prepare("INSERT INTO users_groups (user_id,group_id) VALUES (?,?)").run([userId, 1]);
-				// dbRun(db, "INSERT INTO users_groups (user_id,group_id) VALUES (?,?)", [userId, 1]);
+
+				// db2.prepare("UPDATE customers SET old_id = ? WHERE id = ?" ).run([userId,userId]);
+
+				db2.prepare(
+					"INSERT INTO customer_addresses (customer_id,complete_address,landmark,created_at,updated_at) VALUES(?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
+				).run([userId, customerAdd.trim(), customerLocality.trim()]);
+
+				// db2.prepare("INSERT INTO users_groups (user_id,group_id) VALUES (?,?)").run([userId, 1]);
 			})();
 		} else {
 			userId = existingUserInfo.id;
 
 			if (customerAdd.trim() !== "") {
 				db2.prepare(
-					"INSERT INTO user_addresses (user_id, complete_address,landmark) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM user_addresses WHERE user_id=? AND complete_address=? AND landmark=?)"
+					"INSERT INTO customer_addresses (customer_id, complete_address,landmark,created_at,updated_at) SELECT ?, ?, ?, datetime('now', 'localtime'), datetime('now', 'localtime') WHERE NOT EXISTS (SELECT 1 FROM customer_addresses WHERE customer_id= ? AND complete_address=? AND landmark=?)"
 				).run([userId, customerAdd?.trim(), customerLocality?.trim(), userId, customerAdd?.trim(), customerLocality?.trim()]);
-
-				// const newAddId = await dbRun(
-				//       db,
-				//       "INSERT INTO user_addresses (user_id, complete_address,landmark) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM user_addresses WHERE user_id=? AND complete_address=? AND landmark=?)",
-				//       [userId, customerAdd.trim(), customerLocality.trim(), userId, customerAdd.trim(), customerLocality.trim()]
-				// );
-				// const userAddresses = await dbAll(db, "SELECT complete_address FROM user_addresses WHERE user_id = ?", [userId])
-				// const isAddressExist = userAddresses.map(address => address.complete_address).includes(customerAdd)
 			}
 		}
 	}
@@ -88,7 +93,7 @@ const createOrder = order => {
 	const orderTrans = db2.transaction(userId => {
 		const orderInfo = db2
 			.prepare(
-				"INSERT INTO orders (user_id,order_number,restaurant_id,customer_name,complete_address,phone_number,order_type,dine_in_table_no,item_total,description,total_discount,discount_percent,total_tax,delivery_charges,total,payment_type,order_status,print_count,online_order_id,promo_id,promo_code,promo_discount,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
+				"INSERT INTO pos_orders (customer_id,bill_no,restaurant_id,customer_name,complete_address,phone_number,order_type,dine_in_table_no,item_total,description,total_discount,discount_percent,total_tax,delivery_charges,total,payment_type,order_status,print_count,promo_id,promo_code,promo_discount,bill_paid,extra_data,tax_details,biller_id,biller_name,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
 			)
 			.run([
 				userId,
@@ -108,24 +113,34 @@ const createOrder = order => {
 				cartTotal,
 				paymentMethod,
 				order_status,
-				printCount,	
-				online_order_id,
+				printCount,
 				promo_id,
 				promo_code,
-				promo_discount
+				promo_discount,
+				Number(billPaid),
+				extra_data_string,
+				tax_details,
+				biller_id,
+				biller_name,
 			]);
+
+		if (paymentMethod === "multipay") {
+			const mutipayPrepare = db2.prepare("INSERT INTO multipays (pos_order_id,payment_type,amount) VALUES (?,?,?)");
+			multipay.forEach(pay => {
+				if (pay.amount > 0) {
+					mutipayPrepare.run([orderInfo.lastInsertRowid, pay.name, pay.amount]);
+				}
+			});
+		}
 
 		const cartTrans = db2.transaction((orderCart, orderId) => {
 			const prepareItem = db2.prepare(
-				"INSERT INTO order_items (order_id,item_id,item_name,price,item_discount,final_price,quantity,variation_name,variation_id,description,tax_id,tax,item_addon_items,contains_free_item,main_order_item_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+				"INSERT INTO pos_order_items (pos_order_id,item_id,item_name,price,item_discount,final_price,quantity,variation_name,variation_id,description,tax_id,tax,item_addon_items,contains_free_item,main_order_item_id,discount_detail,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime', '+' || ? || ' seconds'),datetime('now', 'localtime', '+' || ? || ' seconds'))"
 			);
 
-			// const prepareTax = db2.prepare("INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)");
+			let main_order_item_id = null;
 
-			// const prepareToppings = db2.prepare("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)");
-
-			let main_order_item_id = null
-			orderCart.forEach(item => {
+			orderCart.forEach((item, i) => {
 				if (!["removed", "cancelled"].includes(item.itemStatus)) {
 					const {
 						itemQty,
@@ -135,6 +150,7 @@ const createOrder = order => {
 						variantName,
 						itemTotal,
 						item_discount,
+						discount_detail,
 						multiItemTotal,
 						toppings,
 						itemTax,
@@ -149,6 +165,7 @@ const createOrder = order => {
 					const totalItemTax = itemTax.reduce((total, tax) => (total += tax.tax), 0);
 
 					const toppingsJson = JSON.stringify(toppings);
+					const discount_detail_json = JSON.stringify(discount_detail);
 
 					const itemInfo = prepareItem.run([
 						orderId,
@@ -165,31 +182,13 @@ const createOrder = order => {
 						totalItemTax,
 						toppingsJson,
 						contains_free_item,
-						main_order_item_id
+						main_order_item_id,
+						discount_detail_json,
+						i,
+						i,
 					]);
 
-					main_order_item_id = contains_free_item ? itemInfo.lastInsertRowid : null
-
-					// const taxTrans = db2.transaction((itemTax, orderItemId) => {
-					// 	itemTax.forEach((tax) => {
-					// 		prepareTax.run([orderItemId, tax.id, 2.5, tax.tax]);
-					// 	});
-					// });
-
-					// taxTrans(itemTax, itemInfo.lastInsertRowid);
-
-					// if (toppings.length !== 0) {
-					// 	// item with varient has toppings insert topping data into oreder_item_addongroupitems table with id of above order_item table id
-
-					// 	const toppingsTrans = db2.transaction((toppings, orderItemId) => {
-					// 		toppings.forEach((topping) => {
-					// 			const { id, name, price, quantity } = topping;
-					// 			prepareToppings.run([orderItemId, id, name, price, quantity]);
-					// 		});
-					// 	});
-
-					// 	toppingsTrans(toppings, itemInfo.lastInsertRowid);
-					// }
+					main_order_item_id = contains_free_item ? itemInfo.lastInsertRowid : null;
 				}
 			});
 		});
@@ -200,104 +199,153 @@ const createOrder = order => {
 
 	orderTrans(userId);
 
-	// insert data into orders table
-	// db.run(
-	//       "INSERT INTO orders (user_id,order_number,restaurant_id,customer_name,complete_address,phone_number,order_type,dine_in_table_no,item_total,description,total_discount,total_tax,delivery_charges,total,payment_type,order_status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))",
-	//       [
-	//             userId,
-	//             orderNo,
-	//             restaurantId,
-	//             customerName,
-	//             customerAdd,
-	//             customerContact,
-	//             orderType,
-	//             tableNumber,
-	//             subTotal,
-	//             orderComment,
-	//             discount,
-	//             tax,
-	//             deliveryCharge,
-	//             cartTotal,
-	//             paymentMethod,
-	//             "accepted",
-	//       ],
-	//       function (err) {
-	//             if (err) {
-	//                   console.log(err);
-	//             }
-
-	//             // insert order item data into order_item table with order_id as id from above orders table entry
-	//             let orderId = this.lastID;
-
-	//             // orderCart.forEach((item) => {
-	//             //       const { itemQty, itemId, itemName, variation_id, variantName, itemTotal, multiItemTotal, toppings, itemTax } = item;
-
-	//             //       if (variation_id) {
-	//             //             // if item has varient keep varient releted entries
-
-	//             //             db.run(
-	//             //                   "INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity,variation_name,variation_id) VALUES (?,?,?,?,?,?,?,?)",
-	//             //                   [orderId, itemId, itemName, itemTotal, multiItemTotal, itemQty, variantName, variation_id],
-	//             //                   function (err) {
-	//             //                         if (err) {
-	//             //                               console.log(err);
-	//             //                         }
-
-	//             //                         let orderItemId = this.lastID;
-
-	//             //                         // itemTax.forEach((tax) => {
-	//             //                         //       dbRun(db, "INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)", [
-	//             //                         //             orderItemId,
-	//             //                         //             tax.id,
-	//             //                         //             2.5,
-	//             //                         //             tax.tax,
-	//             //                         //       ]);
-	//             //                         // });
-
-	//             //                         // toppings.forEach((topping) => {
-	//             //                         //       const { id, type, price, qty } = topping;
-
-	//             //                         //       db.run("INSERT INTO order_item_addongroupitems (order_item_id,addongroupitem_id,name,price,quantity) VALUES (?,?,?,?,?)", [
-	//             //                         //             orderItemId,
-	//             //                         //             id,
-	//             //                         //             type,
-	//             //                         //             price,
-	//             //                         //             qty,
-	//             //                         //       ]),
-	//             //                         //             (err) => {
-	//             //                         //                   if (err) console.log(err);
-	//             //                         //             };
-	//             //                         // });
-	//             //                   }
-	//             //             );
-	//             //       } else {
-	//             //             // else remove varient related entries from entry
-
-	//             //             db.run(
-	//             //                   "INSERT INTO order_items (order_id,item_id,item_name,price,final_price,quantity) VALUES (?,?,?,?,?,?)",
-	//             //                   [orderId, itemId, itemName, itemTotal, multiItemTotal, itemQty],
-	//             //                   function (err) {
-	//             //                         if (err) {
-	//             //                               console.log(err);
-	//             //                         } else {
-	//             //                               let orderItemId = this.lastID;
-	//             //                               itemTax.forEach((tax) => {
-	//             //                                     dbRun(db, "INSERT INTO order_item_taxes (order_item_id,tax_id,tax,tax_amount) VALUES (?,?,?,?)", [
-	//             //                                           orderItemId,
-	//             //                                           tax.id,
-	//             //                                           2.5,
-	//             //                                           tax.tax,
-	//             //                                     ]);
-	//             //                               });
-	//             //                         }
-	//             //                   }
-	//             //             );
-	//             //       }
-	//             // });
-	//       }
-	// );
-	//  console.log(`userId ${userId}, orderId ${orderId}`)
 	return { userId, orderId, orderNo };
 };
 
 module.exports = { createOrder };
+
+// const createOrder2 = order => {
+// 	const generateOrderNo = id => `ON${String(id).padStart(7, "0")}`;
+
+// 	const { id } = db2.prepare("SELECT id FROM orders ORDER BY ID DESC LIMIT 1").get([]) || { id: 0 };
+// 	const currentId = id + 1 || 0;
+// 	const orderNo = generateOrderNo(currentId);
+
+// 	let userId;
+// 	let orderId;
+// 	const {
+// 		customerName,
+// 		customerContact,
+// 		customerAdd,
+// 		customerLocality,
+// 		deliveryCharge,
+// 		packagingCharge,
+// 		discount,
+// 		paymentMethod,
+// 		orderType,
+// 		orderComment,
+// 		cartTotal,
+// 		tax,
+// 		subTotal,
+// 		tableNumber,
+// 		orderCart,
+// 		printCount,
+// 		order_status,
+// 		online_order_id = null,
+// 		discount_type,
+// 		discount_percent,
+// 		promo_id = null,
+// 		promo_discount = 0,
+// 		promo_code = null,
+// 	} = order;
+
+// 	if (customerContact) {
+// 		const existingUserInfo = db2.prepare("SELECT id FROM users WHERE number = ?").get([customerContact.trim()]);
+
+// 		if (!existingUserInfo) {
+// 			db2.transaction(() => {
+// 				const newUserInfo = db2.prepare("INSERT INTO users (name,number,password) VALUES(?,?,?)").run([customerName, customerContact, ""]);
+// 				userId = newUserInfo.lastInsertRowid;
+
+// 				db2.prepare("INSERT INTO user_addresses (user_id,complete_address,landmark) VALUES(?,?,?)").run([userId, customerAdd, customerLocality]);
+// 				db2.prepare("INSERT INTO users_groups (user_id,group_id) VALUES (?,?)").run([userId, 1]);
+// 			})();
+// 		} else {
+// 			userId = existingUserInfo.id;
+// 			if (customerAdd.trim() !== "") {
+// 				db2.prepare(
+// 					"INSERT INTO user_addresses (user_id, complete_address,landmark) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM user_addresses WHERE user_id=? AND complete_address=? AND landmark=?)"
+// 				).run([userId, customerAdd?.trim(), customerLocality?.trim(), userId, customerAdd?.trim(), customerLocality?.trim()]);
+// 			}
+// 		}
+// 	}
+
+// 	const orderTrans = db2.transaction(userId => {
+// 		const orderInfo = db2
+// 			.prepare(
+// 				"INSERT INTO orders (user_id,order_number,restaurant_id,customer_name,complete_address,phone_number,order_type,dine_in_table_no,item_total,description,total_discount,discount_percent,total_tax,delivery_charges,total,payment_type,order_status,print_count,online_order_id,promo_id,promo_code,promo_discount,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
+// 			)
+// 			.run([
+// 				userId,
+// 				orderNo,
+// 				1,
+// 				customerName,
+// 				customerAdd,
+// 				customerContact,
+// 				orderType,
+// 				tableNumber,
+// 				subTotal,
+// 				orderComment,
+// 				discount,
+// 				discount_percent,
+// 				tax,
+// 				deliveryCharge,
+// 				cartTotal,
+// 				paymentMethod,
+// 				order_status,
+// 				printCount,
+// 				online_order_id,
+// 				promo_id,
+// 				promo_code,
+// 				promo_discount,
+// 			]);
+
+// 		const cartTrans = db2.transaction((orderCart, orderId) => {
+// 			const prepareItem = db2.prepare(
+// 				"INSERT INTO order_items (order_id,item_id,item_name,price,item_discount,final_price,quantity,variation_name,variation_id,description,tax_id,tax,item_addon_items,contains_free_item,main_order_item_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+// 			);
+
+// 			let main_order_item_id = null;
+// 			orderCart.forEach(item => {
+// 				if (!["removed", "cancelled"].includes(item.itemStatus)) {
+// 					const {
+// 						itemQty,
+// 						itemId,
+// 						itemName,
+// 						variation_id,
+// 						variantName,
+// 						itemTotal,
+// 						item_discount,
+// 						multiItemTotal,
+// 						toppings,
+// 						itemTax,
+// 						variant_display_name,
+// 						itemNotes,
+// 						parent_tax,
+// 						contains_free_item = 0,
+// 						is_it_free_item = 0,
+// 					} = item;
+// 					const final_price = itemTotal - item_discount;
+// 					const totalItemTax = itemTax.reduce((total, tax) => (total += tax.tax), 0);
+// 					const toppingsJson = JSON.stringify(toppings);
+// 					const itemInfo = prepareItem.run([
+// 						orderId,
+// 						itemId,
+// 						itemName,
+// 						itemTotal,
+// 						item_discount,
+// 						final_price,
+// 						itemQty,
+// 						variant_display_name,
+// 						variation_id,
+// 						itemNotes,
+// 						parent_tax,
+// 						totalItemTax,
+// 						toppingsJson,
+// 						contains_free_item,
+// 						main_order_item_id,
+// 					]);
+// 					main_order_item_id = contains_free_item ? itemInfo.lastInsertRowid : null;
+// 				}
+// 			});
+// 		});
+
+// 		cartTrans(orderCart, orderInfo.lastInsertRowid);
+// 		orderId = orderInfo.lastInsertRowid;
+// 	});
+
+// 	orderTrans(userId);
+// 	return { userId, orderId, orderNo };
+// };
+
+// module.exports = { createOrder2 };

@@ -10,8 +10,6 @@ const menuItemsSlice = createSlice({
            const {items,id} = action.payload
            state.id = id
            state.items = items
-
-         //   return [...items]
           
       }
 
