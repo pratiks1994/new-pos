@@ -1,5 +1,5 @@
 const { fork } = require("child_process");
-const { app, BrowserWindow, protocol, ipcMain, Menu, Notification } = require("electron");
+const { app, BrowserWindow, protocol, ipcMain, Menu, Notification,globalShortcut } = require("electron");
 const path = require("path");
 const url = require("url");
 const { autoUpdater } = require("electron-updater");
@@ -37,6 +37,16 @@ function createWindow() {
 		},
 	});
 
+	
+	globalShortcut.register("CommandOrControl+Shift+i", () => {
+		mainWindow.webContents.openDevTools({ mode: "detach" });
+	});
+
+	globalShortcut.register("CommandOrControl+r", () => {
+		mainWindow.webContents.reload();
+	});
+
+
 	const startupConfig = getServerData(db2);
 
 	serverProcess = initiateServer(startupConfig, serverFilePath, destinationFile);
@@ -68,6 +78,7 @@ function createWindow() {
 
 app.on("ready", function () {
 	updateDatabaseSchema(latestDbVersion, db2);
+	
 
 	if (!app.isPackaged) {
 		const { default: installExtension, REDUX_DEVTOOLS } = require("electron-devtools-installer");
@@ -194,7 +205,6 @@ ipcMain.handle("newOnlineOrder", async (event, payload) => {
 	const notification = new Notification({ title: "POS", subtitle: "New Order", body: messageBody });
 
 	notification.on("click", () => {
-		
 		mainWindow.show();
 	});
 	notification.show();

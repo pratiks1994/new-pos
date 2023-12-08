@@ -7,6 +7,8 @@ const tokenData = db2.prepare("SELECT value FROM startup_config WHERE name = ?")
 async function syncOrders() {
 	const orders = getOrderToSync();
 
+
+
 	if (orders.length) {
 		const config = {
 			method: "post",
@@ -22,7 +24,9 @@ async function syncOrders() {
 			},
 		};
 
-		console.log(JSON.stringify(orders))
+		// console.log(JSON.stringify(orders))
+
+		
 
 		try {
 			const response = await axios.request(config);

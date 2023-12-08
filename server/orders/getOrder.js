@@ -1,4 +1,3 @@
-
 const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
@@ -50,11 +49,8 @@ const getOrder = orderId => {
 
 module.exports = { getOrder };
 
-
 // discount_details = [
 // 	{ id: "offer_id / promo_id ", type: "promo / offer / special_discount", name: "offer_name / promo_name", discount: "relavent discount amount" },
 // 	{ id: "offer_id / promo_id ", type: "promo / offer / special_discount", name: "offer_name / promo_name", discount: "relavent discount amount" },
 // 	{ id: "offer_id / promo_id ", type: "promo / offer / special_discount", name: "offer_name / promo_name", discount: "relavent discount amount" },
 // ];
-
-

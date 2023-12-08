@@ -13,6 +13,30 @@ CREATE TABLE "customers" (
 	PRIMARY KEY("id" AUTOINCREMENT)
 ) ;
 
+-- CREATE TABLE "kot" (
+-- 	"id"	INTEGER NOT NULL,
+-- 	"restaurant_id"	INTEGER,
+-- 	"token_no"	INTEGER,
+-- 	"order_type"	TEXT,
+-- 	"customer_id"	INTEGER,
+-- 	"customer_name"	TEXT DEFAULT NULL,
+-- 	"phone_number"	TEXT DEFAULT NULL,
+-- 	"address"	TEXT DEFAULT NULL,
+-- 	"landmark"	TEXT DEFAULT NULL,
+-- 	"table_id"	INTEGER,
+-- 	"table_no"	TEXT,
+-- 	"print_count"	INTEGER,
+-- 	"created_at"	INTEGER DEFAULT (datetime('now', 'localtime')),
+-- 	"updated_at"	INTEGER DEFAULT (datetime('now', 'localtime')),
+-- 	"kot_status"	TEXT,
+-- 	"pos_order_id"	INTEGER DEFAULT NULL,
+-- 	"description"	TEXT,
+-- 	"sync"	INTEGER DEFAULT 0,
+-- 	"web_id"	INTEGER DEFAULT NULL,
+-- 	PRIMARY KEY("id" AUTOINCREMENT),
+-- 	FOREIGN KEY("customer_id") REFERENCES "customers"("id")
+-- );
+
 
 -- customer addresses table create
 
@@ -51,8 +75,33 @@ CREATE TABLE "kot" (
     "kot_status" TEXT,
     "pos_order_id" INTEGER DEFAULT NULL,
     "description" TEXT,
+    "web_id" INTEGER DEFAULT NULL,
+    "sync" INTEGER DEFAULT 0,
     FOREIGN KEY ("customer_id") REFERENCES "customers" ("id")
 );
+
+CREATE TABLE "kot_items" (
+	"id"	integer NOT NULL,
+	"kot_id"	integer DEFAULT NULL,
+	"item_id"	integer DEFAULT NULL,
+	"item_name"	varchar(255) DEFAULT NULL,
+	"quantity"	integer DEFAULT NULL,
+	"description"	text COLLATE BINARY,
+	"variation_name"	varchar(255) DEFAULT NULL COLLATE NOCASE,
+	"variation_id"	integer DEFAULT NULL,
+	"contains_free_item"	integer DEFAULT '0',
+	"main_order_item_id"	integer DEFAULT NULL,
+	"created_at"	timestamp DEFAULT (datetime('now', 'localtime')),
+	"updated_at"	timestamp DEFAULT (datetime('now', 'localtime')),
+	"item_tax"	REAL,
+	"item_addon_items"	TEXT DEFAULT NULL,
+	"price"	REAL,
+	"final_price"	REAL,
+	"tax"	REAL,
+	"tax_id"	INTEGER,
+	"status"	INTEGER DEFAULT 1, sync INTEGER DEFAULT 0, web_id INTEGER DEFAULT NULL,
+	PRIMARY KEY("id" AUTOINCREMENT)
+)
 
 CREATE TABLE "pos_orders" (
     "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -134,9 +183,39 @@ SELECT a.id, a.web_id, c.web_id AS customer_web_id, a.complete_address , a.landm
 
 
 UPDATE pos_orders SET web_id = ? ,sync = CASE WHEN updated_at = ? THEN ? ELSE ? END WHERE id = ? 
+
+
+SELECT K.id, O.web_id AS order_id,C.web_id AS customer_id, K.restaurant_id, K.token_no, k.order_type, K.customer_name, K.phone_number, K.address, K.landmark, K.table_id, K.table_no, K.print_count, K.created_at, K.Updated_at, K.kot_status,K.description,K.web_id FROM kot AS K JOIN pos_orders AS O ON K.pos_order_id = O.id JOIN customer AS C ON C.id = K/customer_id WHERE K.sync = 0 AND O.web_id IS NOT NULL AND K.pos_order_id IS NOT NULL AND C.web_id IS NOT NULL AND C.web_id IS NOT NULL
+
+SELECT id, pos_order_id AS order_id,customer_id, restaurant_id, token_no, order_type, customer_name, phone_number, address , landmark, table_id, table_no, print_count, created_at, Updated_at, kot_status, description, web_id FROM kot WHERE sync = 0 AND pos_order_id IS NULL AND customer_id IS NULL
   
 
-
+SELECT 
+    K.id,
+    CASE WHEN K.pos_order_id IS NOT NULL AND O.web_id IS NOT NULL THEN O.web_id ELSE NULL END AS order_id
+    CASE WHEN K.customer_id IS NOT NULL AND C.web_id IS NOT NULL THEN C.web_id ELSE NULL END AS customer_id
+    K.restaurant_id, 
+    K.token_no, 
+    K.order_type, 
+    K.customer_name, 
+    K.phone_number, 
+    K.address, 
+    K.landmark, 
+    K.table_id, 
+    K.table_no, 
+    K.print_count, 
+    K.created_at, 
+    K.Updated_at, 
+    K.kot_status,
+    K.description,
+    K.web_id
+FROM 
+    kot AS K
+LEFT JOIN 
+    pos_orders AS O ON K.pos_order_id = O.id
+LEFT JOIN 
+    customers AS C ON C.id = K.customer_id
+WHERE K.sync = 0 AND O.web_id IS NOT NULL AND C.web_id Is NOT NULL LIMIT 10
 
 
 

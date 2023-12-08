@@ -41,11 +41,12 @@ const { updatePendingOrder } = require("./pendingOrders/updatePendingOrder");
 const { updateOnlineOrderOnMainServer } = require("./pendingOrders/updateOnlineOrderOnMainServer");
 const { authenticateBiller } = require("./biller/authenticateBiller");
 const { getDueOrders } = require("./orders/getDueOrders");
-const { getExistingOrder, getMergedOrder } = require("./orders/getExistingOrder");
+const { getMergedOrder } = require("./orders/getExistingOrder");
 const { getMergedOrderAndKotData } = require("./KOT/getMergedOrderAndKotData");
 const { syncCustomers } = require("./sync/syncCustomers");
 const { syncCustomerAddresses } = require("./sync/syncCustomerAddresses");
 const { syncOrders } = require("./sync/syncOrders");
+const { syncKots } = require("./sync/syncKots");
 
 // const appPath = process.argv
 // console.log(appPath)
@@ -146,6 +147,7 @@ app.post("/order", (req, res, next) => {
 	}
 });
 
+
 app.post("/order", (req, res, next) => {
 	if (req.body.finalOrder.orderType === "dine_in") {
 		const isOldKOTsExist = checkOldKOTs(req.body.finalOrder.tableNumber);
@@ -158,6 +160,7 @@ app.post("/order", (req, res, next) => {
 		next();
 	}
 });
+
 
 app.post("/order", (req, res) => {
 	const { userId, orderId, orderNo } = createOrder(req.body.finalOrder);
@@ -483,9 +486,12 @@ const pendingOrderRefreshIterval = setInterval(async () => {
 }, 5000);
 
 const syncCustomersInterval = setInterval(async () => {
-	await syncCustomers();
-	await syncCustomerAddresses();
-	await syncOrders();
+	// await syncCustomers();
+	// await syncCustomerAddresses();
+	// await syncOrders();
+	await syncKots()
+
+	
 }, 12000);
 
 process.on("message", message => {

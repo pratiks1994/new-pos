@@ -20,6 +20,7 @@ import { validateOrder } from "../Utils/validateOrder";
 import { useKotMutation, useKotToOrderMutation, useKotToPrintOrderMutation, useModifyKotMutation, useOrderMutation, usePrintOrderMutation } from "../Utils/customMutationHooks";
 import OrderCancelAlertModal from "./OrderCancelAlertModal";
 import MultipayModal from "./MultipayModal";
+import Item from "./Item";
 
 function OrderPayment() {
 	const finalOrder = useSelector(state => state.finalOrder);
@@ -276,3 +277,5 @@ function OrderPayment() {
 }
 
 export default OrderPayment;
+
+
