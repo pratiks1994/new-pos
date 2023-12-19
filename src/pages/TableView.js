@@ -19,7 +19,6 @@ function TableView() {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	
-
 	const { data: orders, isLoading: isOrdersLoading, error, isError } = useGetLiveOrdersQuery();
 	const { data: bigMenu, isLoading: isBigMenuLoading } = useGetMenuQuery2();
 	const { data: kots, isLoading: isKotLoading } = useGetLiveKotsQuery();
@@ -27,7 +26,8 @@ function TableView() {
 	const printers = useMemo(() => (printerArr?.length ? sortPrinters(printerArr) : []), [printerArr]);
 
 	const areas = bigMenu?.areas || [];
-	const defaultRestaurantPrice = bigMenu?.defaultSettings?.default_restaurant_price || 0;
+	const defaultSettings = bigMenu?.defaultSettings || {}
+	const defaultRestaurantPrice = defaultSettings.default_restaurant_price || 0;
 
 	// const defaultRestaurantPrice = defaultSettings?.default_restaurant_price || 0 ;
 
@@ -67,7 +67,7 @@ function TableView() {
 
 				{allAreas?.map(area => {
 					if (area.tables.length) {
-						return <DineInArea area={area} key={area.id} restaurantPriceId={area.restaurant_price_id} printers={printers} />;
+						return <DineInArea area={area} key={area.id} defaultSettings={defaultSettings} restaurantPriceId={area.restaurant_price_id} printers={printers} />;
 					} else {
 						return null;
 					}

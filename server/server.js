@@ -47,6 +47,7 @@ const { syncCustomers } = require("./sync/syncCustomers");
 const { syncCustomerAddresses } = require("./sync/syncCustomerAddresses");
 const { syncOrders } = require("./sync/syncOrders");
 const { syncKots } = require("./sync/syncKots");
+const cookieParser = require("cookie-parser");
 
 // const appPath = process.argv
 // console.log(appPath)
@@ -75,6 +76,7 @@ io.on("connection", socket => {
 app.use(cors("*"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(compression());
 
 app.get("/menuData", (req, res) => {
@@ -133,7 +135,7 @@ app.post("/order", (req, res, next) => {
 	// middleware
 
 	//  for order type Dine In only check if same table number exist and is not setteled, if axist add items to that order only no need to create new KOT
-	const orderId = checkAndUpdateOrder(req.body.finalOrder);
+	const { orderId, customerId } = checkAndUpdateOrder(req.body.finalOrder);
 
 	if (orderId !== "") {
 		const order = getOrder(orderId);
@@ -147,7 +149,6 @@ app.post("/order", (req, res, next) => {
 	}
 });
 
-
 app.post("/order", (req, res, next) => {
 	if (req.body.finalOrder.orderType === "dine_in") {
 		const isOldKOTsExist = checkOldKOTs(req.body.finalOrder.tableNumber);
@@ -160,7 +161,6 @@ app.post("/order", (req, res, next) => {
 		next();
 	}
 });
-
 
 app.post("/order", (req, res) => {
 	const { userId, orderId, orderNo } = createOrder(req.body.finalOrder);
@@ -289,8 +289,8 @@ app.put("/assignPrinterToBill", (req, res) => {
 
 app.post("/updateOrderAndCreateKOT", (req, res) => {
 	// const db = openDb();
-	const orderId = checkAndUpdateOrder(req.body);
-	let userId;
+	const { orderId, customerId } = checkAndUpdateOrder(req.body);
+	let userId = customerId;
 	const kotTokenNo = createKot(req.body, userId, orderId);
 	res.status(200).json(kotTokenNo);
 	const orders = getLiveOrders();
@@ -311,8 +311,10 @@ app.post("/includeKOTsAndCreateOrder", (req, res) => {
 
 	let newFinalOrder = mergeKOTandOrder(req.body, oldKOTs);
 	const { userId, orderId, orderNo } = createOrder(newFinalOrder);
-	addOrderIdToOldKots(orderId, req.body.tableNumber);
+	addOrderIdToOldKots(orderId, req.body.tableNumber, userId);
+
 	const order = getOrder(orderId);
+
 	res.status(200).json({ kotTokenNo, orderNo, order });
 
 	updateKOTUserId(orderId, userId, req.body.tableNumber);
@@ -341,7 +343,13 @@ app.patch("/defaultScreenData", (req, res) => {
 app.get("/ordersSummary", (req, res) => {
 	const filters = req.query;
 	const orders = getOrderSummary(filters);
-	res.status(200).json({ success: true, error: null, orderData: orders.filterdOrders, orderSummary: orders.salesSummaryData, duration: orders.duration });
+	res.status(200).json({
+		success: true,
+		error: null,
+		orderData: orders.filterdOrders,
+		orderSummary: orders.salesSummaryData,
+		duration: orders.duration,
+	});
 });
 
 app.post("/modifyOrder", async (req, res, next) => {
@@ -418,12 +426,13 @@ app.post("/pendingOrderToOrder", async (req, res) => {
 
 	//if success
 	const pendingOrderDetail = req.body.pendingOrderDetail;
+	const biller = req.body.biller;
 	const { success } = await updateOnlineOrderOnMainServer(pendingOrderDetail);
 	//getpending order
 
 	if (success) {
 		const pendingOrder = getPendingOrder(pendingOrderDetail);
-		let newOrder = convertPendingOrderToOrder(pendingOrder, pendingOrderDetail.status);
+		let newOrder = convertPendingOrderToOrder(pendingOrder, pendingOrderDetail.status, biller);
 		const { userId, orderId, orderNo } = createOrder(newOrder);
 
 		if (pendingOrderDetail.status === "accepted") {
@@ -440,8 +449,8 @@ app.post("/pendingOrderToOrder", async (req, res) => {
 
 		const pendingOrders = getPendingOrders();
 		const isPending = false;
-		const customerNames = []
-		io.emit("pendingOrders", pendingOrders, isPending,customerNames);
+		const customerNames = [];
+		io.emit("pendingOrders", pendingOrders, isPending, customerNames);
 		if (pendingOrderDetail.status === "accepted") {
 			const orders = getLiveOrders();
 			io.emit("orders", orders);
@@ -463,35 +472,32 @@ app.get("/dueOrders", async (req, res) => {
 	}
 });
 
-httpServer.listen(3001, async(err) => {
+httpServer.listen(3001, async err => {
 	if (err) {
 		console.log(err);
 	} else {
 		process.send({ status: "started" });
-		const { isUpdated,customerNames } = await setPendingOrders();
-	if (isUpdated) {
-		const pendingOrders = getPendingOrders();
-		io.emit("pendingOrders", pendingOrders, isUpdated,customerNames);
-	}
-		
+		const { isUpdated, customerNames } = await setPendingOrders();
+		if (isUpdated) {
+			const pendingOrders = getPendingOrders();
+			io.emit("pendingOrders", pendingOrders, isUpdated, customerNames);
+		}
 	}
 });
 
-const pendingOrderRefreshIterval = setInterval(async () => {
-	const { isUpdated,customerNames } = await setPendingOrders();
-	if (isUpdated) {
-		const pendingOrders = getPendingOrders();
-		io.emit("pendingOrders", pendingOrders, isUpdated,customerNames);
-	}
-}, 5000);
+// const pendingOrderRefreshIterval = setInterval(async () => {
+// 	const { isUpdated, customerNames } = await setPendingOrders();
+// 	if (isUpdated) {
+// 		const pendingOrders = getPendingOrders();
+// 		io.emit("pendingOrders", pendingOrders, isUpdated, customerNames);
+// 	}
+// }, 5000);
 
 const syncCustomersInterval = setInterval(async () => {
 	// await syncCustomers();
 	// await syncCustomerAddresses();
 	// await syncOrders();
-	await syncKots()
-
-	
+	// await syncKots();
 }, 12000);
 
 process.on("message", message => {
@@ -523,3 +529,4 @@ process.on("message", message => {
 // 	},
 // 	//...other orders
 // ];
+	

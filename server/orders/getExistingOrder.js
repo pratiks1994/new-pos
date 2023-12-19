@@ -3,7 +3,6 @@ const { getDb } = require("../common/getDb");
 db2 = getDb();
 
 const getMergedOrder = latestOrder => {
-	
 	const existingOrder = db2
 		.prepare(
 			"SELECT id, item_total, total, total_discount, discount_percent, payment_type FROM pos_orders WHERE  order_type='dine_in' AND dine_in_table_no = ? AND order_status = 'accepted' AND print_count= 0 AND settle_amount IS NULL"

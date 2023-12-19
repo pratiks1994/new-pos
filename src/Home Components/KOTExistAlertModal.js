@@ -3,8 +3,8 @@ import styles from "./KOTExistAlertModal.module.css";
 import { Modal, Row, Col } from "react-bootstrap";
 import { useIncludeKotAndCreateOrderMutation } from "../Utils/customMutationHooks";
 
-function KOTExistAlertModal({ show, hide, finalOrder, printers, shouldPrintOrder, setShouldPrintOrder }) {
-	const { mutate, isLoading } = useIncludeKotAndCreateOrderMutation(finalOrder, hide, shouldPrintOrder, setShouldPrintOrder, printers);
+function KOTExistAlertModal({ show, hide, finalOrder, printers, shouldPrintOrder, setShouldPrintOrder,defaultSettings }) {
+	const { mutate, isLoading } = useIncludeKotAndCreateOrderMutation(finalOrder, hide, shouldPrintOrder, setShouldPrintOrder, printers,defaultSettings);
 
 	const handleCancel = () => {
 		hide();

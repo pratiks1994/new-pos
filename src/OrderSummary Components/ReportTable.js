@@ -36,7 +36,7 @@ function ReportTable({ orders }) {
 			{
 				header: "Order No.",
 				id: "Order No",
-				accessorKey: "order_number",
+				accessorKey: "bill_no",
 				footer: " ",
 			},
 			{

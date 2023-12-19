@@ -24,6 +24,7 @@ const getOldKOTs = tableNo => {
 
 	const prepareKOTItem = db2.prepare("SELECT * FROM kot_items WHERE kot_id = ? AND status != ?");
 	// const prepareAddon = db2.prepare("SELECT * FROM KOT_item_addongroupitems WHERE KOT_item_id = ?");
+
 	const parentTaxStmt = db2.prepare("SELECT child_ids FROM taxes where id=?");
 
 	const taxesStmt = db2.prepare("SELECT * FROM taxes where id = ? ");
@@ -36,10 +37,9 @@ const getOldKOTs = tableNo => {
 	const liveKOTsWithItems = liveKOTs.map(KOT => {
 		KOT.description ? kotComments.push(KOT.description) : null;
 
-		const KOTItems = prepareKOTItem.all([KOT.id, -1]);
+		const KOTItems = prepareKOTItem.all([KOT.id, 0]);
 
 		const itemsWithAddons = KOTItems.map(item => {
-			
 			const childTaxesString = item.tax_id ? parentTaxStmt.get(item.tax_id) : { child_ids: "" };
 
 			const taxesIdArray = childTaxesString.child_ids.length ? childTaxesString.child_ids.split(",") : [];

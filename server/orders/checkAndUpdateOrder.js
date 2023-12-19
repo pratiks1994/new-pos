@@ -3,9 +3,10 @@ const db2 = getDb();
 
 const checkAndUpdateOrder = order => {
 	let orderId = "";
+	let customerId = null
 	const matchOrder = db2
 		.prepare(
-			"SELECT id, item_total,total_discount,discount_percent,payment_type,tax_details FROM pos_orders WHERE  order_type='dine_in' AND dine_in_table_no=? AND order_status = 'accepted' AND print_count= 0 AND settle_amount IS NULL"
+			"SELECT id , customer_id, item_total,total_discount,discount_percent,payment_type,tax_details FROM pos_orders WHERE  order_type='dine_in' AND dine_in_table_no=? AND order_status = 'accepted' AND print_count= 0 AND settle_amount IS NULL"
 		)
 		.get([order.tableNumber]);
 
@@ -13,6 +14,7 @@ const checkAndUpdateOrder = order => {
 		const { orderCart, subTotal, discount_percent, discount, tax, printCount, paymentMethod, cartTotal } = order;
 		const matchOrderId = matchOrder.id;
 		orderId = matchOrder.id;
+		customerId = matchOrder.customer_id
 
 		const newSubtotal = subTotal + matchOrder.item_total;
 		let new_total_discount;
@@ -175,9 +177,9 @@ const checkAndUpdateOrder = order => {
 			}
 		})();
 
-		return orderId;
+		return {orderId,customerId};
 	} else {
-		return orderId;
+		return {orderId,customerId};
 	}
 };
 

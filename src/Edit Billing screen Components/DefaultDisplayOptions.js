@@ -60,28 +60,28 @@ function DefaultDisplayOptions({ defaultOptions, setDefaultOptions }) {
 		<div className={styles.defaultDisplayOptionBody}>
 			{/* <header className={styles.displayOptionsheader}>Display </header>  */}
 			<main className={styles.displayOptionsMain}>
-				{displayOptions.map((item) => {
+				{displayOptions.map(item => {
 					return (
-						<div
-							className={styles.optionCard}
-							key={item.name}>
+						<div className={styles.optionCard} key={item.name}>
 							<div className={styles.optionNameContainer}>
 								<div className={styles.optionName}>{item.displayName}</div>
 							</div>
 							<div className={styles.options}>
-								{item.options.map((option) => {
+								{item.options.map(option => {
 									return (
-										<div
-											key={option.name}
-											className={styles.option}>
+										<div key={option.name} className={styles.option}>
 											<input
 												type="radio"
 												id={`${option.displayName}${item.displayName}`}
 												name={item.name}
 												checked={defaultOptions[item.name] === option.name}
-												onChange={() => setDefaultOptions((prev) => ({ ...prev, [item.name]: option.name }))}
+												onChange={() =>
+													setDefaultOptions(prev => ({ ...prev, [item.name]: option.name }))
+												}
 											/>
-											<label htmlFor={`${option.displayName}${item.displayName}`}>{option.displayName}</label>
+											<label htmlFor={`${option.displayName}${item.displayName}`}>
+												{option.displayName}
+											</label>
 										</div>
 									);
 								})}

@@ -16,7 +16,7 @@ import SettleOrderModal from "./SettleOrderModal";
 import getDisplayName from "../Utils/getDisplayName";
 import { executeBillPrint } from "../Utils/executePrint";
 import { convertOrder } from "../Utils/convertOrder";
-import { useGetPrintersQuery } from "../Utils/customQueryHooks";
+import { useGetDefaultScreenQuery, useGetPrintersQuery } from "../Utils/customQueryHooks";
 import sortPrinters from "../Utils/shortPrinters";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPrint } from "@fortawesome/free-solid-svg-icons";
@@ -29,6 +29,7 @@ function OrderCard({ order, idx }) {
 	const { IPAddress } = useSelector(state => state.serverConfig);
 	const { data: printerArr } = useGetPrintersQuery();
 	const printers = printerArr?.length ? sortPrinters(printerArr) : [];
+	const {data : defaultSettings} = useGetDefaultScreenQuery()
 
 	const [showSettleModal, setShowSettleModal] = useState(false);
 	const [showOnlineOrderExistModal, setShowOnlineOrderExistModal] = useState(false);
@@ -115,7 +116,7 @@ function OrderCard({ order, idx }) {
 		} else {
 			if (order.print_count === 0 && order.order_type === "dine_in") {
 				const orderToPrint = convertOrder(order);
-				executeBillPrint(orderToPrint, printers);
+				executeBillPrint(orderToPrint, printers,defaultSettings);
 			}
 
 			const statusMap = {
@@ -147,7 +148,7 @@ function OrderCard({ order, idx }) {
 
 	const handlePrint = (order, printers) => {
 		const orderToPrint = convertOrder(order);
-		executeBillPrint(orderToPrint, printers);
+		executeBillPrint(orderToPrint, printers,defaultSettings);
 
 		const updatedPrintCount = order.print_count + 1;
 		updateOrderPrintCountMutate(order.id, updatedPrintCount);

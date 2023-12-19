@@ -16,6 +16,7 @@ const setMenuData = async (token, syncCode, db2) => {
 		},
 		data: { restaurant_code: syncCode },
 	};
+
 	try {
 		const res = await axios(options);
 		if (res.status === 200) {
@@ -47,41 +48,61 @@ const setMenuData = async (token, syncCode, db2) => {
 			"INSERT INTO categories (id,restaurant_id,main_category_id,parent_cat_id,name,display_name,image,call_to_action,bogo_item,sio,item_count,priority,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
 		);
 
-		const variationstmt = db2.prepare("INSERT INTO variations (id,restaurant_id,main_variation_id,name,display_name,groupname,bogo_item,sio,status,pp_id) VALUES(?,?,?,?,?,?,?,?,?,?)");
+		const variationstmt = db2.prepare(
+			"INSERT INTO variations (id,restaurant_id,main_variation_id,name,display_name,groupname,bogo_item,sio,status,pp_id) VALUES(?,?,?,?,?,?,?,?,?,?)"
+		);
 
 		const restaurantstmt = db2.prepare(
 			"INSERT INTO restaurants (id, user_id, name, legal_entity_name, gstin,address, contact,latitude, longitude, landmark, city_id, state_id, start_time, end_time, delivery_start_time1, delivery_end_time1, delivery_start_time2, delivery_end_time2,serviceable_radius, min_order_amt_for_free_delivery, delivery_charges_below_min_amount, min_order_amt_delivery, min_order_amt_pickup, min_order_amt_dinein, new_order_alert_number, has_extra_charges_for_delivery_per_km, normal_delivery_radius, extra_charges_per_km, accepting_delivery, accepting_pickup, accepting_dinein, cod_limit_pickup, cod_limit_delivery, cod_limit_dinein, cod_for_failed_payment, cod_fp_delivery, cod_fp_pickup, cod_fp_dinein, cod_for_failed_payment_limit, cod_delivery, cod_pickup, cod_dinein, op_delivery, op_pickup, op_dinein, pp_restaurant_code, menu_version, fssai_lic_number, has_dinein, ask_table_no, is_table_no_optional, pg_account_id, status, opening_date, image) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 		);
 
-		const addongroupstmt = db2.prepare("INSERT INTO addongroups (id,restaurant_id,main_addongroup_id,name,display_name,priority,status,pp_id) VALUES (?,?,?,?,?,?,?,?)");
+		const addongroupstmt = db2.prepare(
+			"INSERT INTO addongroups (id,restaurant_id,main_addongroup_id,name,display_name,priority,status,pp_id) VALUES (?,?,?,?,?,?,?,?)"
+		);
 
-		const addonItemstmt = db2.prepare("INSERT INTO addongroupitems (id,attribute,addongroup_id,name,display_name,price,status,priority,pp_id) VALUES (?,?,?,?,?,?,?,?,?)");
+		const addonItemstmt = db2.prepare(
+			"INSERT INTO addongroupitems (id,attribute,addongroup_id,name,display_name,price,status,priority,pp_id) VALUES (?,?,?,?,?,?,?,?,?)"
+		);
 
 		const itemstmt = db2.prepare(
 			"INSERT INTO items (id,restaurant_id, main_item_id, category_id, name, display_name, attribute, description, is_spicy, has_jain, tag, image, pp_image_url, status, priority, has_variation, order_type, packing_charges, has_addon, has_variation_addon, in_stock, suggest, in_stock_turn_on_time, variation_groupname, price, item_tax, bogo_item, pp_id,parent_tax,price_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 		);
 
-		const itemVariationstmt = db2.prepare("INSERT INTO item_variation (id,item_id,variation_id,price,restaurant_price_id) VALUES (?,?,?,?,?)");
+		const itemVariationstmt = db2.prepare(
+			"INSERT INTO item_variation (id,item_id,variation_id,price,restaurant_price_id) VALUES (?,?,?,?,?)"
+		);
 
-		const itemRestaurantPricesstmt = db2.prepare("INSERT INTO item_restaurant_prices (item_id,restaurant_price_id,price,status) VALUES (?,?,?,?)");
+		const itemRestaurantPricesstmt = db2.prepare(
+			"INSERT INTO item_restaurant_prices (item_id,restaurant_price_id,price,status) VALUES (?,?,?,?)"
+		);
 
 		const addonItemVariationstmt = db2.prepare("INSERT INTO addongroup_item_variation (id,addongroup_id,item_variation_id) VALUES (?,?,?) ");
 
-		const taxstmt = db2.prepare("INSERT INTO taxes (id,restaurant_id,main_tax_id,name,tax,order_types,status,priority,pp_id,child_ids) VALUES (?,?,?,?,?,?,?,?,?,?)");
+		const taxstmt = db2.prepare(
+			"INSERT INTO taxes (id,restaurant_id,main_tax_id,name,tax,order_types,status,priority,pp_id,child_ids) VALUES (?,?,?,?,?,?,?,?,?,?)"
+		);
 
-		const dineInTablestmt = db2.prepare("INSERT INTO dine_in_tables (id,restaurant_id,area_id,uid,sid,table_no,qr_code,platform) VALUES (?,?,?,?,?,?,?,?)");
+		const dineInTablestmt = db2.prepare(
+			"INSERT INTO dine_in_tables (id,restaurant_id,area_id,uid,sid,table_no,qr_code,platform) VALUES (?,?,?,?,?,?,?,?)"
+		);
 
 		const groupstmt = db2.prepare("INSERT INTO groups (id,name,permissions) VALUES (?,?,?)");
 
-		const userstmt = db2.prepare("INSERT INTO customers (id,name,number,otp,email,pg_cust_id,email_verified_at,activated) VALUES (?,?,?,?,?,?,?,?)");
+		const userstmt = db2.prepare(
+			"INSERT INTO customers (id,name,number,otp,email,pg_cust_id,email_verified_at,activated) VALUES (?,?,?,?,?,?,?,?)"
+		);
 
 		const userGroupstmt = db2.prepare("INSERT INTO users_groups (user_id,group_id) VALUES (?,?) ");
 
-		const billerStmt = db2.prepare("INSERT INTO billers (id, user_id, restaurant_id, passcode, status, created_at, updated_at, name, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		const billerStmt = db2.prepare(
+			"INSERT INTO billers (id, user_id, restaurant_id, passcode, status, created_at, updated_at, name, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		);
 
 		const pricesstms = db2.prepare("INSERT INTO prices (id,name,type,status,created_at,updated_at) VALUES(?,?,?,?,?,?)");
 
-		const restaurantPricesstmt = db2.prepare("INSERT INTO restaurant_prices (id,price_id,restaurant_id,display_name,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)");
+		const restaurantPricesstmt = db2.prepare(
+			"INSERT INTO restaurant_prices (id,price_id,restaurant_id,display_name,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)"
+		);
 
 		const orderTypestmt = db2.prepare("INSERT INTO order_types (id,name,status) VALUES(?,?,?)");
 
@@ -93,7 +114,9 @@ const setMenuData = async (token, syncCode, db2) => {
 			"INSERT INTO order_items (id,order_id,item_id,item_name,item_discount,price,final_price,quantity,description,variation_name,variation_id,contains_free_item,main_order_item_id,created_at,updated_at,item_addon_items) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 		);
 
-		const orderItemTaxesstmt = db2.prepare("INSERT INTO order_item_taxes (id,order_item_id,tax_id,tax,tax_amount,created_at,updated_at) VALUES (?,?,?,?,?,?,?)");
+		const orderItemTaxesstmt = db2.prepare(
+			"INSERT INTO order_item_taxes (id,order_item_id,tax_id,tax,tax_amount,created_at,updated_at) VALUES (?,?,?,?,?,?,?)"
+		);
 
 		const brandsStmt = db2.prepare(`
             INSERT INTO brands ( id, uid, user_id, name, logo, primary_color, secondary_color, extra_light_color, h_desc, h_img, insta_url, fb_url, youtube_url, android_app_link, ios_app_link, app_ss, h_bg_img, is_our_story, our_story_img, our_story_desc, location, support_email, support_phone, is_fe, fe_phone, fe_email, fe_banner_img, domain, terms_and_conditions, refund_policy, faqs, terms_and_conditions_link,refund_policy_link, help_and_support_link, faqs_link, franchise_enquiry_link, pg_default_email, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
@@ -174,7 +197,14 @@ const setMenuData = async (token, syncCode, db2) => {
 			}
 
 			for (const attribute of attributes) {
-				attributesstmt.run(attribute.id, attribute.name, attribute.status, attribute.pp_id, attribute.created_at, attribute.updated_at);
+				attributesstmt.run(
+					attribute.id,
+					attribute.name,
+					attribute.status,
+					attribute.pp_id,
+					attribute.created_at,
+					attribute.updated_at
+				);
 			}
 
 			brandsStmt.run(
@@ -232,18 +262,13 @@ const setMenuData = async (token, syncCode, db2) => {
 				);
 			}
 
-			// for (const biller of billers) {
-			// 	const { id, user_id, restaurant_id, passcode, status, created_at, updated_at, name, password } = biller;
-			// 	billerStmt.run(id, user_id, restaurant_id, passcode, status, created_at, updated_at, name, password);
-			// }
+			for (const biller of billers) {
+				const { id, user_id, restaurant_id, passcode, status, created_at, updated_at, name, password } = biller;
+				billerStmt.run(id, user_id, restaurant_id, passcode, status, created_at, updated_at, name, password);
+			}
 
 			for (const promo of promos) {
-				const {
-					promodays,
-					excluded_categories,
-					excluded_offers,
-					order_types,
-				} = promo;
+				const { promodays, excluded_categories, excluded_offers, order_types } = promo;
 				const other_data_json = JSON.stringify({ promodays, excluded_categories, excluded_offers, order_types });
 
 				promoStmt.run([
@@ -285,7 +310,18 @@ const setMenuData = async (token, syncCode, db2) => {
 			}
 
 			for (const tax of taxes) {
-				taxstmt.run(tax.id, tax.restaurant_id, tax.main_tax_id, tax.name, tax.tax, tax.order_types, tax.status, tax.priority, tax.pp_id, tax.child_ids);
+				taxstmt.run(
+					tax.id,
+					tax.restaurant_id,
+					tax.main_tax_id,
+					tax.name,
+					tax.tax,
+					tax.order_types,
+					tax.status,
+					tax.priority,
+					tax.pp_id,
+					tax.child_ids
+				);
 			}
 
 			for (const category of categories) {
@@ -496,7 +532,16 @@ const setMenuData = async (token, syncCode, db2) => {
 			}
 
 			for (const table of dine_in_tables) {
-				dineInTablestmt.run(table.id, table.restaurant_id, table.area_id, table.uid, table.sid, table.table_no, table.qr_code, table.platform);
+				dineInTablestmt.run(
+					table.id,
+					table.restaurant_id,
+					table.area_id,
+					table.uid,
+					table.sid,
+					table.table_no,
+					table.qr_code,
+					table.platform
+				);
 			}
 
 			for (const group of groups) {
@@ -530,13 +575,21 @@ const setMenuData = async (token, syncCode, db2) => {
 			if (customers.length < 2000) {
 				db2.transaction(() => {
 					for (const customer of allCustomers) {
-						userstmt.run(customer.id, customer.name, customer.number, customer.otp, customer.email, customer.pg_cust_id, customer.email_varified_at, customer.activated);
-						userGroupstmt.run(customer.id, customer.group_id);
+						userstmt.run(
+							customer.id,
+							customer.name,
+							customer.number,
+							customer.otp,
+							customer.email,
+							customer.pg_cust_id,
+							customer.email_varified_at,
+							customer.activated
+						);
+						// userGroupstmt.run(customer.id, customer.group_id);
 					}
 				})();
 				hasData = false;
 				let timeTaken = Date.now() - start;
-			
 			}
 
 			i++;

@@ -115,7 +115,7 @@ export const useGetConnectedPrintersQuery = () => {
 	});
 };
 
-//==========================================================================================================//
+//==================================================================================================================//
 
 export const useGetHoldOrdersQuery = () => {
 	const { IPAddress } = useSelector(state => state.serverConfig);
@@ -171,7 +171,7 @@ export const useGetPendingOrdersQuery = () => {
 	});
 };
 
-export const useGetExistingOrdersQuery = (finalOrder,shouldFetchExistingOrder) => {
+export const useGetExistingOrdersQuery = (finalOrder, shouldFetchExistingOrder) => {
 	const { IPAddress } = useSelector(state => state.serverConfig);
 	const getExistingOrder = async finalOrder => {
 		let { data } = await axios.post(`http://${IPAddress}:3001/existingOrder`, finalOrder);
@@ -182,8 +182,24 @@ export const useGetExistingOrdersQuery = (finalOrder,shouldFetchExistingOrder) =
 		queryKey: ["existingDineInOrder"],
 		queryFn: () => getExistingOrder(finalOrder),
 		enabled: !!IPAddress && shouldFetchExistingOrder,
-		refetchOnWindowFocus:false,
-		cacheTime:0
+		refetchOnWindowFocus: false,
+		cacheTime: 0,
+	});
+};
 
+export const useGetDefaultScreenQuery = () => {
+	const { IPAddress } = useSelector(state => state.serverConfig);
+	const getServerStatus = async () => {
+		const { data } = await axios.get(`http://${IPAddress}:3001/defaultScreenData`);
+		return data;
+	};
+
+	return useQuery({
+		queryKey: ["defaultScreen"],
+		queryFn: getServerStatus,
+		enabled: !!IPAddress,
+		refetchOnWindowFocus: false,
+		cacheTime: 0,
+		staleTime: 5000000,
 	});
 };

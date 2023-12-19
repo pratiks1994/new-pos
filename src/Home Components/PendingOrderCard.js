@@ -7,8 +7,8 @@ import { usePendingOrderToOrderMutation } from "../Utils/customMutationHooks";
 const orderTypeMap = { pick_up: "Pick Up", delivery: "Delivery", dine_in: "Dine In" };
 const orderBgColorMap = { pick_up: "#0d323f", delivery: "#3f0d0d", dine_in: "#383f0d" };
 
-function PendingOrderCard({ order, idx, printers }) {
-	const { mutate, isLoading } = usePendingOrderToOrderMutation(printers);
+function PendingOrderCard({ order, idx, printers,defaultSettings }) {
+	const { mutate, isLoading } = usePendingOrderToOrderMutation(printers,defaultSettings);
 
 	const pendingOrderToOrder = (pendingOrderId, status, onlineOrderId) => {
 		mutate({ pendingOrderId, status, onlineOrderId });

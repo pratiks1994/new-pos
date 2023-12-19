@@ -21,8 +21,6 @@ function EditPrinter() {
 	const categories = bigMenu?.categories || [];
 	const { printerId } = useParams();
 
-
-
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
@@ -134,8 +132,6 @@ function EditPrinter() {
 		},
 	});
 
-	
-
 	const handleSave = async (printer, printerKotOrderType, printerBillOrderType) => {
 		const billPrintOrderTypes = printerBillOrderType.reduce((acc, orderType) => (orderType.isChecked ? [...acc, orderType.id] : acc), []).join(",");
 		const billPrintCopyCount = printerBillOrderType.map(ordertype => ordertype.copyCount || 0).join(",");
@@ -146,17 +142,18 @@ function EditPrinter() {
 		const printCategories = selectedCategory.allSelected || !selectedCategory.selectedCategoryIds.length ? "-1" : selectedCategory.selectedCategoryIds.join(",");
 		const printItems = selectedItems.allSelected || !selectedItems.selectedItemIds.length ? "-1" : selectedItems.selectedItemIds.join(",");
 
+		console.log(printer)
+
 		printerMutation.mutate({ ...printer, kotPrintCopyCount, kotPrintOrderTypes, billPrintCopyCount, billPrintOrderTypes, printCategories, printItems });
 	};
 
-	if (isLoading || isFetching ) {
-		return  <Loading />;
+	if (isLoading || isFetching) {
+		return <Loading />;
 	}
 
 	if (isError) {
 		return <div>something went wrong...</div>;
 	}
-
 
 	return (
 		<motion.div className={styles.editPrinterBody} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.1 }}>

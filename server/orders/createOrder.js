@@ -9,18 +9,43 @@ const createOrder = order => {
 	// printBill(order)
 	// console.log(order);
 
-	const generateOrderNo = id => {
-		const numString = String(id);
-		const numZerosToAdd = 7 - numString.length;
-		const zeros = "0".repeat(numZerosToAdd);
-		return `ON${zeros}${id}`;
+	// const generateOrderNo = id => {
+	// 	const numString = String(id);
+	// 	const numZerosToAdd = 7 - numString.length;
+	// 	const zeros = "0".repeat(numZerosToAdd);
+	// 	return `ON${zeros}${id}`;
+	// };
+
+	const generateBillNo = (lastOrderTime, lastBillNo) => {
+		if (!lastBillNo || !lastOrderTime) return 1;
+
+		const currentOrderTime = new Date();
+		const lastOrderMonth = lastOrderTime.getMonth() + 1;
+		const cutOffYear = lastOrderMonth < 4 ? lastOrderTime.getFullYear() : lastOrderTime.getFullYear() + 1;
+		const cutOffTime = new Date(`${cutOffYear}-03-31T23:59:59`);
+
+		console.log(cutOffTime, "cutoff");
+		console.log(currentOrderTime, "current");
+		console.log(lastOrderTime, "last");
+
+		let newBillNo = lastBillNo + 1;
+
+		if (currentOrderTime > cutOffTime) {
+			newBillNo = 1;
+		}
+
+		return newBillNo;
 	};
 
+	const lastOrderData = db2.prepare("SELECT bill_no, created_at FROM pos_orders ORDER BY created_at DESC LIMIT 1 ").get([]);
+
+	const orderNo = lastOrderData?.created_at ? generateBillNo(new Date(lastOrderData.created_at), +lastOrderData.bill_no) : 1;
+
 	// const lastEntry = await dbAll(db, "SELECT id FROM orders ORDER BY ID DESC LIMIT 1", []);
-	const { id } = db2.prepare("SELECT id FROM pos_orders ORDER BY ID DESC LIMIT 1").get([]) || { id: 0 };
+	// const { id } = db2.prepare("SELECT id FROM pos_orders ORDER BY ID DESC LIMIT 1").get([]) || { id: 0 };
 	// const orderNo = `ON00${id + 1}`;
-	const currentId = id + 1 || 0;
-	const orderNo = generateOrderNo(currentId);
+	// const currentId = id + 1 || 0;
+	// const orderNo = generateOrderNo(currentId);
 
 	let userId;
 	let restaurantId = 1;
@@ -67,7 +92,9 @@ const createOrder = order => {
 		if (!existingUserInfo) {
 			db2.transaction(() => {
 				const newUserInfo = db2
-					.prepare("INSERT INTO customers (name,number,created_at,updated_at) VALUES(?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))")
+					.prepare(
+						"INSERT INTO customers (name,number,created_at,updated_at) VALUES(?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
+					)
 					.run([customerName, customerContact]);
 				userId = newUserInfo.lastInsertRowid;
 
@@ -140,7 +167,7 @@ const createOrder = order => {
 
 			let main_order_item_id = null;
 
-			orderCart.forEach((item, i) => {
+			orderCart.forEach((item, i, items) => {
 				if (!["removed", "cancelled"].includes(item.itemStatus)) {
 					const {
 						itemQty,
@@ -160,6 +187,15 @@ const createOrder = order => {
 						contains_free_item = 0,
 						is_it_free_item = 0,
 					} = item;
+
+					let timeOffset = 0;
+
+					const isDuplicate = items.findIndex(
+						(item, idx) => item.itemId === itemId && item.variation_id === variation_id && idx !== i
+					);
+					if (isDuplicate !== -1) {
+						timeOffset = i;
+					}
 
 					const final_price = itemTotal - item_discount;
 					const totalItemTax = itemTax.reduce((total, tax) => (total += tax.tax), 0);
@@ -184,8 +220,8 @@ const createOrder = order => {
 						contains_free_item,
 						main_order_item_id,
 						discount_detail_json,
-						i,
-						i,
+						timeOffset,
+						timeOffset,
 					]);
 
 					main_order_item_id = contains_free_item ? itemInfo.lastInsertRowid : null;

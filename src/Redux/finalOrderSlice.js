@@ -56,7 +56,7 @@ const reCalculateOrderData = state => {
 	state.discount = flatDiscount;
 	state.taxDetails = updatedTaxDetails;
 	state.subTotal = subTotal;
-	state.cartTotal = subTotal + totalTax - flatDiscount + state.deliveryCharge + state.packagingCharge	;
+	state.cartTotal = subTotal + totalTax - flatDiscount + state.deliveryCharge + state.packagingCharge;
 	state.tax = totalTax;
 };
 
@@ -89,8 +89,8 @@ const initialFinalOrder = {
 	order_status: "accepted",
 	maxFlatDiscount: 0,
 	billPaid: false,
-	biller_id : 1,
-	biller_name : "biller",
+	biller_id: 1,
+	biller_name: "biller",
 	taxDetails: [],
 	multipay: [
 		{ name: "upi_phonepe", amount: 0 },
@@ -140,13 +140,13 @@ const finalOrderSlice = createSlice({
 			let data = action.payload;
 
 			if (Object.keys(data)[0] === "packagingCharge") {
-				const packagingCharge = +Object.values(data)[0]
+				const packagingCharge = +Object.values(data)[0];
 				let cartTotal = state.subTotal + state.tax - state.discount + state.deliveryCharge + packagingCharge;
 				return { ...state, packagingCharge, cartTotal };
 			}
 
 			if (Object.keys(data)[0] === "deliveryCharge") {
-				const deliveryCharge = +Object.values(data)[0]
+				const deliveryCharge = +Object.values(data)[0];
 				let cartTotal = state.subTotal + state.tax - state.discount + state.packagingCharge + deliveryCharge;
 				return { ...state, deliveryCharge, cartTotal };
 			}
@@ -401,10 +401,10 @@ const finalOrderSlice = createSlice({
 
 				let toppingsTotal = item.item_addons.reduce((total, topping) => (total += topping.quantity * topping.price), 0);
 
-				subTotal += item.status === -1 ? 0 : item.price * item.quantity;
+				subTotal += item.status === 0 ? 0 : item.price * item.quantity;
 
 				let itemTax = item.item_tax.map(tax => {
-					totalTax += item.status === -1 ? 0 : tax.tax_amount * item.quantity;
+					totalTax += item.status === 0 ? 0 : tax.tax_amount * item.quantity;
 
 					let existingTax = taxDetails.find(totaltax => totaltax.id === tax.tax_id);
 					if (existingTax) {
@@ -418,7 +418,7 @@ const finalOrderSlice = createSlice({
 
 				return {
 					currentOrderItemId: item.id,
-					itemStatus: item.status === -1 ? "cancelled" : "default",
+					itemStatus: item.status === 0 ? "cancelled" : "default",
 					itemQty: item.quantity,
 					itemId: item.item_id,
 					itemName: item.item_name,

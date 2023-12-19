@@ -14,10 +14,17 @@ import OrderExistAlertModal from "./OrderExistAlertModal";
 import KOTExistAlertModal from "./KOTExistAlertModal";
 import notify from "../Feature Components/notify";
 import { useSearchParams } from "react-router-dom";
-import { useGetMenuQuery2, useGetPrintersQuery } from "../Utils/customQueryHooks";
+import { useGetDefaultScreenQuery, useGetPrintersQuery } from "../Utils/customQueryHooks";
 import sortPrinters from "../Utils/shortPrinters";
 import { validateOrder } from "../Utils/validateOrder";
-import { useKotMutation, useKotToOrderMutation, useKotToPrintOrderMutation, useModifyKotMutation, useOrderMutation, usePrintOrderMutation } from "../Utils/customMutationHooks";
+import {
+	useKotMutation,
+	useKotToOrderMutation,
+	useKotToPrintOrderMutation,
+	useModifyKotMutation,
+	useOrderMutation,
+	usePrintOrderMutation,
+} from "../Utils/customMutationHooks";
 import OrderCancelAlertModal from "./OrderCancelAlertModal";
 import MultipayModal from "./MultipayModal";
 import Item from "./Item";
@@ -26,10 +33,11 @@ function OrderPayment() {
 	const finalOrder = useSelector(state => state.finalOrder);
 
 	const { data: printerArr } = useGetPrintersQuery();
-	const { data: bigMenu } = useGetMenuQuery2();
+	// const { data: bigMenu } = useGetMenuQuery2();
+	const { data: defaultSettings } = useGetDefaultScreenQuery();
 	const activeOrderBtns = useSelector(state => state.UIActive.activeOrderBtns);
 	const customerPhoneMandatory =
-		bigMenu?.defaultSettings?.customer_phone_mandatory.split(",").map(orderType => {
+		defaultSettings?.customer_phone_mandatory.split(",").map(orderType => {
 			if (orderType === "1") {
 				return "dine_in";
 			}
@@ -41,6 +49,7 @@ function OrderPayment() {
 		}) || [];
 
 	const printers = printerArr?.length ? sortPrinters(printerArr) : [];
+	// const defaultSettings = bigMenu?.defaultSettings || {};
 
 	let [searchParams, setSearchParams] = useSearchParams();
 	const [shouldPrintOrder, setShouldPrintOrder] = useState(false);
@@ -72,9 +81,9 @@ function OrderPayment() {
 
 	const { mutate: modifyKotMutate } = useModifyKotMutation(printers);
 
-	const { mutate: printOrderMutate } = usePrintOrderMutation(setShowKOTExistModal, setShouldPrintOrder, printers);
+	const { mutate: printOrderMutate } = usePrintOrderMutation(setShowKOTExistModal, setShouldPrintOrder, printers, defaultSettings);
 
-	const { mutate: kotToPrintOrderMutate } = useKotToPrintOrderMutation(printers);
+	const { mutate: kotToPrintOrderMutate } = useKotToPrintOrderMutation(printers, defaultSettings);
 
 	const saveOrder = async finalOrder => {
 		const isValid = validateOrder(finalOrder, setSearchParams, customerPhoneMandatory);
@@ -153,7 +162,10 @@ function OrderPayment() {
 		<div className={styles.orderPayment}>
 			<PaymentBreakdown showPaymentBreakdown={showPaymentBreakdown} setShowPaymentBreakdown={setShowPaymentBreakdown} />
 
-			<button className={styles.paymentBreakdownToggle} name="toggleBreakdown" onClick={() => setShowPaymentBreakdown(!showPaymentBreakdown)}>
+			<button
+				className={styles.paymentBreakdownToggle}
+				name="toggleBreakdown"
+				onClick={() => setShowPaymentBreakdown(!showPaymentBreakdown)}>
 				{chevronPosition}
 			</button>
 
@@ -164,24 +176,59 @@ function OrderPayment() {
 
 			<div className={`${styles.paymentModes} d-flex justify-content-around`}>
 				<label>
-					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="cash" checked={finalOrder.paymentMethod === "cash"} />
+					<input
+						className="mx-2 my-2"
+						type="radio"
+						name="paymentMethod"
+						onChange={handleChange}
+						value="cash"
+						checked={finalOrder.paymentMethod === "cash"}
+					/>
 					Cash
 				</label>
 
 				<label>
-					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="card" checked={finalOrder.paymentMethod === "card"} />
+					<input
+						className="mx-2 my-2"
+						type="radio"
+						name="paymentMethod"
+						onChange={handleChange}
+						value="card"
+						checked={finalOrder.paymentMethod === "card"}
+					/>
 					Card
 				</label>
 				<label>
-					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="due" checked={finalOrder.paymentMethod === "due"} />
+					<input
+						className="mx-2 my-2"
+						type="radio"
+						name="paymentMethod"
+						onChange={handleChange}
+						value="due"
+						checked={finalOrder.paymentMethod === "due"}
+					/>
 					Due
 				</label>
 				<label>
-					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="other" checked={finalOrder.paymentMethod === "other"} />
+					<input
+						className="mx-2 my-2"
+						type="radio"
+						name="paymentMethod"
+						onChange={handleChange}
+						value="other"
+						checked={finalOrder.paymentMethod === "other"}
+					/>
 					Other
 				</label>
 				<label>
-					<input className="mx-2 my-2" type="radio" name="paymentMethod" onChange={handleChange} value="multipay" checked={finalOrder.paymentMethod === "multipay"} />
+					<input
+						className="mx-2 my-2"
+						type="radio"
+						name="paymentMethod"
+						onChange={handleChange}
+						value="multipay"
+						checked={finalOrder.paymentMethod === "multipay"}
+					/>
 					Multipay
 				</label>
 			</div>
@@ -194,11 +241,19 @@ function OrderPayment() {
 				<>
 					{activeOrderBtns.includes("save") ? (
 						<>
-							<Button variant="danger" size="sm" className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1" onClick={() => saveOrder(finalOrder)}>
+							<Button
+								variant="danger"
+								size="sm"
+								className="mx-1 py-1 px-4 fw-bold text-nowrap rounded-1"
+								onClick={() => saveOrder(finalOrder)}>
 								{" "}
 								Save{" "}
 							</Button>
-							<Button variant="danger" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => saveAndPrintOrder(finalOrder, printers)}>
+							<Button
+								variant="danger"
+								size="sm"
+								className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1"
+								onClick={() => saveAndPrintOrder(finalOrder, printers)}>
 								{" "}
 								Save & Print
 							</Button>
@@ -209,11 +264,19 @@ function OrderPayment() {
 					{/* <Button variant="secondary" size="sm" className="mx-1 py-1 fw-light px-2 fw-normal text-nowrap rounded-1"> KOT </Button> */}
 					{activeOrderBtns.includes("kot") ? (
 						<>
-							<Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => createKOT(finalOrder, printers)}>
+							<Button
+								variant="secondary"
+								size="sm"
+								className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1"
+								onClick={() => createKOT(finalOrder, printers)}>
 								{" "}
 								KOT & Print{" "}
 							</Button>
-							<Button variant="secondary" size="sm" className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1" onClick={() => {}}>
+							<Button
+								variant="secondary"
+								size="sm"
+								className="mx-1 py-1 px-2 fw-bold text-nowrap rounded-1"
+								onClick={() => {}}>
 								{" "}
 								KOT{" "}
 							</Button>
@@ -222,7 +285,11 @@ function OrderPayment() {
 
 					{activeOrderBtns.includes("hold") ? (
 						<>
-							<Button variant="white" size="sm" className="mx-1 py-1 px-2 fw-bold border-1 border border-dark text-nowrap rounded-1" onClick={holdOrder}>
+							<Button
+								variant="white"
+								size="sm"
+								className="mx-1 py-1 px-2 fw-bold border-1 border border-dark text-nowrap rounded-1"
+								onClick={holdOrder}>
 								{" "}
 								HOLD{" "}
 							</Button>
@@ -231,7 +298,11 @@ function OrderPayment() {
 
 					{activeOrderBtns.includes("cancel") ? (
 						<>
-							<Button variant="white" size="sm" className="mx-1 pe-auto py-1 px-3 fw-bold border-1 border border-dark text-nowrap rounded-1" onClick={handleCancel}>
+							<Button
+								variant="white"
+								size="sm"
+								className="mx-1 pe-auto py-1 px-3 fw-bold border-1 border border-dark text-nowrap rounded-1"
+								onClick={handleCancel}>
 								Cancel
 							</Button>
 						</>
@@ -239,7 +310,14 @@ function OrderPayment() {
 				</>
 			</div>
 			{showOrderExistModal && (
-				<OrderExistAlertModal show={showOrderExistModal} hide={() => setShowOrderExistModal(false)} IPAddress={IPAddress} finalOrder={finalOrder} printers={printers} notify={notify} />
+				<OrderExistAlertModal
+					show={showOrderExistModal}
+					hide={() => setShowOrderExistModal(false)}
+					IPAddress={IPAddress}
+					finalOrder={finalOrder}
+					printers={printers}
+					notify={notify}
+				/>
 			)}
 			{showKOTExistMOdal && (
 				<KOTExistAlertModal
@@ -250,6 +328,7 @@ function OrderPayment() {
 					shouldPrintOrder={shouldPrintOrder}
 					setShouldPrintOrder={setShouldPrintOrder}
 					printers={printers}
+					defaultSettings={defaultSettings}
 					IPAddress={IPAddress}
 					finalOrder={finalOrder}
 					notify={notify}
@@ -266,6 +345,7 @@ function OrderPayment() {
 					printOrderMutate={printOrderMutate}
 					finalOrder={finalOrder}
 					printers={printers}
+					defaultSettings={defaultSettings}
 					shouldPrintOrder={shouldPrintOrder}
 					setShouldPrintOrder={setShouldPrintOrder}
 					multipayControlType={multipayControlType}
@@ -277,5 +357,3 @@ function OrderPayment() {
 }
 
 export default OrderPayment;
-
-

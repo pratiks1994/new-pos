@@ -29,12 +29,12 @@ import OrdersSummary from "./pages/OrdersSummary.js";
 import SalesSummary from "./pages/SalesSummary.js";
 import BillerLogin from "./pages/BillerLogin.js";
 import { ToastContainer } from "react-toastify";
-// import { io } from "socket.io-client";
-// import echo from "./Utils/echoConfig..js";
+
 
 function Main() {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
+    
 	const { systemType, IPAddress, biller } = useSelector(state => state.serverConfig);
 
 	const getServerData = async () => {
@@ -47,33 +47,41 @@ function Main() {
 		return data;
 	};
 
+	// when app starts it will try to get server data eg(systemType, IPAddress,biller) from local database via electron ipcRenderer ( getServerData call)
+	// local database for client and server both stores last connected serve IP, systemType, and last biller detail in startup_config table.
+
 	const { data: serverData, isLoading: serverDataLoading } = useQuery({
 		queryKey: ["serverData"],
 		queryFn: getServerData,
 		onSuccess: async data => {
+			//if sync code id not in database redirect to ./POSConfig to start new app setup
 			if (!data?.sync_code) {
 				navigate("./POSConfig");
 				return;
 			}
 
+			// if server IPAddress is undefined redirect to ./serveConfig to start server or in case of client add server IPAdress
 			if (!data?.system_type || !data?.ip) {
 				navigate("./serverConfig");
 				return;
 			}
 
+			// if all both IPAddress and system type is there dispatch these value in redux server_config slice for future api calls
 			if (data?.ip) {
 				dispatch(setSystem({ name: "IPAddress", value: data.ip }));
 				dispatch(setSystem({ name: "systemType", value: data.system_type }));
 				dispatch(setSystem({ name: "biller", value: data["last_login_user"] }));
 			}
 
+			// if biller is logged out before closing app and last_login_user is null redirect to login page
 			if (data.last_login_user === null) {
 				navigate("./login");
 				return;
 			}
 		},
 		onError: () => {
-			//this is for browse as browser cant make requst to system it will retur error, in final build handle error by navigating to appropreate page
+			//this is for browse as browser cant make requst to system it will return error, in final build handle error by navigating to appropreate page
+			// remove this in final build as it is omly for starting app in browser and handle error by redirecting to POSconfing page or serverConfig page
 			dispatch(setSystem({ name: "IPAddress", value: "192.168.1.84" }));
 			dispatch(setSystem({ name: "systemType", value: "client" }));
 			dispatch(setSystem({ name: "biller", value: "biller" }));
@@ -85,6 +93,7 @@ function Main() {
 		retry: false,
 	});
 
+	//this query call get DefaultData and can only be made after IPAddress be awailaible (which will be after previos query call "serverData"), and setup default variables in redux slice
 	const { data, isLoading } = useQuery({
 		queryKey: ["defaultScreen"],
 		queryFn: getServerStatus,
@@ -98,11 +107,11 @@ function Main() {
 		},
 		refetchOnWindowFocus: false,
 		refetchIntervalInBackground: false,
-		staleTime: 5000000,
 		retry: false,
 		enabled: !!IPAddress && !!biller,
 	});
 
+	// routing for the app
 	return isLoading || serverDataLoading ? (
 		<div className={styles.loadingContainer}>
 			<Loading />
@@ -137,7 +146,7 @@ function Main() {
 									<Route path="assignBill" element={<AssignBill />} />
 								</Route>
 							</Route>
-							</Route>
+						</Route>
 					</Route>
 					<Route path="reports">
 						<Route path="ordersSummary" element={<OrdersSummary />} />

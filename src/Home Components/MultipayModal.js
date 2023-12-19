@@ -17,6 +17,7 @@ function MultipayModal({
 	setShouldPrintOrder,
 	setMultipayControlType,
 	multipayControlType,
+	defaultSettings,
 }) {
 	let cartTotal = finalOrder.cartTotal;
 	const orderMultipayData = finalOrder.multipay;
@@ -45,8 +46,19 @@ function MultipayModal({
 		{ name: "cash", displayName: "Cash", amount: "", ref: cashRef },
 	];
 
-	const { mutate: includeKotAndCreateOrderMutate, isLoading: isMutationLoading } = useIncludeKotAndCreateOrderMutation(finalOrder, hide, shouldPrintOrder, setShouldPrintOrder, printers);
-	const { mutate: updateOrderAndCreateKOTMutate, isLoading: isUpdateOrderAndCreateKOTLoading } = useUpdateOrderAndCreateKOTMutation(printers, hide, finalOrder);
+	const { mutate: includeKotAndCreateOrderMutate, isLoading: isMutationLoading } = useIncludeKotAndCreateOrderMutation(
+		finalOrder,
+		hide,
+		shouldPrintOrder,
+		setShouldPrintOrder,
+		printers,
+		defaultSettings
+	);
+	const { mutate: updateOrderAndCreateKOTMutate, isLoading: isUpdateOrderAndCreateKOTLoading } = useUpdateOrderAndCreateKOTMutation(
+		printers,
+		hide,
+		finalOrder
+	);
 
 	const { data, isLoading: isExistingOrderLoading } = useGetExistingOrdersQuery(finalOrder, shouldFetchExistingOrder);
 	console.log(data);
@@ -227,7 +239,15 @@ function MultipayModal({
 					{multipay.map(pay => (
 						<div key={pay.name} className={styles.multipayOption}>
 							<label className={styles.multipayLabel}>{pay.displayName}</label>
-							<input className={styles.multipayInput} type="number" ref={pay.ref} name={pay.name} min="0" disabled={pay.name === "cash"} onChange={handleChange} />
+							<input
+								className={styles.multipayInput}
+								type="number"
+								ref={pay.ref}
+								name={pay.name}
+								min="0"
+								disabled={pay.name === "cash"}
+								onChange={handleChange}
+							/>
 						</div>
 					))}
 				</div>

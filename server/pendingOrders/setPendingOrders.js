@@ -39,7 +39,7 @@ const setPendingOrders = async () => {
 			});
 		})();
 	} catch (error) {
-		console.log("pending order update error");
+		console.log(error)
 	}
 
 	return { isUpdated,customerNames };

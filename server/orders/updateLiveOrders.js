@@ -27,7 +27,7 @@ const updateLiveOrders = data => {
 						db2.transaction(() => {
 							db2.prepare("DELETE FROM multipays WHERE pos_order_id =? ").run([orderId]);
 						})();
-						
+
 						multipay.forEach(partPay => {
 							if (+partPay.amount) {
 								multipayPrepare.run([orderId, partPay.name, partPay.amount]);
@@ -54,12 +54,14 @@ const updateLiveOrders = data => {
 		// const updatedStatus = statuses[current + 1];
 
 		try {
-			db2.prepare("UPDATE pos_orders SET order_status=?, settle_amount=total, sync = 0, updated_at = datetime('now', 'localtime') WHERE id=? AND order_status != 'cancelled'").run([updatedStatus, orderId]);
+			db2.prepare("UPDATE pos_orders SET order_status=?, settle_amount=total, sync = 0, updated_at = datetime('now', 'localtime') WHERE id=? AND order_status != 'cancelled'").run([
+				updatedStatus,
+				orderId,
+			]);
 
 			if (orderType !== "dine_in" && updatedStatus === "food_is_ready") {
-				db2.prepare("UPDATE kot SET kot_status=? WHERE id = ?").run(["food_is_ready", KOTId]);
+				db2.prepare("UPDATE kot SET kot_status=?, updated_at = datetime('now', 'localtime'), sync = 0 WHERE id = ?").run(["food_is_ready", KOTId]);
 			}
-
 		} catch (err) {
 			console.log(err);
 		}

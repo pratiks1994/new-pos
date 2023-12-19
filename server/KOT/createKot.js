@@ -37,21 +37,28 @@ const createKot = (order, userId, orderId) => {
 
 		const { lastInsertRowid: KOTId } = db2
 			.prepare(
-				"INSERT INTO kot (pos_order_id,restaurant_id,token_no,order_type,customer_id,customer_name,phone_number,address,landmark,table_id,table_no,print_count,kot_status,description,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now', 'localtime'),datetime('now', 'localtime'))"
+				"INSERT INTO kot (pos_order_id,restaurant_id,token_no,order_type,customer_id,customer_name,phone_number,address,landmark,table_id,table_no,print_count,kot_status,description,sync,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,datetime('now', 'localtime'),datetime('now', 'localtime'))"
 			)
 			.run([orderId, restaurantId, tokenNo, orderType, userId, customerName, customerContact, customerAdd, customerLocality, tableNumber, tableNumber, 1, "accepted", orderComment]);
 
 		db2.transaction(() => {
 			const prepareItem = db2.prepare(
-				"INSERT INTO kot_items (kot_id,item_id,item_name,quantity,variation_name,variation_id,description,tax,price,final_price,item_addon_items,tax_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
+				"INSERT INTO kot_items (kot_id,item_id,item_name,quantity,variation_name,variation_id,description,tax,price,final_price,item_addon_items,tax_id,sync, created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0,datetime('now', 'localtime', '+' || ? || ' seconds'), datetime('now', 'localtime', '+' || ? || ' seconds'))"
 			);
 
 			// const prepareToppings = db2.prepare("INSERT INTO KOT_item_addongroupitems (KOT_item_id,addongroupitem_id,name,quantity) VALUES (?,?,?,?)");
 
-			orderCart.forEach(item => {
+			orderCart.forEach((item, i, items) => {
 				const { itemQty, itemId, itemName, variation_id, itemNotes, variantName, toppings, itemTax, itemTotal, multiItemTotal, variant_display_name, parent_tax } = item;
 
 				const totalItemTax = itemTax.reduce((total, tax) => (total += tax.tax), 0);
+				let timeOffset = 0;
+
+				const isDuplicate = items.findIndex((item, idx) => item.itemId === itemId && item.variation_id === variation_id && idx !== i);
+				
+				if (isDuplicate !== -1) {
+					timeOffset = i;
+				}
 
 				const { lastInsertRowid: KOTItemId } = prepareItem.run([
 					KOTId,
@@ -66,6 +73,8 @@ const createKot = (order, userId, orderId) => {
 					itemTotal,
 					JSON.stringify(toppings),
 					parent_tax,
+					timeOffset,
+					timeOffset,
 				]);
 			});
 		})();

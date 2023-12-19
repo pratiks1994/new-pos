@@ -18,6 +18,7 @@ const orderDetailsMap = [
 
 function OrderTypeDetail({ type, cartAction, orderId, kotsDetail }) {
 	const [showDetailType, setShowDetailType] = useState(null);
+
 	let [searchParams, setSearchParams] = useSearchParams();
 
 	const kots = kotsDetail.map(kot => kot.token_no).join(",");
@@ -66,13 +67,23 @@ function OrderTypeDetail({ type, cartAction, orderId, kotsDetail }) {
 					</motion.div>
 				))}
 				{cartAction === "modifyOrder" && (
-					<motion.div layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} className={styles.order}>
+					<motion.div
+						layout
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ duration: 0.2 }}
+						className={styles.order}>
 						<div className={styles.orderTitle}>Order No</div>
 						<div className={styles.number}>{orderId}</div>
 					</motion.div>
 				)}
 				{cartAction === "modifyKot" && (
-					<motion.div layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }} className={styles.order}>
+					<motion.div
+						layout
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ duration: 0.2 }}
+						className={styles.order}>
 						<div className={styles.orderTitle}>KOT No</div>
 						<div className={styles.number}>{kots}</div>
 					</motion.div>

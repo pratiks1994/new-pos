@@ -67,16 +67,16 @@ const getOrderToSync = () => {
 				item_id: item.item_id,
 				item_discount: item.item_discount,
 				tax: item.tax,
-				tax_id :item.tax_id,
+				tax_id: item.tax_id,
 				variation_id: item.variation_id,
 				variation_name: item.variation_name,
 				price: item.price,
-				item_name:item.item_name,
+				item_name: item.item_name,
 				quantity: item.quantity,
 				created_at: item.created_at,
 				updated_at: item.updated_at,
 				main_order_item_id: item.main_order_item_id,
-				status : item.status
+				status: item.status,
 			};
 
 			orderTosync.order.items.push(itemTosync);

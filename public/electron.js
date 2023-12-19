@@ -13,6 +13,7 @@ const { getLocalDb } = require("./electronUtils/getLocalDb");
 const { updateDatabaseSchema } = require("./electronUtils/updateDatabaseSchema");
 const { getServerData } = require("./electronUtils/getServerData");
 const { getLandingPage, initiateServer } = require("./electronUtils/initiateApp");
+const { testPrint } = require("./electronUtils/testprint");
 
 const destinationFolder = app.isPackaged ? path.join(app.getAppPath(), "..", "..", "..", "..", "pos_db") : path.join(app.getAppPath(), "..", "..", "pos_db");
 const sourceFile = app.isPackaged ? path.join(app.getAppPath(), "..", "..", "posDatabse.sqlite") : path.join(app.getAppPath(), "posDatabse.sqlite");
@@ -242,6 +243,16 @@ ipcMain.handle("kotPrint", async (event, payload) => {
 		return err;
 	}
 });
+
+ipcMain.handle("testprint", async (event, payload) => {
+	try {
+		await testPrint(payload)
+	} catch (error) {
+		console.log(err);
+		return err;
+	}
+});
+
 
 ipcMain.handle("printInvoice", async (event, payload) => {
 	try {

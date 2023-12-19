@@ -1,11 +1,10 @@
 export const convertOrder = order => {
-	
 	const totalTaxes = [];
-	let totalQty = 0
+	let totalQty = 0;
 
 	const orderCart = order.items.map(item => {
 		const addonTotal = item.itemAddons.reduce((total, addon) => (total += +addon.price * +addon.quantity), 0);
-		totalQty += item.quantity 
+		totalQty += item.quantity;
 
 		item.itemTax.forEach(tax => {
 			let existingTax = totalTaxes.find(totaltax => totaltax.id === tax.tax_id);
@@ -29,20 +28,26 @@ export const convertOrder = order => {
 			itemTotal: item.price,
 			multiItemTotal: item.final_price,
 			itemTax: item.itemTax,
+			discount_detail: item.discount_detail,
 		};
 	});
 
 	const kotTokenNo = order.KOTDetail.map(kot => kot.token_no).join(",");
 
 	return {
+		online_order_id: order.extra_data.online_order_id,
+		online_order_number: order.extra_data.pending_order_id,
 		kotTokenNo,
 		printCount: order.print_count,
-		orderNo: order.order_number,
+		orderNo: order.bill_no,
 		customerName: order.customer_name,
 		customerContact: order.phone_number,
 		customerAdd: order.complete_address,
 		subTotal: order.item_total,
 		tax: order.total_tax,
+		promo_code: order.promo_code,
+		promo_id: order.promo_id,
+		promo_discount: order.promo_discount,
 		deliveryCharge: order.delivery_charges,
 		packagingCharge: 0,
 		discount: order.total_discount,
@@ -55,7 +60,9 @@ export const convertOrder = order => {
 		order_status: order.order_status,
 		orderCart,
 		totalTaxes,
-		totalQty
+		totalQty,
+		billPaid: order.bill_paid,
+		biller_name: order.biller_name,
+		taxDetails: order.tax_details,
 	};
-	
 };

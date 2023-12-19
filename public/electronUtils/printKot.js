@@ -112,13 +112,14 @@ const printKot = async payload => {
 
 			${data.orderCart
 				.map(item => {
-
-				
-					const itemStatus = item.itemStatus !== "default" && data.isModified ? `[${itemStatusDisplayName[item.itemStatus]}]` : "";
+					const itemStatus =
+						item.itemStatus !== "default" && data.isModified ? `[${itemStatusDisplayName[item.itemStatus]}]` : "";
 
 					const itemCard = `<article class="itemCard">
 										<div class="itemQty">${item.itemQty}</div>
-										<div class="itemName bold ${["removed","cancelled"].includes(item.itemStatus) ? "strikeThrough" : ""}"> ${itemStatus} ${item.itemName} ${item.variantName ? " - " + item.variantName : ""}</div>
+										<div class="itemName bold ${["removed", "cancelled"].includes(item.itemStatus) ? "strikeThrough" : ""}"> ${itemStatus} ${item.itemName} ${
+						item.variantName ? " - " + item.variantName : ""
+					}</div>
 			    					</article>`;
 
 					const addonCard = item.toppings.length

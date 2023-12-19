@@ -44,9 +44,9 @@ const updateDatabaseSchema = (latestDbVersion, db2) => {
 				// 		const addparentTaxRow = `INSERT INTO taxes (restaurant_id,name,tax,order_types,status,priority,child_ids) VALUES (?,?,?,?,?,?,?) WHERE id=?`
 				// 		const addPriceType = `ALTER TABLE "items" ADD "price_type" INTEGER DEFAULT 1`;
 				// 		const addParentTax = `ALTER TABLE "items" ADD "parent_tax" INTEGER DEFAULT 5`;
-				// 		const addTaxToOrderItemsColumn = `ALTER TABLE order_items ADD COLUMN tax REAL` ; 
+				// 		const addTaxToOrderItemsColumn = `ALTER TABLE order_items ADD COLUMN tax REAL` ;
 				// 		const addTaxIdToOrderItemsColumn =  `ALTER TABLE order_items ADD COLUMN tax_id INTEGER`
-				// 		const addTaxToKotItemsColumn = `ALTER TABLE kot_items ADD COLUMN tax REAL` ; 
+				// 		const addTaxToKotItemsColumn = `ALTER TABLE kot_items ADD COLUMN tax REAL` ;
 				// 		const addTaxIdToKotItemsColumn =  `ALTER TABLE order_items ADD COLUMN tax_id INTEGER`
 				// 		const updatedefaultConfig = "UPDATE restaurants SET configuration=?" ;
 
@@ -58,8 +58,6 @@ const updateDatabaseSchema = (latestDbVersion, db2) => {
 				// Add more target versions and corresponding actions here
 			];
 
-
-            
 			db2.transaction(async () => {
 				for (const map of updateMaps) {
 					if (map.targetVersion > currentDbVersion && map.targetVersion <= latestDbVersion) {

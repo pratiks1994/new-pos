@@ -1,11 +1,15 @@
 const { getDb } = require("../common/getDb");
 const db2 = getDb();
 
-const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
+const convertPendingOrderToOrder = (pendingOrder, updatedStatus, biller) => {
 	const itemStmt = db2.prepare("SELECT id,category_id,name,price,item_tax,price_type,parent_tax FROM items WHERE id = ?");
-	const itemRestaurantPriceStmt = db2.prepare("SELECT price FROM item_restaurant_prices WHERE item_id =? AND (restaurant_price_id = ? OR restaurant_price_id IS NULL) ");
+	const itemRestaurantPriceStmt = db2.prepare(
+		"SELECT price FROM item_restaurant_prices WHERE item_id =? AND (restaurant_price_id = ? OR restaurant_price_id IS NULL) "
+	);
 	const taxesStmt = db2.prepare("SELECT id,name,tax FROM taxes WHERE id=?");
-	const variationStmt = db2.prepare("SELECT price FROM item_variation WHERE item_id = ? AND variation_id=? AND (restaurant_price_id = ? OR restaurant_price_id IS NULL)");
+	const variationStmt = db2.prepare(
+		"SELECT price FROM item_variation WHERE item_id = ? AND variation_id=? AND (restaurant_price_id = ? OR restaurant_price_id IS NULL)"
+	);
 	const toppingStmt = db2.prepare("SELECT price FROM addongroupitems WHERE id=?");
 
 	const orderDetail = pendingOrder.order_json;
@@ -72,7 +76,7 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 				if (existingTax) {
 					existingTax.tax += itemTaxAmount;
 				} else {
-					cartTaxDetail.push({ id: +tax.id, name: tax.name, tax: itemTaxAmount * +item.quantity, tax_percent: tax.tax });
+					cartTaxDetail.push({ id: +tax.id, name: tax.name, tax: itemTaxAmount, tax_percent: tax.tax });
 				}
 
 				return {
@@ -106,14 +110,18 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 				item_discount,
 				contains_free_item: item.contains_free_item,
 				is_it_free_item: item.is_it_free_item,
-				discount_detail : item.discount_details ? JSON.parse(item?.discount_details ) : []
+				discount_detail: item.discount_details ? JSON.parse(item?.discount_details) : [],
 			};
 		});
+
+		console.log(orderDetail.payment_type)
 
 		const finalOrder = {
 			online_order_id: pendingOrder.online_order_id,
 			online_order_number: pendingOrder.online_order_number,
 			kotsDetail: [],
+			biller_name: biller.biller_name,
+			biller_id: biller.biller_id,
 			id: "",
 			printCount: 1,
 			customerName: orderDetail.customer.customer_name,
@@ -121,7 +129,7 @@ const convertPendingOrderToOrder = (pendingOrder, updatedStatus) => {
 			customerAdd: orderDetail.customer.address,
 			customerLocality: "",
 			tableArea: "Other",
-			paymentMethod: "card",
+			paymentMethod: orderDetail.order.payment_type,
 			deliveryCharge: +orderDetail.order.delivery_charges || 0,
 			packagingCharge: +orderDetail.order.packing_charges || 0,
 			discount: +orderDetail.order.discount_total || 0,

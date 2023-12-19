@@ -9,7 +9,6 @@ import axios from "axios";
 import { convertOrder } from "../Utils/convertOrder";
 import { executeBillPrint } from "../Utils/executePrint";
 import notify from "../Feature Components/notify";
-import { useGetPrintersQuery } from "../Utils/customQueryHooks";
 import { liveKotToCart, modifyCartData, resetFinalOrder } from "../Redux/finalOrderSlice";
 import { modifyUIActive } from "../Redux/UIActiveSlice";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +16,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // import { faEye } from "@fortawesome/free-solid-svg-icons";
 import { faEye } from "@fortawesome/free-regular-svg-icons";
 
-function ActiveKotTableCard({ orders, areaId, printers }) {
+function ActiveKotTableCard({ orders, areaId, printers,defaultSettings }) {
 	const IPAddress = useSelector(state => state.serverConfig.IPAddress);
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
@@ -48,7 +47,7 @@ function ActiveKotTableCard({ orders, areaId, printers }) {
 			const orderToPrint = convertOrder(order);
 
 			try {
-				await executeBillPrint(orderToPrint, printers);
+				await executeBillPrint(orderToPrint, printers,defaultSettings);
 				notify("success", "order Created");
 			} catch (error) {
 				console.log(error);

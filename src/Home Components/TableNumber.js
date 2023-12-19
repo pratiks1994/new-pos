@@ -30,7 +30,6 @@ function TableNumber({ showDetailType }) {
 	};
 
 	useEffect(() => {
-	
 		let timeOut = setTimeout(() => {
 			console.log("table changed");
 			if (orderCart.length > 0) {

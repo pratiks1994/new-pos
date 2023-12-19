@@ -11,13 +11,17 @@ function MainMenu() {
 	const dispatch = useDispatch();
 	// useGetPrintersQuery();
 	const { isLoading, data: bigMenu } = useGetMenuQuery2();
+
 	const categories = bigMenu?.categories || [];
+
 	const activeCategoryId = useSelector(state => state.menuItems.id);
 	const isCartActionDisable = useSelector(state => state.UIActive.isCartActionDisable);
 	const searchItemRef = useRef("");
 
 	const handleChange = () => {
 		let searchTerm = searchItemRef.current.value;
+
+
 		let searchItem = [];
 
 		if (searchTerm.length >= 3) {
@@ -36,6 +40,7 @@ function MainMenu() {
 			dispatch(setMenuItems({ items, id: activeCategoryId }));
 			return;
 		}
+		
 		dispatch(setMenuItems({ items: searchItem, id: activeCategoryId }));
 	};
 

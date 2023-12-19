@@ -9,14 +9,14 @@ import { faEye } from "@fortawesome/free-solid-svg-icons";
 function BillerLogin() {
 	const nameRef = useRef();
 	const passRef = useRef();
-	const { mutate: authMutate,isLoading } = useAuthenticateMutation();
+	const { mutate: authMutate, isLoading } = useAuthenticateMutation();
 
 	const handleLogin = () => {
 		if (!nameRef.current.value) {
 			notify("err", "Username Required ");
 			return;
 		}
-		
+
 		if (!passRef.current.value) {
 			notify("err", "Password required");
 			return;
@@ -36,7 +36,6 @@ function BillerLogin() {
 					<img src={loginImg} alt="login" className={styles.loginLogo} />
 				</div>
 				<section className={styles.mainLoginContainer}>
-
 					<form className={styles.loginDetail}>
 						<div className={styles.loginTitle}>Biller Login</div>
 						<div className={styles.inputContainer}>
@@ -46,7 +45,12 @@ function BillerLogin() {
 						<div className={styles.inputContainer}>
 							<input type="password" placeholder=" " ref={passRef} />
 							<label className={styles.passwordLabel}> Password</label>
-							<FontAwesomeIcon className={styles.showPassword} icon={faEye} onMouseDown={() => passRef.current.type="text"} onMouseUp={() => passRef.current.type="password"} />
+							<FontAwesomeIcon
+								className={styles.showPassword}
+								icon={faEye}
+								onMouseDown={() => (passRef.current.type = "text")}
+								onMouseUp={() => (passRef.current.type = "password")}
+							/>
 						</div>
 						<button className={styles.loginBtn} onClick={() => handleLogin()} disabled={isLoading}>
 							Login

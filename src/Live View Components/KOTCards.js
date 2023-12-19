@@ -49,7 +49,13 @@ function KOTCards({ KOT, idx }) {
 	const getColor = type => (type !== "dine_in" ? { backgroundColor: "rgba(116, 116, 0, 0.87)" } : null);
 
 	return (
-		<motion.div layout className={styles.KOTCard} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit = {{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.1, delay: idx * 0.03 }}>
+		<motion.div
+			layout
+			className={styles.KOTCard}
+			initial={{ opacity: 0, scale: 0.9 }}
+			animate={{ opacity: 1, scale: 1 }}
+			exit={{ opacity: 0, scale: 0.9 }}
+			transition={{ duration: 0.1, delay: idx * 0.03 }}>
 			<div className={styles.CardHeader} style={getColor(KOT.order_type)} onClick={() => moveKotToCart(KOT)}>
 				<div>
 					{KOT.table_no && <div>{KOT.table_no}</div>}
@@ -77,7 +83,7 @@ function KOTCards({ KOT, idx }) {
 			{KOT.items.map(item => {
 				return (
 					<div className={styles.KOTItemsDetail} key={uuidv4()}>
-						<div className={`${styles.KOTItemName} ${item.status === -1 ? styles.strikeThrough : null}`}>
+						<div className={`${styles.KOTItemName} ${item.status === 0 ? styles.strikeThrough : null}`}>
 							{item.item_name} {item.variation_name ? `- ${item.variation_name}` : null}{" "}
 							{item.item_addons.length
 								? item.item_addons.map(addon => (
@@ -87,7 +93,7 @@ function KOTCards({ KOT, idx }) {
 								  ))
 								: null}
 						</div>
-						<div className={`${styles.KOTItemQty} ${item.status === -1 ? styles.strikeThrough : null}`}>{item.quantity}</div>
+						<div className={`${styles.KOTItemQty} ${item.status === 0 ? styles.strikeThrough : null}`}>{item.quantity}</div>
 					</div>
 				);
 			})}

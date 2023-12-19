@@ -5,7 +5,7 @@ const getLiveOrders = () => {
 	try {
 		const liveOrders = db2
 			.prepare(
-				"SELECT id, bill_no, customer_name, complete_address, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, discount_percent, total_tax, delivery_charges, total, payment_type, order_status, created_at, print_count,bill_paid,tax_details,extra_data FROM pos_orders WHERE (order_type IN ('delivery', 'pick_up') AND order_status NOT IN ('delivered', 'picked_up','rejected','cancelled','pending','pending_payment')) OR (order_type = 'dine_in' AND order_status = 'accepted' AND settle_amount IS NULL)"
+				"SELECT id, bill_no,promo_code, promo_id, promo_discount, biller_name, customer_name, complete_address, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, discount_percent, total_tax, delivery_charges, total, payment_type, order_status, created_at, print_count, bill_paid, tax_details,extra_data FROM pos_orders WHERE (order_type IN ('delivery', 'pick_up') AND order_status NOT IN ('delivered', 'picked_up','rejected','cancelled','pending','pending_payment')) OR (order_type = 'dine_in' AND order_status = 'accepted' AND settle_amount IS NULL)"
 			)
 			.all([]);
 

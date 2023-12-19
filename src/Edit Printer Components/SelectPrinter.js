@@ -5,6 +5,7 @@ import { v4 } from "uuid";
 function SelectPrinter({ printer, setPrinter, connectedPrinters }) {
 	const printerTypes = ["30 mm", "40 mm"];
 
+	
 	return (
 		<main className={styles.selectPrinterMain}>
 			<div className={styles.printerInfoField}>

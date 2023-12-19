@@ -6,7 +6,7 @@ const db2 = getDb()
 
 
 const updatePrinter = (data) => {
-	// console.log(data);
+	console.log(data);
 
 	const billPrintStatus = data.assignToBillStatus ? 1 : 0;
 	const kotPrintStatus = data.assignToKotStatus ? 1 : 0;

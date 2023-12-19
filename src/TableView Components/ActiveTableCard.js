@@ -15,7 +15,7 @@ import SettleOrderModal from "../Live View Components/SettleOrderModal";
 import { convertOrder } from "../Utils/convertOrder";
 import { executeBillPrint } from "../Utils/executePrint";
 
-function ActiveTableCard({ order, printers }) {
+function ActiveTableCard({ order, printers,defaultSettings }) {
 	const { IPAddress } = useSelector(state => state.serverConfig);
 
 	const dispatch = useDispatch();
@@ -73,7 +73,7 @@ function ActiveTableCard({ order, printers }) {
 			setShowSettleModal(true);
 		} else {
 			const orderToPrint = convertOrder(order);
-			await executeBillPrint(orderToPrint, printers);
+			await executeBillPrint(orderToPrint, printers,defaultSettings);
 
 			orderMutation({
 				orderStatus: order.order_status,

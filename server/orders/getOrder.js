@@ -5,7 +5,7 @@ const getOrder = orderId => {
 	try {
 		const order = db2
 			.prepare(
-				"SELECT id, bill_no, customer_name, complete_address, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, discount_percent, total_tax, delivery_charges, total, payment_type, order_status, created_at, print_count,bill_paid FROM pos_orders WHERE id = ?"
+				"SELECT id, bill_no, biller_name, customer_name, complete_address, promo_code, promo_id, promo_discount, phone_number, order_type, dine_in_table_no, description, item_total, total_discount, discount_percent, total_tax, tax_details, delivery_charges, total, payment_type, order_status,extra_data, created_at, print_count, bill_paid FROM pos_orders WHERE id = ?"
 			)
 			.get([orderId]);
 
@@ -30,7 +30,12 @@ const getOrder = orderId => {
 
 			const taxesArray = taxesIdArray.map(tax => {
 				const taxData = taxesStmt.get(tax);
-				const itemTax = { tax_id: taxData.id, tax_name: taxData.name, tax_percent: taxData.tax, tax_amount: (taxData.tax * item.final_price) / 100 };
+				const itemTax = {
+					tax_id: taxData.id,
+					tax_name: taxData.name,
+					tax_percent: taxData.tax,
+					tax_amount: (taxData.tax * item.final_price) / 100,
+				};
 				return itemTax;
 			});
 
@@ -38,10 +43,21 @@ const getOrder = orderId => {
 
 			// const itemTax = prepareTax.all([item.id]);\
 
-			return { ...item, itemAddons: JSON.parse(item.item_addon_items), itemTax: taxesArray, discount_detail: JSON.parse(item.discount_detail) };
+			return {
+				...item,
+				itemAddons: JSON.parse(item.item_addon_items),
+				itemTax: taxesArray,
+				discount_detail: JSON.parse(item.discount_detail),
+			};
 		});
 
-		return { ...order, items: itemsWithAddons, KOTDetail };
+		return {
+			...order,
+			items: itemsWithAddons,
+			KOTDetail,
+			tax_details: JSON.parse(order.tax_details),
+			extra_data: JSON.parse(order.extra_data),
+		};
 	} catch (err) {
 		console.log(err);
 	}
